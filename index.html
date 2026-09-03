@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frutiger Aero</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.22);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --title-outline: #00a8ff;
+            --title-shadow: rgba(0, 61, 98, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Orbitron", sans-serif !important;
+            font-optical-sizing: auto;
+            border-radius: 0 !important;
+            cursor: url('https://tr.rbxcdn.com/180DAY-047cef60cb8a81b89ba623b0477f6442/420/420/FaceAccessory/Webp/noFilter'), auto !important;
+        }
+
+        body {
+            background: linear-gradient(135deg, #70a1ff 0%, #7bed9f 50%, #1e90ff 100%);
+            background-attachment: fixed;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+            transition: background 0.5s ease;
+        }
+
+        body.theme-blue {
+            background: linear-gradient(135deg, #1e90ff 0%, #70a1ff 50%, #0984e3 100%);
+            --title-outline: #1e90ff;
+            --title-shadow: rgba(0, 61, 98, 0.35);
+        }
+
+        body.theme-black {
+            background: linear-gradient(135deg, #2d3436 0%, #1e272c 50%, #000000 100%);
+            --title-outline: #000000;
+            --title-shadow: rgba(0, 0, 0, 0.8);
+        }
+
+        body.theme-green {
+            background: linear-gradient(135deg, #00b894 0%, #55efc4 50%, #00a8ff 100%);
+            --title-outline: #00b894;
+            --title-shadow: rgba(0, 100, 70, 0.4);
+        }
+
+        body.theme-purple {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 50%, #2c3e50 100%);
+            --title-outline: #8e44ad;
+            --title-shadow: rgba(60, 20, 80, 0.4);
+        }
+
+        body.theme-sunset {
+            background: linear-gradient(135deg, #e17055 0%, #fab1a0 50%, #d63031 100%);
+            --title-outline: #e17055;
+            --title-shadow: rgba(120, 30, 20, 0.4);
+        }
+
+        body::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #wallpaper-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; overflow: hidden;
+        }
+
+        #wallpaper-container img, #wallpaper-container video {
+            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 75px;
+            background: rgba(255, 255, 255, 0.22);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px 0;
+            z-index: 3;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: var(--glass-shadow);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
+            overflow-y: auto;
+            white-space: nowrap;
+        }
+
+        aside:hover {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.38);
+        }
+
+        .nav-link {
+            width: 100%; height: 50px; display: flex; align-items: center; padding: 0 22px; gap: 16px;
+            color: #ffffff; transition: 0.2s ease; text-decoration: none; font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255, 255, 255, 0.45); color: #ffffff; box-shadow: inset 0 0 12px rgba(255,255,255,0.7);
+        }
+
+        .nav-link.bottom { margin-top: auto; }
+
+        .nav-icon-badge { min-width: 24px; display: flex; align-items: center; justify-content: center; }
+        .nav-icon-badge img { width: 22px; height: 22px; object-fit: contain; }
+        .nav-text { opacity: 0; transition: opacity 0.2s ease; font-size: 0.95rem; color: #ffffff; }
+        aside:hover .nav-text { opacity: 1; }
+
+        /* View Container */
+        .view-container { flex: 1; position: relative; z-index: 2; overflow-y: auto; }
+        .view-section {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .view-section.active { opacity: 1; pointer-events: auto; }
+
+        .homepage-center-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        .welcome-png {
+            max-width: 100%;
+            width: 260px;
+            height: auto;
+            animation: floatAero 4.5s ease-in-out infinite alternate;
+            transition: all 0.4s ease;
+        }
+
+        .smooth-welcome-title, h2 {
+            font-family: "Orbitron", sans-serif !important;
+            font-weight: 800;
+            font-style: normal;
+            font-size: 2.8rem;
+            color: #ffffff !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            text-shadow: 
+                -2px -2px 0 var(--title-outline),  
+                 2px -2px 0 var(--title-outline),
+                -2px  2px 0 var(--title-outline),
+                 2px  2px 0 var(--title-outline),
+                 0px -2px 0 var(--title-outline),
+                 0px  2px 0 var(--title-outline),
+                -2px  0px 0 var(--title-outline),
+                 2px  0px 0 var(--title-outline),
+                 0 5px 15px var(--title-shadow) !important;
+            letter-spacing: 1.5px;
+            transition: text-shadow 0.4s ease, color 0.4s ease;
+        }
+
+        .view-section h2 {
+            font-size: 2.2rem !important;
+            margin-bottom: 4px;
+        }
+
+        @keyframes floatAero {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-10px); }
+        }
+
+        #settings-view {
+            justify-content: stretch;
+            align-items: stretch;
+            padding: 0;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .settings-dashboard-container {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: 1fr;
+            gap: 0px;
+            padding: 0;
+        }
+
+        .settings-box {
+            background: var(--glass-bg);
+            border-right: 1px solid var(--glass-border);
+            border-left: 1px solid var(--glass-border);
+            padding: 30px 20px;
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        .settings-box-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            flex: 1;
+            margin-top: 15px;
+            padding-right: 4px;
+        }
+
+        .settings-box-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffffff;
+            border-bottom: 2px solid var(--glass-border);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .settings-input {
+            width: 100%; padding: 10px 14px; background: rgba(255, 255, 255, 0.35);
+            border: 1px solid var(--glass-border); color: #ffffff; font-size: 0.85rem; outline: none;
+        }
+
+        .settings-btn {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0.15)); 
+            border: 1px solid var(--glass-border);
+            color: white; padding: 12px; font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.6);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .settings-btn:hover { 
+            background: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.25)); 
+            border-color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .theme-grid-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .theme-card {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--glass-border);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .theme-card:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #ffffff;
+            transform: scale(1.02);
+        }
+
+        .theme-color-preview {
+            width: 28px;
+            height: 28px;
+            border: 1px solid rgba(255,255,255,0.8);
+            flex-shrink: 0;
+        }
+
+        .wallpaper-picker-grid {
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 10px; 
+            overflow-y: auto; 
+            max-height: 100%;
+            padding-bottom: 10px;
+        }
+
+        .wallpaper-thumb-wrapper {
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--glass-border);
+            background: rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            aspect-ratio: 16/9;
+        }
+
+        .wallpaper-thumb-wrapper:hover {
+            border-color: #ffffff;
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .wallpaper-thumb { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+
+        p, span, label {
+            color: #ffffff !important;
+            text-shadow: none !important;
+        }
+    </style>
+</head>
+<body class="theme-blue">
+
+    <div id="wallpaper-container"></div>
+
+    <aside>
+        <a class="nav-link active" data-target="home-view">
+            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=2797&format=png&color=ffffff" class="dynamic-icon" alt="Home"></span>
+            <span class="nav-text">Home</span>
+        </a>
+        <a class="nav-link" data-target="games-view">
+            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=qKgrnVGYY8lp&format=png&color=ffffff" class="dynamic-icon" alt="Game Hub"></span>
+            <span class="nav-text">Game Hub</span>
+        </a>
+        <a class="nav-link" data-target="movies-view">
+            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=11306&format=png&color=ffffff" class="dynamic-icon" alt="Movies"></span>
+            <span class="nav-text">Movies</span>
+        </a>
+        <a class="nav-link bottom" data-target="settings-view">
+            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=2969&format=png&color=ffffff" class="dynamic-icon" alt="Settings"></span>
+            <span class="nav-text">Settings</span>
+        </a>
+    </aside>
+
+    <div class="view-container">
+        
+        <div id="home-view" class="view-section active">
+            <div class="homepage-center-wrapper">
+                <img id="welcome-globe-img" src="https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918" class="welcome-png" alt="Welcome Graphic">
+                <h1 class="smooth-welcome-title">Welcome to frutiger aero</h1>
+            </div>
+        </div>
+
+        <div id="games-view" class="view-section" style="padding: 0; justify-content: stretch; align-items: stretch; background: transparent !important;">
+            <iframe id="game-iframe" src="https://tetris.com/play-tetris" style="width: 100%; height: 100%; border: none; background: transparent !important;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        </div>
+
+        <div id="movies-view" class="view-section" style="padding: 0; justify-content: stretch; align-items: stretch; background: transparent !important;">
+            <iframe id="movie-iframe" src="https://archive.org/embed/Tetris_1984" style="width: 100%; height: 100%; border: none; background: transparent !important;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        </div>
+
+        <div id="settings-view" class="view-section">
+            <div class="settings-dashboard-container">
+                
+                <div class="settings-box">
+                    <div class="settings-box-title">
+                        <img src="https://img.icons8.com/?size=100&id=11488&format=png&color=ffffff" class="dynamic-icon" style="width:18px; height:18px;" alt=""> Color Themes
+                    </div>
+                    <div class="settings-box-content">
+                        <label style="font-size:0.8rem; font-weight:600; opacity: 0.8;">Choose Visual Style</label>
+                        <div class="theme-grid-cards">
+                            <div class="theme-card" onclick="setTheme('blue')">
+                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #1e90ff, #0984e3);"></div>
+                                <span style="font-weight: 600; font-size: 0.9rem;">Blue Theme</span>
+                            </div>
+                            <div class="theme-card" onclick="setTheme('black')">
+                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #2d3436, #000000);"></div>
+                                <span style="font-weight: 600; font-size: 0.9rem;">Black Theme</span>
+                            </div>
+                            <div class="theme-card" onclick="setTheme('green')">
+                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #00b894, #00a8ff);"></div>
+                                <span style="font-weight: 600; font-size: 0.9rem;">Green Theme</span>
+                            </div>
+                            <div class="theme-card" onclick="setTheme('purple')">
+                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #8e44ad, #9b59b6);"></div>
+                                <span style="font-weight: 600; font-size: 0.9rem;">Purple Theme</span>
+                            </div>
+                            <div class="theme-card" onclick="setTheme('sunset')">
+                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #e17055, #d63031);"></div>
+                                <span style="font-weight: 600; font-size: 0.9rem;">Sunset Theme</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-box">
+                    <div class="settings-box-title">
+                        <img src="https://img.icons8.com/?size=100&id=11488&format=png&color=ffffff" class="dynamic-icon" style="width:18px; height:18px;" alt=""> Wallpapers
+                    </div>
+                    <div class="settings-box-content">
+                        <label style="font-size:0.8rem; font-weight:600; opacity: 0.8;">Cloud Gallery</label>
+                        <div id="wallpaper-picker" class="wallpaper-picker-grid">
+                            <span style="font-size:0.75rem; grid-column:span 2; text-align:center; padding: 20px;">Loading gallery...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-box">
+                    <div class="settings-box-title">
+                        <img src="https://img.icons8.com/?size=100&id=2969&format=png&color=ffffff" class="dynamic-icon" style="width:18px; height:18px;" alt=""> Icon Color
+                    </div>
+                    <div class="settings-box-content">
+                        <label style="font-size:0.8rem; font-weight:600; opacity: 0.8;">Custom Icon Tint</label>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="color" id="icon-color-picker" class="settings-input" style="padding: 2px; height: 42px;" value="#ffffff">
+                            <button class="settings-btn" style="flex:1; justify-content:center;" onclick="applyIconColor()">Apply Tint</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function switchView(targetId) {
+            document.querySelectorAll('.view-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+
+            document.getElementById(targetId).classList.add('active');
+            const activeLink = document.querySelector(`.nav-link[data-target="${targetId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                const target = this.getAttribute('data-target');
+                switchView(target);
+            });
+        });
+
+        // Function to broadcast the theme change to the child iframes via postMessage
+        function broadcastThemeToIframes(themeName) {
+            const gameIframe = document.getElementById('game-iframe');
+            const movieIframe = document.getElementById('movie-iframe');
+            
+            const messageData = { type: 'SET_THEME', theme: themeName };
+
+            if (gameIframe && gameIframe.contentWindow) {
+                gameIframe.contentWindow.postMessage(messageData, '*');
+            }
+            if (movieIframe && movieIframe.contentWindow) {
+                movieIframe.contentWindow.postMessage(messageData, '*');
+            }
+        }
+
+        function setTheme(themeName) {
+            document.body.classList.remove('theme-blue', 'theme-black', 'theme-green', 'theme-purple', 'theme-sunset');
+            document.body.classList.add('theme-' + themeName);
+            
+            const globeImg = document.getElementById('welcome-globe-img');
+
+            if (themeName === 'blue') {
+                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
+                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(0, 61, 98, 0.4)) hue-rotate(0deg)";
+            } else if (themeName === 'black') {
+                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
+                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(0, 0, 0, 0.8)) brightness(0.5) grayscale(1)";
+            } else if (themeName === 'green') {
+                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
+                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(0, 100, 70, 0.4)) hue-rotate(90deg)";
+            } else if (themeName === 'purple') {
+                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
+                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(80, 20, 100, 0.4)) hue-rotate(240deg)";
+            } else if (themeName === 'sunset') {
+                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
+                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(120, 30, 20, 0.4)) sepia(0.8) hue-rotate(300deg)";
+            }
+
+            localStorage.setItem('aero_selected_theme', themeName);
+            broadcastThemeToIframes(themeName);
+        }
+
+        function applyIconColor() {
+            const pickerValue = document.getElementById('icon-color-picker').value;
+            const cleanHex = pickerValue.replace('#', '');
+            
+            document.querySelectorAll('.dynamic-icon').forEach(img => {
+                let src = img.getAttribute('src');
+                if (src && src.includes('icons8.com')) {
+                    if (src.includes('color=')) {
+                        src = src.replace(/color=[^&]*/, `color=${cleanHex}`);
+                    } else {
+                        src += `&color=${cleanHex}`;
+                    }
+                    img.setAttribute('src', src);
+                }
+            });
+
+            localStorage.setItem('aero_icon_color', cleanHex);
+        }
+
+        async function fetchGitHubWallpapersAutomatically() {
+            const picker = document.getElementById('wallpaper-picker');
+            const repoInput = "school-rgb/frutiger-aero-wallpaper";
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/${repoInput}/contents`);
+                if (!response.ok) throw new Error();
+                const files = await response.json();
+                
+                const validExtensions = ['.png', '.jpg', '.jpeg', '.mp4', '.webm', '.gif'];
+                const mediaFiles = files.filter(file => validExtensions.some(ext => file.name.toLowerCase().endsWith(ext)));
+
+                picker.innerHTML = '';
+                mediaFiles.forEach(file => {
+                    const rawUrl = file.download_url;
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'wallpaper-thumb-wrapper';
+
+                    if (file.name.toLowerCase().endsWith('.mp4')) {
+                        const videoThumb = document.createElement('video');
+                        videoThumb.src = rawUrl;
+                        videoThumb.className = 'wallpaper-thumb';
+                        videoThumb.muted = true;
+                        wrapper.onclick = () => setWallpaper(rawUrl, 'video');
+                        wrapper.appendChild(videoThumb);
+                    } else {
+                        const imgThumb = document.createElement('img');
+                        imgThumb.src = rawUrl;
+                        imgThumb.className = 'wallpaper-thumb';
+                        wrapper.onclick = () => setWallpaper(rawUrl, 'image');
+                        wrapper.appendChild(imgThumb);
+                    }
+                    picker.appendChild(wrapper);
+                });
+            } catch (error) {
+                picker.innerHTML = `<span style="font-size:0.75rem; color:#ff4757; grid-column:span 2; text-align:center; padding: 10px;">Automatic load failed.</span>`;
+            }
+        }
+
+        function setWallpaper(url, type) {
+            const container = document.getElementById('wallpaper-container');
+            container.innerHTML = '';
+            if (type === 'video') {
+                const vid = document.createElement('video');
+                vid.src = url;
+                vid.autoplay = true;
+                vid.loop = true;
+                vid.muted = true;
+                container.appendChild(vid);
+            } else {
+                const img = document.createElement('img');
+                img.src = url;
+                container.appendChild(img);
+            }
+            localStorage.setItem('aero_saved_wallpaper', url);
+            localStorage.setItem('aero_saved_wallpaper_type', type);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedColor = localStorage.getItem('aero_icon_color');
+            if (savedColor) {
+                document.getElementById('icon-color-picker').value = '#' + savedColor;
+                applyIconColor();
+            }
+
+            const savedTheme = localStorage.getItem('aero_selected_theme') || 'blue';
+            setTheme(savedTheme);
+
+            const savedUrl = localStorage.getItem('aero_saved_wallpaper');
+            const savedType = localStorage.getItem('aero_saved_wallpaper_type');
+            if (savedUrl) {
+                setWallpaper(savedUrl, savedType);
+            }
+
+            fetchGitHubWallpapersAutomatically();
+        });
+    </script>
+</body>
+</html>

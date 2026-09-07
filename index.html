@@ -1,602 +1,2181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frutiger Aero</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        :root {
-            --glass-bg: rgba(255, 255, 255, 0.22);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-            --title-outline: #00a8ff;
-            --title-shadow: rgba(0, 61, 98, 0.35);
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChromeOS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: "Orbitron", sans-serif !important;
-            font-optical-sizing: auto;
-            border-radius: 0 !important;
-            cursor: url('https://tr.rbxcdn.com/180DAY-047cef60cb8a81b89ba623b0477f6442/420/420/FaceAccessory/Webp/noFilter'), auto !important;
-        }
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: #000000;
+    }
 
-        body {
-            background: linear-gradient(135deg, #70a1ff 0%, #7bed9f 50%, #1e90ff 100%);
-            background-attachment: fixed;
-            color: #ffffff;
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-            position: relative;
-            transition: background 0.5s ease;
-        }
+    #desktopWallpaperContainer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
 
-        body.theme-blue {
-            background: linear-gradient(135deg, #1e90ff 0%, #70a1ff 50%, #0984e3 100%);
-            --title-outline: #1e90ff;
-            --title-shadow: rgba(0, 61, 98, 0.35);
-        }
+    #desktopWallpaperContainer video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
 
-        body.theme-black {
-            background: linear-gradient(135deg, #2d3436 0%, #1e272c 50%, #000000 100%);
-            --title-outline: #000000;
-            --title-shadow: rgba(0, 0, 0, 0.8);
-        }
+    #rainCanvas {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
 
-        body.theme-green {
-            background: linear-gradient(135deg, #00b894 0%, #55efc4 50%, #00a8ff 100%);
-            --title-outline: #00b894;
-            --title-shadow: rgba(0, 100, 70, 0.4);
-        }
+    .desktop {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      overflow: hidden;
+      z-index: 2;
+    }
 
-        body.theme-purple {
-            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 50%, #2c3e50 100%);
-            --title-outline: #8e44ad;
-            --title-shadow: rgba(60, 20, 80, 0.4);
-        }
+    /* --- WINDOW SYSTEM STYLES --- */
+    .app-window {
+      position: absolute;
+      inset: 0;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: #09090b;
+      border-radius: 0;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      z-index: 800;
+      overflow: hidden;
+      border: none;
+      transition: top 0.2s cubic-bezier(0.2, 0, 0, 1), left 0.2s cubic-bezier(0.2, 0, 0, 1), width 0.2s cubic-bezier(0.2, 0, 0, 1), height 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
 
-        body.theme-sunset {
-            background: linear-gradient(135deg, #e17055 0%, #fab1a0 50%, #d63031 100%);
-            --title-outline: #e17055;
-            --title-shadow: rgba(120, 30, 20, 0.4);
-        }
+    .app-window.windowed {
+      position: absolute;
+      width: 950px !important;
+      height: 600px !important;
+      top: 6% !important;
+      left: 10% !important;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
 
-        body::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 50%;
-            background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
+    .app-window.dragging, .app-window.resizing {
+      transition: none !important;
+    }
 
-        #wallpaper-container {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; overflow: hidden;
-        }
+    .app-window.hidden {
+      display: none !important;
+    }
 
-        #wallpaper-container img, #wallpaper-container video {
-            width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;
-        }
+    .window-header {
+      height: 40px;
+      background: #050505;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      cursor: move;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
-        /* Sidebar */
-        aside {
-            width: 75px;
-            background: rgba(255, 255, 255, 0.22);
-            border-right: 1px solid var(--glass-border);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 20px 0;
-            z-index: 3;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: var(--glass-shadow);
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-x: hidden;
-            overflow-y: auto;
-            white-space: nowrap;
-        }
+    .window-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+    }
 
-        aside:hover {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.38);
-        }
+    .window-title img {
+      width: 18px;
+      height: 18px;
+    }
 
-        .nav-link {
-            width: 100%; height: 50px; display: flex; align-items: center; padding: 0 22px; gap: 16px;
-            color: #ffffff; transition: 0.2s ease; text-decoration: none; font-weight: 500;
-            flex-shrink: 0;
-        }
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-        .nav-link:hover, .nav-link.active {
-            background: rgba(255, 255, 255, 0.45); color: #ffffff; box-shadow: inset 0 0 12px rgba(255,255,255,0.7);
-        }
+    .win-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      color: #ffffff;
+      transition: background 0.15s;
+    }
 
-        .nav-link.bottom { margin-top: auto; }
+    .win-btn img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      filter: invert(1);
+    }
 
-        .nav-icon-badge { min-width: 24px; display: flex; align-items: center; justify-content: center; }
-        .nav-icon-badge img { width: 22px; height: 22px; object-fit: contain; }
-        .nav-text { opacity: 0; transition: opacity 0.2s ease; font-size: 0.95rem; color: #ffffff; }
-        aside:hover .nav-text { opacity: 1; }
+    .win-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
 
-        /* View Container */
-        .view-container { flex: 1; position: relative; z-index: 2; overflow-y: auto; }
-        .view-section {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 30px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-        }
-        .view-section.active { opacity: 1; pointer-events: auto; }
+    .win-btn.close:hover {
+      background: #e81123;
+      color: white;
+    }
 
-        .homepage-center-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 25px;
-            max-width: 700px;
-            text-align: center;
-        }
+    .window-body {
+      flex: 1;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      background: #000000;
+    }
 
-        .welcome-png {
-            max-width: 100%;
-            width: 260px;
-            height: auto;
-            animation: floatAero 4.5s ease-in-out infinite alternate;
-            transition: all 0.4s ease;
-        }
+    .window-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
-        .smooth-welcome-title, h2 {
-            font-family: "Orbitron", sans-serif !important;
-            font-weight: 800;
-            font-style: normal;
-            font-size: 2.8rem;
-            color: #ffffff !important;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            text-shadow: 
-                -2px -2px 0 var(--title-outline),  
-                 2px -2px 0 var(--title-outline),
-                -2px  2px 0 var(--title-outline),
-                 2px  2px 0 var(--title-outline),
-                 0px -2px 0 var(--title-outline),
-                 0px  2px 0 var(--title-outline),
-                -2px  0px 0 var(--title-outline),
-                 2px  0px 0 var(--title-outline),
-                 0 5px 15px var(--title-shadow) !important;
-            letter-spacing: 1.5px;
-            transition: text-shadow 0.4s ease, color 0.4s ease;
-        }
+    /* Resizable Handles */
+    .resize-handle { position: absolute; z-index: 99; display: none; }
+    .app-window.windowed .resize-handle { display: block; }
+    .resize-handle.n  { top: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+    .resize-handle.s  { bottom: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
+    .resize-handle.w  { top: 0; bottom: 0; left: 0; width: 6px; cursor: ew-resize; }
+    .resize-handle.e  { top: 0; bottom: 0; right: 0; width: 6px; cursor: ew-resize; }
+    .resize-handle.nw { top: 0; left: 0; width: 10px; height: 10px; cursor: nwse-resize; }
+    .resize-handle.ne { top: 0; right: 0; width: 10px; height: 10px; cursor: nesw-resize; }
+    .resize-handle.sw { bottom: 0; left: 0; width: 10px; height: 10px; cursor: nesw-resize; }
+    .resize-handle.se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: nwse-resize; }
 
-        .view-section h2 {
-            font-size: 2.2rem !important;
-            margin-bottom: 4px;
-        }
+    /* Right Click Context Menu */
+    .context-menu {
+      position: absolute;
+      width: 220px;
+      background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      z-index: 1500;
+      display: none;
+      flex-direction: column;
+    }
 
-        @keyframes floatAero {
-            0% { transform: translateY(0px); }
-            100% { transform: translateY(-10px); }
-        }
+    .context-menu.active { display: flex; }
 
-        #settings-view {
-            justify-content: stretch;
-            align-items: stretch;
-            padding: 0;
-            height: 100vh;
-            width: 100%;
-        }
+    .context-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #ffffff;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.10s ease;
+      position: relative;
+    }
 
-        .settings-dashboard-container {
-            width: 100%;
-            height: 100%;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: 1fr;
-            gap: 0px;
-            padding: 0;
-        }
+    .context-item:hover { background: rgba(255, 255, 255, 0.12); }
+    .context-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.8; }
+    .context-label { flex: 1; }
+    .context-arrow { font-size: 10px; color: #888888; }
 
-        .settings-box {
-            background: var(--glass-bg);
-            border-right: 1px solid var(--glass-border);
-            border-left: 1px solid var(--glass-border);
-            padding: 30px 20px;
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            box-shadow: var(--glass-shadow);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-        }
+    .submenu {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      width: 160px;
+      background: rgba(18, 18, 18, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      display: none;
+      flex-direction: column;
+    }
 
-        .settings-box-content {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
-            flex: 1;
-            margin-top: 15px;
-            padding-right: 4px;
-        }
+    .context-item:hover .submenu { display: flex; }
 
-        .settings-box-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #ffffff;
-            border-bottom: 2px solid var(--glass-border);
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
+    /* Launcher Menu */
+    .launcher {
+      position: absolute;
+      width: 620px;
+      max-width: 95vw;
+      height: 78vh;
+      max-height: 680px;
+      background: rgba(12, 12, 12, 0.75);
+      backdrop-filter: blur(35px);
+      -webkit-backdrop-filter: blur(35px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 28px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      z-index: 1200;
+      opacity: 0;
+      transform: scale(0.97);
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0, 0, 0.2, 1), transform 0.25s cubic-bezier(0, 0, 0.2, 1);
+      overflow-y: auto;
+    }
 
-        .settings-input {
-            width: 100%; padding: 10px 14px; background: rgba(255, 255, 255, 0.35);
-            border: 1px solid var(--glass-border); color: #ffffff; font-size: 0.85rem; outline: none;
-        }
+    .launcher.active {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
 
-        .settings-btn {
-            background: linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0.15)); 
-            border: 1px solid var(--glass-border);
-            color: white; padding: 12px; font-weight: 600; font-size: 0.85rem; flex-shrink: 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1), inset 0 1px 1px rgba(255,255,255,0.6);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .settings-btn:hover { 
-            background: linear-gradient(to bottom, rgba(255,255,255,0.5), rgba(255,255,255,0.25)); 
-            border-color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
+    .launcher-drag-handle {
+      width: 40px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      margin: -12px auto 12px auto;
+      cursor: grab;
+      flex-shrink: 0;
+    }
 
-        .theme-grid-cards {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-        }
+    .launcher-search {
+      position: relative;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
 
-        .theme-card {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid var(--glass-border);
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
+    .launcher-search input {
+      width: 100%;
+      padding: 14px 70px 14px 44px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      outline: none;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      color: #ffffff;
+      font-size: 14px;
+    }
 
-        .theme-card:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: #ffffff;
-            transform: scale(1.02);
-        }
+    .search-google-logo { position: absolute; left: 16px; width: 18px; height: 18px; }
+    .search-right-icons { position: absolute; right: 18px; display: flex; align-items: center; gap: 10px; }
 
-        .theme-color-preview {
-            width: 28px;
-            height: 28px;
-            border: 1px solid rgba(255,255,255,0.8);
-            flex-shrink: 0;
-        }
+    .default-view { display: flex; flex-direction: column; gap: 20px; }
+    .default-view.hidden { display: none; }
 
-        .wallpaper-picker-grid {
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 10px; 
-            overflow-y: auto; 
-            max-height: 100%;
-            padding-bottom: 10px;
-        }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #aaa;
+      font-weight: 600;
+    }
 
-        .wallpaper-thumb-wrapper {
-            position: relative;
-            overflow: hidden;
-            border: 2px solid var(--glass-border);
-            background: rgba(0,0,0,0.2);
-            transition: all 0.2s ease;
-            aspect-ratio: 16/9;
-        }
+    .recents-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-        .wallpaper-thumb-wrapper:hover {
-            border-color: #ffffff;
-            transform: scale(1.03);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
+    .recent-item {
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      transition: transform 0.15s ease, background 0.15s;
+    }
 
-        .wallpaper-thumb { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-        }
+    .recent-item:hover { transform: translateY(-1px); background: rgba(255, 255, 255, 0.12); }
+    .recent-icon { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .recent-icon img { width: 22px; height: 22px; }
+    .recent-info h4 { font-size: 12px; color: #ffffff; font-weight: 500; }
+    .recent-info p { font-size: 10px; color: #aaa; }
 
-        p, span, label {
-            color: #ffffff !important;
-            text-shadow: none !important;
-        }
-    </style>
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 20px;
+    }
+
+    .app-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 6px 2px;
+      text-align: center;
+      transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .app-icon:hover { transform: translateY(-3px) scale(1.05); }
+
+    .icon-img {
+      width: 38px;
+      height: 38px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    }
+
+    .icon-img img { width: 100%; height: 100%; object-fit: contain; }
+
+    .search-view { display: none; flex-direction: column; gap: 16px; }
+    .search-view.active { display: flex; }
+    .search-category-title { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+      transition: transform 0.15s ease;
+      color: #ffffff;
+    }
+
+    .search-result-item:hover { transform: translateX(3px); background: rgba(255, 255, 255, 0.12); }
+    .search-result-item img { width: 20px; height: 20px; }
+
+    /* Shelf / Dock */
+    .shelf {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 1000;
+      transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+
+    .shelf.pos-bottom {
+      height: 48px; bottom: 0; left: 0; right: 0;
+      flex-direction: row; padding: 0 8px; border-width: 1px 0 0 0;
+      transform: translateY(0);
+    }
+    .shelf.pos-bottom.autohide, .shelf.pos-bottom.app-fullscreen-hide { transform: translateY(100%); }
+
+    .shelf.pos-left {
+      width: 52px; top: 0; bottom: 0; left: 0;
+      flex-direction: column; padding: 8px 0; border-width: 0 1px 0 0;
+      transform: translateX(0);
+    }
+    .shelf.pos-left.autohide, .shelf.pos-left.app-fullscreen-hide { transform: translateX(-100%); }
+
+    .shelf.pos-right {
+      width: 52px; top: 0; bottom: 0; right: 0;
+      flex-direction: column; padding: 8px 0; border-width: 0 0 0 1px;
+      transform: translateX(0);
+    }
+    .shelf.pos-right.autohide, .shelf.pos-right.app-fullscreen-hide { transform: translateX(100%); }
+
+    .shelf.autohide.reveal, .shelf.app-fullscreen-hide.reveal { transform: translate(0, 0) !important; }
+
+    .shelf-trigger-zone { position: fixed; z-index: 1100; display: none; }
+    .shelf-trigger-zone.active { display: block; }
+    .shelf-trigger-zone.pos-bottom { bottom: 0; left: 0; right: 0; height: 8px; }
+    .shelf-trigger-zone.pos-left { left: 0; top: 0; bottom: 0; width: 8px; }
+    .shelf-trigger-zone.pos-right { right: 0; top: 0; bottom: 0; width: 8px; }
+
+    .shelf-left { display: flex; align-items: center; justify-content: center; }
+
+    .launcher-btn {
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: rgba(255, 255, 255, 0.1); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+    }
+
+    .launcher-btn:hover { background: rgba(255, 255, 255, 0.25); }
+    .launcher-btn::after { content: ''; width: 12px; height: 12px; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.6); }
+
+    .shelf-center { display: flex; gap: 12px; align-items: center; justify-content: center; }
+
+    .shelf.pos-bottom .shelf-center { position: absolute; left: 50%; transform: translateX(-50%); flex-direction: row; }
+    .shelf.pos-left .shelf-center, .shelf.pos-right .shelf-center { position: absolute; top: 50%; transform: translateY(-50%); flex-direction: column; }
+
+    .shelf-app-icon {
+      position: relative; width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 10px; transition: transform 0.15s, background 0.15s;
+    }
+
+    .shelf-app-icon:hover { transform: scale(1.08); background: rgba(255, 255, 255, 0.15); }
+    .shelf-app-icon img { width: 28px; height: 28px; object-fit: contain; }
+
+    .shelf-app-icon.active::after {
+      content: ''; position: absolute; background: #ffffff;
+      box-shadow: 0 0 6px rgba(255,255,255,0.8); border-radius: 2px; transition: all 0.2s ease;
+    }
+
+    .shelf.pos-bottom .shelf-app-icon.active::after { bottom: 1px; left: 25%; width: 50%; height: 3px; }
+    .shelf.pos-left .shelf-app-icon.active::after { left: 1px; top: 25%; height: 50%; width: 3px; }
+    .shelf.pos-right .shelf-app-icon.active::after { right: 1px; top: 25%; height: 50%; width: 3px; }
+
+    .shelf-right { display: flex; align-items: center; gap: 6px; }
+
+    .tray-pill {
+      background: rgba(255, 255, 255, 0.1); height: 32px; padding: 0 10px;
+      border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      gap: 4px; font-size: 11px; font-weight: 600; color: #ffffff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); cursor: default; white-space: nowrap;
+    }
+
+    /* Wallpaper Selection Modal */
+    .wallpaper-modal {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      width: 560px; max-width: 90vw; max-height: 80vh;
+      background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px; padding: 20px; box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      z-index: 2500; display: none; flex-direction: column; gap: 16px;
+      opacity: 0; transition: all 0.2s ease;
+    }
+
+    .wallpaper-modal.active { display: flex; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .wallpaper-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .wallpaper-header h3 { font-size: 16px; color: #ffffff; }
+    .wallpaper-header-actions { display: flex; align-items: center; gap: 8px; }
+
+    .loop-toggle-btn, .rain-toggle-btn {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .loop-toggle-btn:hover, .rain-toggle-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+    .wallpaper-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+      overflow-y: auto; max-height: 340px; padding-right: 4px;
+    }
+
+    .wallpaper-option {
+      height: 100px; border-radius: 12px; background-size: cover;
+      background-position: center; cursor: pointer; border: 2px solid transparent;
+      position: relative; overflow: hidden; transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .wallpaper-option video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; pointer-events: none; }
+    .wallpaper-option:hover { transform: scale(1.03); border-color: #ffffff; }
+
+    /* ========================================================= */
+    /* --- ENHANCED MUSIC PLAYER UI & PLAYLIST/POPUP STYLING --- */
+    /* ========================================================= */
+    .music-player-pro {
+      height: 100%;
+      background: #09090b;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .mp-main-layout {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .mp-sidebar {
+      width: 220px;
+      background: #000000;
+      border-right: 1px solid #1a1a1e;
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .mp-sidebar-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #52525b;
+      margin-bottom: 10px;
+      padding-left: 10px;
+    }
+
+    .mp-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: #a1a1aa;
+      transition: all 0.15s ease;
+    }
+
+    .mp-nav-item img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+    }
+
+    .mp-nav-item:hover, .mp-nav-item.active {
+      background: #18181b;
+      color: #ffffff;
+    }
+
+    /* Playlist Section inside Sidebar */
+    .mp-playlists-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+      margin-top: 4px;
+    }
+
+    .mp-playlist-link {
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #71717a;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mp-playlist-link:hover { background: #121215; color: #fff; }
+
+    .mp-create-playlist-btn {
+      background: none;
+      border: 1px dashed #3f3f46;
+      color: #a1a1aa;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 6px;
+      transition: all 0.15s;
+    }
+    .mp-create-playlist-btn:hover { background: #18181b; color: #fff; border-color: #71717a; }
+
+    .mp-content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #070709;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mp-search-bar-container {
+      padding: 16px 24px;
+      border-bottom: 1px solid #141417;
+      display: flex;
+      gap: 12px;
+      background: #000000;
+    }
+
+    .mp-search-bar-container input {
+      flex: 1;
+      background: #121215;
+      border: 1px solid #27272a;
+      border-radius: 10px;
+      padding: 10px 16px;
+      color: #ffffff;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .mp-search-bar-container input:focus {
+      border-color: #52525b;
+    }
+
+    .mp-search-bar-container button {
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: #ffffff;
+      padding: 0 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .mp-search-bar-container button img {
+      width: 14px;
+      height: 14px;
+    }
+
+    .mp-search-bar-container button:hover {
+      background: #27272a;
+    }
+
+    .mp-tracklist-header {
+      display: grid;
+      grid-template-columns: 48px 1fr 140px 100px 80px;
+      padding: 12px 24px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      border-bottom: 1px solid #141417;
+    }
+
+    .mp-playlist {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mp-track-item {
+      display: grid;
+      grid-template-columns: 48px 1fr 140px 100px 80px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      position: relative;
+    }
+
+    .mp-track-item:hover {
+      background: #121215;
+      border-color: #27272a;
+    }
+
+    .mp-track-item.playing {
+      background: #18181b;
+      border-color: #3f3f46;
+    }
+
+    .mp-track-num {
+      font-size: 13px;
+      color: #71717a;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mp-track-num img {
+      width: 14px;
+      height: 14px;
+    }
+
+    .mp-track-info-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .mp-track-cover {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: #18181b;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .mp-track-names {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mp-track-names h5 {
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mp-track-names p {
+      font-size: 11px;
+      color: #a1a1aa;
+      margin-top: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mp-track-album {
+      font-size: 12px;
+      color: #71717a;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mp-track-duration {
+      font-size: 12px;
+      color: #71717a;
+      font-family: monospace;
+    }
+
+    .mp-track-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      position: relative;
+    }
+
+    .mp-action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.15s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mp-action-btn img {
+      width: 16px;
+      height: 16px;
+    }
+
+    .mp-action-btn:hover {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+
+    .mp-action-btn.active img {
+      filter: invert(27%) sepia(91%) saturate(2352%) hue-rotate(331deg) brightness(97%) contrast(96%);
+    }
+
+    /* Playlist Selection Dropdown Menu */
+    .playlist-popup-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      width: 180px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      padding: 6px;
+      z-index: 999;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .playlist-popup-menu.active {
+      display: flex;
+    }
+
+    .playlist-popup-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #71717a;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .playlist-popup-item {
+      padding: 8px 10px;
+      font-size: 12px;
+      color: #d4d4d8;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.1s;
+    }
+
+    .playlist-popup-item:hover {
+      background: #27272a;
+      color: #ffffff;
+    }
+
+    /* Bottom Player Controls Bar */
+    .mp-player-bar {
+      height: 92px;
+      background: #000000;
+      border-top: 1px solid #18181b;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .mp-current-track {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 250px;
+    }
+
+    .mp-current-cover {
+      width: 52px;
+      height: 52px;
+      border-radius: 10px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+
+    .mp-current-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .mp-controls-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 480px;
+    }
+
+    .mp-buttons {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .mp-btn-sec {
+      background: none;
+      border: none;
+      opacity: 0.7;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mp-btn-sec img {
+      width: 18px;
+      height: 18px;
+    }
+
+    .mp-btn-sec:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .mp-btn-main {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, background 0.15s;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .mp-btn-main img {
+      width: 18px;
+      height: 18px;
+    }
+
+    .mp-btn-main:hover {
+      transform: scale(1.06);
+      background: #e4e4e7;
+    }
+
+    .mp-progress-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      color: #71717a;
+      font-family: monospace;
+    }
+
+    .mp-progress-bar {
+      flex: 1;
+      height: 4px;
+      background: #27272a;
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .mp-progress-fill {
+      width: 0%;
+      height: 100%;
+      background: #ffffff;
+      border-radius: 2px;
+    }
+
+    .mp-volume-zone {
+      width: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .mp-volume-zone img {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+
+    .mp-volume-slider {
+      width: 90px;
+      accent-color: #ffffff;
+      cursor: pointer;
+    }
+
+    /* Native Utility Apps */
+    .notes-app { padding: 20px; height: 100%; display: flex; flex-direction: column; gap: 12px; background: #121212; color: white; }
+    .notes-textarea { flex: 1; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px; outline: none; resize: none; background: #1a1a1a; color: white; font-size: 14px; }
+    
+    .calc-app { padding: 16px; height: 100%; background: #000000; color: white; display: flex; flex-direction: column; gap: 12px; }
+    .calc-display { height: 60px; background: #121212; border: 1px solid #222222; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding: 0 16px; font-size: 28px; font-family: monospace; color: #ffffff; }
+    .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex: 1; }
+    .calc-btn { background: #1c1c1c; border: 1px solid #2a2a2a; color: white; border-radius: 8px; font-size: 18px; cursor: pointer; }
+    .calc-btn:hover { background: #2a2a2a; }
+    .calc-btn.op { background: #333333; color: #ffffff; }
+
+    /* Alt-Tab Overlay */
+    .alttab-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px);
+      z-index: 5000; display: none; align-items: center; justify-content: center; gap: 20px; padding: 40px;
+    }
+    .alttab-overlay.active { display: flex; }
+    .alttab-card {
+      width: 180px; height: 140px; background: #181818; border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+      cursor: pointer; border: 2px solid #2a2a2a; transition: transform 0.15s, border-color 0.15s;
+    }
+    .alttab-card.selected { border-color: #ffffff; transform: scale(1.08); background: #222222; }
+    .alttab-card img { width: 48px; height: 48px; }
+    .alttab-card span { font-size: 13px; font-weight: 600; color: #ffffff; text-align: center; }
+  </style>
 </head>
-<body class="theme-blue">
+<body>
 
-    <div id="wallpaper-container"></div>
+  <!-- Background Wallpaper Container -->
+  <div id="desktopWallpaperContainer"></div>
 
-    <aside>
-        <a class="nav-link active" data-target="home-view">
-            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=2797&format=png&color=ffffff" class="dynamic-icon" alt="Home"></span>
-            <span class="nav-text">Home</span>
-        </a>
-        <a class="nav-link" data-target="games-view">
-            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=qKgrnVGYY8lp&format=png&color=ffffff" class="dynamic-icon" alt="Game Hub"></span>
-            <span class="nav-text">Game Hub</span>
-        </a>
-        <a class="nav-link" data-target="movies-view">
-            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=11306&format=png&color=ffffff" class="dynamic-icon" alt="Movies"></span>
-            <span class="nav-text">Movies</span>
-        </a>
-        <a class="nav-link bottom" data-target="settings-view">
-            <span class="nav-icon-badge"><img src="https://img.icons8.com/?size=100&id=2969&format=png&color=ffffff" class="dynamic-icon" alt="Settings"></span>
-            <span class="nav-text">Settings</span>
-        </a>
-    </aside>
+  <!-- Rain Effect Overlay Canvas -->
+  <canvas id="rainCanvas"></canvas>
 
-    <div class="view-container">
-        
-        <div id="home-view" class="view-section active">
-            <div class="homepage-center-wrapper">
-                <img id="welcome-globe-img" src="https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918" class="welcome-png" alt="Welcome Graphic">
-                <h1 class="smooth-welcome-title">Welcome to frutiger aero</h1>
-            </div>
-        </div>
+  <div class="desktop" id="desktop"></div>
 
-        <div id="games-view" class="view-section" style="padding: 0; justify-content: stretch; align-items: stretch; background: transparent !important;">
-            <iframe id="game-iframe" src="APP/gamehub.html" style="width: 100%; height: 100%; border: none; background: transparent !important;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
-        </div>
+  <!-- Alt-Tab Overlay -->
+  <div class="alttab-overlay" id="altTabOverlay"></div>
 
-        <div id="movies-view" class="view-section" style="padding: 0; justify-content: stretch; align-items: stretch; background: transparent !important;">
-            <iframe id="movie-iframe" src="APP/movies.html" style="width: 100%; height: 100%; border: none; background: transparent !important;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
-        </div>
+  <!-- Wallpaper Selection Dialog -->
+  <div class="wallpaper-modal" id="wallpaperModal">
+    <div class="wallpaper-header">
+      <h3>Select Media Wallpaper</h3>
+      <div class="wallpaper-header-actions">
+        <button class="loop-toggle-btn" id="loopVideoModalBtn" onclick="toggleVideoLooping()">Loop Video: ON</button>
+        <button class="rain-toggle-btn" id="rainModalBtn" onclick="toggleRainEffect()">Rain Effect: ON</button>
+        <button class="win-btn close" onclick="closeWallpaperModal()">✕</button>
+      </div>
+    </div>
+    <div class="wallpaper-grid" id="wallpaperGridContainer"></div>
+  </div>
 
-        <div id="settings-view" class="view-section">
-            <div class="settings-dashboard-container">
-                
-                <div class="settings-box">
-                    <div class="settings-box-title">
-                        <img src="https://img.icons8.com/?size=100&id=11488&format=png&color=ffffff" class="dynamic-icon" style="width:18px; height:18px;" alt=""> Color Themes
-                    </div>
-                    <div class="settings-box-content">
-                        <label style="font-size:0.8rem; font-weight:600; opacity: 0.8;">Choose Visual Style</label>
-                        <div class="theme-grid-cards">
-                            <div class="theme-card" onclick="setTheme('blue')">
-                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #1e90ff, #0984e3);"></div>
-                                <span style="font-weight: 600; font-size: 0.9rem;">Blue Theme</span>
-                            </div>
-                            <div class="theme-card" onclick="setTheme('black')">
-                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #2d3436, #000000);"></div>
-                                <span style="font-weight: 600; font-size: 0.9rem;">Black Theme</span>
-                            </div>
-                            <div class="theme-card" onclick="setTheme('green')">
-                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #00b894, #00a8ff);"></div>
-                                <span style="font-weight: 600; font-size: 0.9rem;">Green Theme</span>
-                            </div>
-                            <div class="theme-card" onclick="setTheme('purple')">
-                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #8e44ad, #9b59b6);"></div>
-                                <span style="font-weight: 600; font-size: 0.9rem;">Purple Theme</span>
-                            </div>
-                            <div class="theme-card" onclick="setTheme('sunset')">
-                                <div class="theme-color-preview" style="background: linear-gradient(135deg, #e17055, #d63031);"></div>
-                                <span style="font-weight: 600; font-size: 0.9rem;">Sunset Theme</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <!-- Right Click Context Menu -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-item" onclick="toggleAlwaysHideShelf()">
+      <div class="context-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><rect x="2" y="16" width="20" height="5" rx="2"/><rect x="2" y="3" width="20" height="10" rx="2"/></svg>
+      </div>
+      <span class="context-label" id="autohideLabel">Autohide Shelf</span>
+    </div>
+    <div class="context-item">
+      <div class="context-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><rect x="2" y="15" width="20" height="6" rx="2"/><line x1="6" y1="18" x2="8" y2="18"/><line x1="11" y1="18" x2="13" y2="18"/><line x1="16" y1="18" x2="18" y2="18"/></svg>
+      </div>
+      <span class="context-label">Shelf position</span>
+      <span class="context-arrow">›</span>
+      <div class="submenu">
+        <div class="context-item" onclick="setShelfPosition('bottom')">Bottom</div>
+        <div class="context-item" onclick="setShelfPosition('left')">Left</div>
+        <div class="context-item" onclick="setShelfPosition('right')">Right</div>
+      </div>
+    </div>
+    <div class="context-item" onclick="openWallpaperModal()">
+      <div class="context-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      </div>
+      <span class="context-label">Set wallpaper & style</span>
+    </div>
+  </div>
 
-                <div class="settings-box">
-                    <div class="settings-box-title">
-                        <img src="https://img.icons8.com/?size=100&id=11488&format=png&color=ffffff" class="dynamic-icon" style="width:18px; height:18px;" alt=""> Wallpapers
-                    </div>
-                    <div class="settings-box-content">
-                        <label style="font-size:0.8rem; font-weight:600; opacity: 0.8;">Cloud Gallery</label>
-                        <div id="wallpaper-picker" class="wallpaper-picker-grid">
-                            <span style="font-size:0.75rem; grid-column:span 2; text-align:center; padding: 20px;">Loading gallery...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-box">
-                    <div class="settings-box-title">
-                        <img src="https://img.icons8.com/?size=100&id=2969&format=png&color=ffffff" class="dynamic-icon" style="width:18px; height:18px;" alt=""> Icon Color
-                    </div>
-                    <div class="settings-box-content">
-                        <label style="font-size:0.8rem; font-weight:600; opacity: 0.8;">Custom Icon Tint</label>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <input type="color" id="icon-color-picker" class="settings-input" style="padding: 2px; height: 42px;" value="#ffffff">
-                            <button class="settings-btn" style="flex:1; justify-content:center;" onclick="applyIconColor()">Apply Tint</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
+  <!-- Translucent Launcher Menu -->
+  <div class="launcher" id="launcherMenu">
+    <div class="launcher-drag-handle" id="launcherDragHandle" title="Drag to move menu"></div>
+    
+    <div class="launcher-search">
+      <img src="https://img.icons8.com/color/48/google-logo.png" class="search-google-logo" alt="Google">
+      <input type="text" id="searchInput" placeholder="Search shortcuts, apps...">
+      <div class="search-right-icons">
+        <img src="https://img.icons8.com/color/48/google-lens.png" width="16" alt="Lens">
+        <img src="https://img.icons8.com/?size=100&id=rnK88i9FvAFO&format=png&color=000000" width="16" alt="AI">
+      </div>
     </div>
 
-    <script>
-        function switchView(targetId) {
-            document.querySelectorAll('.view-section').forEach(section => {
-                section.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
+    <div class="default-view" id="defaultView">
+      <div class="section-header">
+        <span>Continue where you left off</span>
+        <span>▲</span>
+      </div>
 
-            document.getElementById(targetId).classList.add('active');
-            const activeLink = document.querySelector(`.nav-link[data-target="${targetId}"]`);
-            if (activeLink) activeLink.classList.add('active');
-        }
+      <div class="recents-grid">
+        <div class="recent-item" onclick="openApp('Music Studio Pro', 'https://img.icons8.com/color/96/youtube-music.png', 'native:music')">
+          <div class="recent-icon"><img src="https://img.icons8.com/color/48/audio.png" alt="Audio"></div>
+          <div class="recent-info">
+            <h4 id="recentTrackTitle">Janice STFU</h4>
+            <p id="recentTrackSub">Drake · Working Audio Player</p>
+          </div>
+        </div>
+      </div>
 
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                const target = this.getAttribute('data-target');
-                switchView(target);
-            });
+      <div class="app-grid">
+        <div class="app-icon" onclick="openApp('Music Studio Pro', 'https://img.icons8.com/color/96/youtube-music.png', 'native:music')">
+          <div class="icon-img"><img src="https://img.icons8.com/color/96/youtube-music.png" alt="Music"></div>
+          <span>Music Pro</span>
+        </div>
+        <div class="app-icon" onclick="openApp('Sticky Notes', 'https://img.icons8.com/color/96/note.png', 'native:notes')">
+          <div class="icon-img"><img src="https://img.icons8.com/color/96/note.png" alt="Notes"></div>
+          <span>Notes</span>
+        </div>
+        <div class="app-icon" onclick="openApp('Calculator', 'https://img.icons8.com/color/96/calculator.png', 'native:calculator')">
+          <div class="icon-img"><img src="https://img.icons8.com/color/96/calculator.png" alt="Calculator"></div>
+          <span>Calculator</span>
+        </div>
+        <div class="app-icon" onclick="openApp('Chrome Browser', 'https://img.icons8.com/color/96/chrome.png', 'https://www.bing.com')">
+          <div class="icon-img"><img src="https://img.icons8.com/color/96/chrome.png" alt="Chrome"></div>
+          <span>Browser</span>
+        </div>
+        <div class="app-icon" onclick="openApp('Wikipedia', 'https://img.icons8.com/color/96/wikipedia.png', 'https://www.wikipedia.org')">
+          <div class="icon-img"><img src="https://img.icons8.com/color/96/wikipedia.png" alt="Wikipedia"></div>
+          <span>Wikipedia</span>
+        </div>
+        <div class="app-icon" onclick="openApp('Bing Search', 'https://img.icons8.com/color/96/bing.png', 'https://www.bing.com')">
+          <div class="icon-img"><img src="https://img.icons8.com/color/96/bing.png" alt="Bing"></div>
+          <span>Bing</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Results View -->
+    <div class="search-view" id="searchView">
+      <div>
+        <div class="search-category-title">Best Match</div>
+        <div class="search-result-item">
+          <img src="https://img.icons8.com/color/48/document.png" alt="File">
+          <span id="bestMatchText">Search result</span>
+        </div>
+      </div>
+      <div>
+        <div class="search-category-title">Search Engine</div>
+        <div class="search-result-item">
+          <img src="https://img.icons8.com/color/48/google-logo.png" alt="Google">
+          <span id="googleSearchText">Search Google</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Shelf Trigger Zone -->
+  <div class="shelf-trigger-zone pos-bottom" id="shelfTriggerZone"></div>
+
+  <!-- Shelf / Dock -->
+  <div class="shelf pos-bottom" id="shelf">
+    <div class="shelf-left">
+      <button class="launcher-btn" id="launcherBtn" onclick="toggleLauncher(event)"></button>
+    </div>
+    
+    <!-- Dynamic Center App Dock -->
+    <div class="shelf-center" id="shelfCenter"></div>
+
+    <div class="shelf-right">
+      <div class="tray-pill">
+        <span id="clockTime">12:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Master Audio Engine -->
+  <audio id="masterAudio" preload="auto"></audio>
+
+  <script>
+    const desktop = document.getElementById('desktop');
+    const contextMenu = document.getElementById('contextMenu');
+    const shelf = document.getElementById('shelf');
+    const shelfCenter = document.getElementById('shelfCenter');
+    const shelfTriggerZone = document.getElementById('shelfTriggerZone');
+    const launcher = document.getElementById('launcherMenu');
+    const wallpaperContainer = document.getElementById('desktopWallpaperContainer');
+    const altTabOverlay = document.getElementById('altTabOverlay');
+    const masterAudio = document.getElementById('masterAudio');
+    
+    let highestZIndex = 100;
+    let currentPosition = 'bottom';
+    let isAutohideEnabled = false;
+    let isVideoLooping = true;
+    let isRainActive = true;
+    
+    const openApps = {};
+    let altTabAppKeys = [];
+    let altTabIndex = 0;
+
+    // Music Player State & API Integration with Working Audio & Custom Playlists
+    let musicSearchResults = [];
+    let currentTrackIdx = -1;
+    let isMusicPlaying = false;
+    let likedTracks = new Set();
+    let userPlaylists = ["Favorites", "Workout Vibes", "Late Night"];
+    let activeViewMode = 'discover'; // 'discover' or 'liked' or specific playlist name
+
+    // High quality PNG assets for Music UI
+    const PNGS = {
+      search: "https://img.icons8.com/?size=100&id=132&format=png&color=FFFFFF",
+      discover: "https://img.icons8.com/?size=100&id=83220&format=png&color=A1A1AA",
+      library: "https://img.icons8.com/?size=100&id=85038&format=png&color=A1A1AA", // Heart icon for library
+      heartOutline: "https://img.icons8.com/?size=100&id=85038&format=png&color=71717A",
+      heartFilled: "https://img.icons8.com/?size=100&id=85038&format=png&color=EF4444",
+      playBtn: "https://img.icons8.com/?size=100&id=398&format=png&color=000000",
+      pauseBtn: "https://img.icons8.com/?size=100&id=10010&format=png&color=000000",
+      prevBtn: "https://img.icons8.com/?size=100&id=50311&format=png&color=FFFFFF",
+      nextBtn: "https://img.icons8.com/?size=100&id=50310&format=png&color=FFFFFF",
+      playRow: "https://img.icons8.com/?size=100&id=398&format=png&color=FFFFFF",
+      volume: "https://img.icons8.com/?size=100&id=41414&format=png&color=A1A1AA",
+      more: "https://img.icons8.com/?size=100&id=98963&format=png&color=71717A"
+    };
+
+    function toggleVideoLooping() {
+      isVideoLooping = !isVideoLooping;
+      const btn = document.getElementById('loopVideoModalBtn');
+      if (btn) btn.textContent = `Loop Video: ${isVideoLooping ? 'ON' : 'OFF'}`;
+
+      const bgVideo = wallpaperContainer.querySelector('video');
+      if (bgVideo) {
+        bgVideo.loop = isVideoLooping;
+        bgVideo.muted = true;
+      }
+    }
+
+    function toggleRainEffect() {
+      isRainActive = !isRainActive;
+      const btn = document.getElementById('rainModalBtn');
+      if (btn) btn.textContent = `Rain Effect: ${isRainActive ? 'ON' : 'OFF'}`;
+      const canvasElem = document.getElementById('rainCanvas');
+      if (canvasElem) canvasElem.style.display = isRainActive ? 'block' : 'none';
+    }
+
+    /* Rain Canvas Engine */
+    const canvas = document.getElementById('rainCanvas');
+    const ctx = canvas.getContext('2d');
+    let raindrops = [];
+
+    function resizeRainCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeRainCanvas);
+    resizeRainCanvas();
+
+    class Raindrop {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * -canvas.height;
+        this.length = Math.random() * 20 + 10;
+        this.speed = Math.random() * 10 + 10;
+        this.opacity = Math.random() * 0.3 + 0.15;
+      }
+      update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+        ctx.lineWidth = 1.2;
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x, this.y + this.length);
+        ctx.stroke();
+      }
+    }
+
+    for (let i = 0; i < 120; i++) raindrops.push(new Raindrop());
+
+    function animateRain() {
+      if (isRainActive) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        raindrops.forEach(drop => { drop.update(); drop.draw(); });
+      }
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
+
+    async function fetchGitHubWallpapers() {
+      const apiEndpoint = "https://api.github.com/repos/school-rgb/frutiger-os-wallpaper/contents/";
+      try {
+        const response = await fetch(apiEndpoint);
+        if (!response.ok) throw new Error("Network error");
+        const files = await response.json();
+        const validMediaFiles = files.filter(file => {
+          const lowerName = file.name.toLowerCase();
+          return lowerName.endsWith('.png') || lowerName.endsWith('.mp4');
         });
 
-        // Function to broadcast the theme change to the child iframes via postMessage
-        function broadcastThemeToIframes(themeName) {
-            const gameIframe = document.getElementById('game-iframe');
-            const movieIframe = document.getElementById('movie-iframe');
-            
-            const messageData = { type: 'SET_THEME', theme: themeName };
+        if (validMediaFiles.length > 0) {
+          populateWallpaperModal(validMediaFiles);
+          setWallpaper(validMediaFiles[0].download_url, validMediaFiles[0].name.toLowerCase().endsWith('.mp4') ? 'video' : 'image');
+        } else {
+          loadFallbackWallpapers();
+        }
+      } catch (err) {
+        loadFallbackWallpapers();
+      }
+    }
 
-            if (gameIframe && gameIframe.contentWindow) {
-                gameIframe.contentWindow.postMessage(messageData, '*');
-            }
-            if (movieIframe && movieIframe.contentWindow) {
-                movieIframe.contentWindow.postMessage(messageData, '*');
-            }
+    function loadFallbackWallpapers() {
+      const fallbacks = [
+        { name: "wallpaper1.png", download_url: "https://raw.githubusercontent.com/school-rgb/frutiger-os-wallpaper/main/Frutiger%20Aero%20Wallpaper%201.png" },
+        { name: "wallpaper2.png", download_url: "https://raw.githubusercontent.com/school-rgb/frutiger-os-wallpaper/main/Frutiger%20Aero%20Wallpaper%202.png" }
+      ];
+      populateWallpaperModal(fallbacks);
+      setWallpaper(fallbacks[0].download_url, 'image');
+    }
+
+    function populateWallpaperModal(mediaList) {
+      const grid = document.getElementById('wallpaperGridContainer');
+      grid.innerHTML = '';
+      mediaList.forEach(item => {
+        const url = item.download_url;
+        const isVideo = item.name.toLowerCase().endsWith('.mp4');
+        const opt = document.createElement('div');
+        opt.className = 'wallpaper-option';
+
+        if (isVideo) {
+          opt.innerHTML = `<video src="${url}#t=0.1" preload="metadata" muted></video>`;
+        } else {
+          opt.style.backgroundImage = `url('${url}')`;
         }
 
-        function setTheme(themeName) {
-            document.body.classList.remove('theme-blue', 'theme-black', 'theme-green', 'theme-purple', 'theme-sunset');
-            document.body.classList.add('theme-' + themeName);
-            
-            const globeImg = document.getElementById('welcome-globe-img');
+        opt.onclick = () => setWallpaper(url, isVideo ? 'video' : 'image');
+        grid.appendChild(opt);
+      });
+    }
 
-            if (themeName === 'blue') {
-                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
-                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(0, 61, 98, 0.4)) hue-rotate(0deg)";
-            } else if (themeName === 'black') {
-                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
-                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(0, 0, 0, 0.8)) brightness(0.5) grayscale(1)";
-            } else if (themeName === 'green') {
-                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
-                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(0, 100, 70, 0.4)) hue-rotate(90deg)";
-            } else if (themeName === 'purple') {
-                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
-                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(80, 20, 100, 0.4)) hue-rotate(240deg)";
-            } else if (themeName === 'sunset') {
-                globeImg.src = "https://preview.redd.it/my-first-attempt-at-frutiger-aero-v0-20grk0cpbv8c1.png?width=400&format=png&auto=webp&s=8c723a49c0090b7e9bf38be592b64a8beb8bf918";
-                globeImg.style.filter = "drop-shadow(0 12px 28px rgba(120, 30, 20, 0.4)) sepia(0.8) hue-rotate(300deg)";
-            }
+    function setWallpaper(url, type) {
+      wallpaperContainer.innerHTML = '';
+      if (type === 'video') {
+        wallpaperContainer.style.backgroundImage = 'none';
+        const vid = document.createElement('video');
+        vid.src = url;
+        vid.autoplay = true;
+        vid.loop = isVideoLooping;
+        vid.muted = true;
+        vid.playsInline = true;
+        wallpaperContainer.appendChild(vid);
+      } else {
+        wallpaperContainer.style.backgroundImage = `url('${url}')`;
+      }
+      closeWallpaperModal();
+    }
 
-            localStorage.setItem('aero_selected_theme', themeName);
-            broadcastThemeToIframes(themeName);
+    fetchGitHubWallpapers();
+
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      hours = hours % 12 || 12;
+      const clockElem = document.getElementById('clockTime');
+      if (clockElem) clockElem.textContent = `${hours}:${minutes}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function repositionLauncher() {
+      const gap = 12;
+      launcher.style.top = 'auto'; launcher.style.bottom = 'auto';
+      launcher.style.left = 'auto'; launcher.style.right = 'auto';
+
+      if (currentPosition === 'bottom') {
+        launcher.style.left = `${gap}px`; launcher.style.bottom = `${48 + gap}px`;
+      } else if (currentPosition === 'left') {
+        launcher.style.left = `${52 + gap}px`; launcher.style.bottom = `${gap}px`;
+      } else if (currentPosition === 'right') {
+        launcher.style.right = `${52 + gap}px`; launcher.style.bottom = `${gap}px`;
+      }
+    }
+    repositionLauncher();
+
+    // --- NETEASE MUSIC API & FUNCTIONAL AUDIO ENGINE ---
+    async function executeMusicSearch(keyword, limit = 25) {
+      if (!keyword) return;
+      const url = `https://api.qijieya.cn/meting/?type=search&id=${encodeURIComponent(keyword)}&limit=${encodeURIComponent(limit)}&server=netease`;
+      
+      const playlistElem = document.getElementById('mpPlaylistContainer');
+      if (playlistElem) {
+        playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#71717a; font-size:13px;">Searching tracks for "${keyword}"...</div>`;
+      }
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        
+        if (Array.isArray(data) && data.length > 0) {
+          musicSearchResults = data;
+          activeViewMode = 'discover';
+          updateSidebarActiveState();
+          renderMusicProPlaylist();
+        } else {
+          if (playlistElem) playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#71717a; font-size:13px;">No tracks found for "${keyword}"</div>`;
         }
+      } catch (error) {
+        console.error("Music API Fetch Error:", error);
+        if (playlistElem) playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#ef4444; font-size:13px;">Error connecting to NetEase Music API</div>`;
+      }
+    }
 
-        function applyIconColor() {
-            const pickerValue = document.getElementById('icon-color-picker').value;
-            const cleanHex = pickerValue.replace('#', '');
-            
-            document.querySelectorAll('.dynamic-icon').forEach(img => {
-                let src = img.getAttribute('src');
-                if (src && src.includes('icons8.com')) {
-                    if (src.includes('color=')) {
-                        src = src.replace(/color=[^&]*/, `color=${cleanHex}`);
-                    } else {
-                        src += `&color=${cleanHex}`;
-                    }
-                    img.setAttribute('src', src);
-                }
-            });
+    function triggerMusicSearchFromInput() {
+      const input = document.getElementById('mpSearchInput');
+      if (input && input.value.trim() !== '') {
+        executeMusicSearch(input.value.trim());
+      }
+    }
 
-            localStorage.setItem('aero_icon_color', cleanHex);
+    function toggleLikeTrack(e, trackId) {
+      e.stopPropagation();
+      const trackStrId = String(trackId);
+      if (likedTracks.has(trackStrId)) {
+        likedTracks.delete(trackStrId);
+      } else {
+        likedTracks.add(trackStrId);
+      }
+      renderMusicProPlaylist();
+    }
+
+    function switchMusicView(mode) {
+      activeViewMode = mode;
+      updateSidebarActiveState();
+      renderMusicProPlaylist();
+    }
+
+    function updateSidebarActiveState() {
+      const discoverNav = document.getElementById('navDiscover');
+      const libraryNav = document.getElementById('navLibrary');
+      if (discoverNav) discoverNav.classList.toggle('active', activeViewMode === 'discover');
+      if (libraryNav) libraryNav.classList.toggle('active', activeViewMode === 'liked');
+    }
+
+    function createNewPlaylistPrompt() {
+      const playlistName = prompt("Enter new playlist name:");
+      if (playlistName && playlistName.trim() !== "") {
+        const trimmed = playlistName.trim();
+        if (!userPlaylists.includes(trimmed)) {
+          userPlaylists.push(trimmed);
+          renderPlaylistsSidebar();
         }
+      }
+    }
 
-        async function fetchGitHubWallpapersAutomatically() {
-            const picker = document.getElementById('wallpaper-picker');
-            const repoInput = "school-rgb/frutiger-aero-wallpaper";
+    function renderPlaylistsSidebar() {
+      const container = document.getElementById('userPlaylistsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      userPlaylists.forEach(plName => {
+        const div = document.createElement('div');
+        div.className = `mp-playlist-link ${activeViewMode === 'pl:' + plName ? 'active' : ''}`;
+        div.textContent = plName;
+        div.onclick = () => {
+          activeViewMode = 'pl:' + plName;
+          updateSidebarActiveState();
+          renderMusicProPlaylist();
+        };
+        container.appendChild(div);
+      });
+    }
 
-            try {
-                const response = await fetch(`https://api.github.com/repos/${repoInput}/contents`);
-                if (!response.ok) throw new Error();
-                const files = await response.json();
+    function togglePlaylistMenu(e, idx) {
+      e.stopPropagation();
+      // Close any other open popup menus first
+      document.querySelectorAll('.playlist-popup-menu').forEach(m => {
+        if (m.id !== `popup-${idx}`) m.classList.remove('active');
+      });
+
+      const popup = document.getElementById(`popup-${idx}`);
+      if (popup) {
+        popup.classList.toggle('active');
+      }
+    }
+
+    function addTrackToPlaylist(trackIdx, playlistName) {
+      const track = musicSearchResults[trackIdx];
+      if (!track) return;
+      if (!track.playlists) track.playlists = new Set();
+      track.playlists.add(playlistName);
+      
+      // Hide popup
+      const popup = document.getElementById(`popup-${trackIdx}`);
+      if (popup) popup.classList.remove('active');
+      alert(`Added "${track.name || track.title}" to playlist "${playlistName}"`);
+    }
+
+    function renderMusicProPlaylist() {
+      const container = document.getElementById('mpPlaylistContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      let listToRender = musicSearchResults;
+      if (activeViewMode === 'liked') {
+        listToRender = musicSearchResults.filter(t => likedTracks.has(String(t.id)));
+      } else if (activeViewMode.startsWith('pl:')) {
+        const plName = activeViewMode.substring(3);
+        listToRender = musicSearchResults.filter(t => t.playlists && t.playlists.has(plName));
+      }
+
+      if (listToRender.length === 0) {
+        container.innerHTML = `<div style="padding:40px; text-align:center; color:#71717a; font-size:13px;">No tracks found in this view. Try searching and liking or adding songs to playlists!</div>`;
+        return;
+      }
+
+      listToRender.forEach((track, displayIdx) => {
+        // Find true index in global search results
+        const realIdx = musicSearchResults.indexOf(track);
+        const isPlaying = realIdx === currentTrackIdx;
+        const trackId = String(track.id || realIdx);
+        const isLiked = likedTracks.has(trackId);
+
+        const item = document.createElement('div');
+        item.className = `mp-track-item ${isPlaying ? 'playing' : ''}`;
+        item.onclick = () => selectTrack(realIdx);
+
+        const coverImg = track.pic 
+          ? `<img src="${track.pic}" class="mp-track-cover" alt="cover">` 
+          : `<div class="mp-track-cover" style="display:flex;align-items:center;justify-content:center;">🎵</div>`;
+
+        const trackNumDisplay = isPlaying 
+          ? `<img src="${PNGS.playRow}" alt="playing">` 
+          : (displayIdx + 1);
+
+        // Build popup playlist options HTML
+        let playlistOptionsHtml = '';
+        userPlaylists.forEach(pl => {
+          playlistOptionsHtml += `<div class="playlist-popup-item" onclick="event.stopPropagation(); addTrackToPlaylist(${realIdx}, '${pl}')"><span>${pl}</span></div>`;
+        });
+
+        item.innerHTML = `
+          <div class="mp-track-num">${trackNumDisplay}</div>
+          <div class="mp-track-info-left">
+            ${coverImg}
+            <div class="mp-track-names">
+              <h5>${track.name || track.title || 'Unknown Title'}</h5>
+              <p>${track.artist || track.author || 'Drake'}</p>
+            </div>
+          </div>
+          <div class="mp-track-album">${track.album || 'Single / NetEase'}</div>
+          <div class="mp-track-duration">03:45</div>
+          <div class="mp-track-actions">
+            <button class="mp-action-btn ${isLiked ? 'active' : ''}" onclick="toggleLikeTrack(event, '${trackId}')" title="Like / Unlike">
+              <img src="${isLiked ? PNGS.heartFilled : PNGS.heartOutline}" alt="like">
+            </button>
+            <button class="mp-action-btn" onclick="togglePlaylistMenu(event, ${realIdx})" title="Add to playlist">
+              <img src="${PNGS.more}" alt="more">
+            </button>
+            <div class="playlist-popup-menu" id="popup-${realIdx}">
+              <div class="playlist-popup-title">Add to Playlist</div>
+              ${playlistOptionsHtml}
+            </div>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function selectTrack(idx) {
+      if (idx < 0 || idx >= musicSearchResults.length) return;
+      currentTrackIdx = idx;
+      const track = musicSearchResults[idx];
+
+      const titleElem = document.getElementById('mpCurrentTitle');
+      const artistElem = document.getElementById('mpCurrentArtist');
+      const coverElem = document.getElementById('mpCurrentCover');
+      
+      if (titleElem) titleElem.textContent = track.name || track.title || 'Unknown Track';
+      if (artistElem) artistElem.textContent = track.artist || track.author || 'NetEase Artist';
+      
+      const recentTitle = document.getElementById('recentTrackTitle');
+      if (recentTitle) recentTitle.textContent = track.name || track.title;
+
+      if (coverElem) {
+        if (track.pic) {
+          coverElem.innerHTML = `<img src="${track.pic}" alt="cover">`;
+        } else {
+          coverElem.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;">🎵</div>`;
+        }
+      }
+
+      // Load functional audio url from Meting API response (track.url)
+      if (track.url) {
+        masterAudio.src = track.url;
+        masterAudio.play().then(() => {
+          isMusicPlaying = true;
+          const mainBtnImg = document.getElementById('mpPlayBtnImg');
+          if (mainBtnImg) mainBtnImg.src = PNGS.pauseBtn;
+        }).catch(err => {
+          console.error("Audio playback error (browser policy or direct stream block):", err);
+        });
+      }
+
+      renderMusicProPlaylist();
+    }
+
+    function togglePlayMusicPro() {
+      if (currentTrackIdx === -1 && musicSearchResults.length > 0) {
+        selectTrack(0);
+        return;
+      }
+      
+      if (masterAudio.paused) {
+        if (!masterAudio.src && musicSearchResults[currentTrackIdx]?.url) {
+          masterAudio.src = musicSearchResults[currentTrackIdx].url;
+        }
+        masterAudio.play().then(() => {
+          isMusicPlaying = true;
+          const mainBtnImg = document.getElementById('mpPlayBtnImg');
+          if (mainBtnImg) mainBtnImg.src = PNGS.pauseBtn;
+        }).catch(e => console.log(e));
+      } else {
+        masterAudio.pause();
+        isMusicPlaying = false;
+        const mainBtnImg = document.getElementById('mpPlayBtnImg');
+        if (mainBtnImg) mainBtnImg.src = PNGS.playBtn;
+      }
+    }
+
+    function playNextTrack() {
+      if (musicSearchResults.length === 0) return;
+      currentTrackIdx = (currentTrackIdx + 1) % musicSearchResults.length;
+      selectTrack(currentTrackIdx);
+    }
+
+    function playPrevTrack() {
+      if (musicSearchResults.length === 0) return;
+      currentTrackIdx = (currentTrackIdx - 1 + musicSearchResults.length) % musicSearchResults.length;
+      selectTrack(currentTrackIdx);
+    }
+
+    function setMusicVolume(val) {
+      masterAudio.volume = val / 100;
+    }
+
+    function seekMusicBar(e) {
+      if (!masterAudio.duration) return;
+      const progressBar = e.currentTarget;
+      const rect = progressBar.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left;
+      const pct = offsetX / rect.width;
+      masterAudio.currentTime = pct * masterAudio.duration;
+    }
+
+    // Update progress bar as audio plays
+    masterAudio.addEventListener('timeupdate', () => {
+      if (!masterAudio.duration) return;
+      const pct = (masterAudio.currentTime / masterAudio.duration) * 100;
+      const fill = document.getElementById('mpProgressFill');
+      if (fill) fill.style.width = `${pct}%`;
+
+      // Format time strings
+      const curMin = Math.floor(masterAudio.currentTime / 60);
+      const curSec = Math.floor(masterAudio.currentTime % 60).toString().padStart(2, '0');
+      const durMin = Math.floor(masterAudio.duration / 60) || 0;
+      const durSec = Math.floor(masterAudio.duration % 60).toString().padStart(2, '0');
+      
+      const timeElem = document.getElementById('mpCurrentTime');
+      const durElem = document.getElementById('mpCurrentDuration');
+      if (timeElem) timeElem.textContent = `${curMin}:${curSec}`;
+      if (durElem) durElem.textContent = `${durMin}:${durSec}`;
+    });
+
+    masterAudio.addEventListener('ended', () => {
+      playNextTrack();
+    });
+
+    // Close any popup menus when clicking outside inside the app window
+    window.addEventListener('click', () => {
+      document.querySelectorAll('.playlist-popup-menu').forEach(m => m.classList.remove('active'));
+    });
+
+    // Window Management System
+    function openApp(title, iconUrl, targetUrl) {
+      launcher.classList.remove('active');
+      const appId = 'win-' + title.replace(/\s+/g, '-').toLowerCase();
+
+      let appWin = document.getElementById(appId);
+      
+      if (appWin) {
+        appWin.classList.remove('hidden');
+        openApps[appId].isMinimized = false;
+        bringToFront(appWin);
+        updateShelfAutoHideState();
+        renderDockItems();
+        return;
+      }
+
+      appWin = document.createElement('div');
+      appWin.className = 'app-window windowed';
+      appWin.id = appId;
+
+      let bodyContent = '';
+
+      if (targetUrl === 'native:music') {
+        bodyContent = `
+          <div class="music-player-pro">
+            <div class="mp-main-layout">
+              <div class="mp-sidebar">
+                <div>
+                  <div class="mp-sidebar-title">Menu</div>
+                  <div class="mp-nav-item active" id="navDiscover" onclick="switchMusicView('discover')">
+                    <img src="${PNGS.discover}" alt="discover">
+                    <span>Discover</span>
+                  </div>
+                  <div class="mp-nav-item" id="navLibrary" onclick="switchMusicView('liked')">
+                    <img src="${PNGS.library}" alt="library">
+                    <span>My Library</span>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="mp-sidebar-title">Playlists</div>
+                  <div class="mp-playlists-box" id="userPlaylistsContainer">
+                    <!-- Dynamic playlist list links -->
+                  </div>
+                  <button class="mp-create-playlist-btn" onclick="createNewPlaylistPrompt()">+ New Playlist</button>
+                </div>
+              </div>
+              <div class="mp-content-area">
+                <div class="mp-search-bar-container">
+                  <input type="text" id="mpSearchInput" value="Drake" placeholder="Search NetEase songs, artists..." onkeydown="if(event.key==='Enter') triggerMusicSearchFromInput()">
+                  <button onclick="triggerMusicSearchFromInput()">
+                    <img src="${PNGS.search}" alt="search">
+                    <span>Search</span>
+                  </button>
+                </div>
                 
-                const validExtensions = ['.png', '.jpg', '.jpeg', '.mp4', '.webm', '.gif'];
-                const mediaFiles = files.filter(file => validExtensions.some(ext => file.name.toLowerCase().endsWith(ext)));
+                <div class="mp-tracklist-header">
+                  <div>#</div>
+                  <div>Title</div>
+                  <div>Album</div>
+                  <div>Duration</div>
+                  <div style="text-align:right;">Actions</div>
+                </div>
 
-                picker.innerHTML = '';
-                mediaFiles.forEach(file => {
-                    const rawUrl = file.download_url;
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'wallpaper-thumb-wrapper';
+                <div class="mp-playlist" id="mpPlaylistContainer">
+                  <!-- Tracks loaded dynamically via NetEase API metadata -->
+                </div>
+              </div>
+            </div>
+            
+            <div class="mp-player-bar">
+              <div class="mp-current-track">
+                <div class="mp-current-cover" id="mpCurrentCover">
+                  <div style="display:flex;align-items:center;justify-content:center;height:100%;">🎵</div>
+                </div>
+                <div style="overflow:hidden;">
+                  <h4 style="font-size:13px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="mpCurrentTitle">Janice STFU</h4>
+                  <p style="font-size:11px; color:#a1a1aa; margin-top:2px;" id="mpCurrentArtist">2026</p>
+                </div>
+              </div>
 
-                    if (file.name.toLowerCase().endsWith('.mp4')) {
-                        const videoThumb = document.createElement('video');
-                        videoThumb.src = rawUrl;
-                        videoThumb.className = 'wallpaper-thumb';
-                        videoThumb.muted = true;
-                        wrapper.onclick = () => setWallpaper(rawUrl, 'video');
-                        wrapper.appendChild(videoThumb);
-                    } else {
-                        const imgThumb = document.createElement('img');
-                        imgThumb.src = rawUrl;
-                        imgThumb.className = 'wallpaper-thumb';
-                        wrapper.onclick = () => setWallpaper(rawUrl, 'image');
-                        wrapper.appendChild(imgThumb);
-                    }
-                    picker.appendChild(wrapper);
-                });
-            } catch (error) {
-                picker.innerHTML = `<span style="font-size:0.75rem; color:#ff4757; grid-column:span 2; text-align:center; padding: 10px;">Automatic load failed.</span>`;
-            }
+              <div class="mp-controls-center">
+                <div class="mp-buttons">
+                  <button class="mp-btn-sec" onclick="playPrevTrack()">
+                    <img src="${PNGS.prevBtn}" alt="prev">
+                  </button>
+                  <button class="mp-btn-main" onclick="togglePlayMusicPro()">
+                    <img id="mpPlayBtnImg" src="${PNGS.playBtn}" alt="play">
+                  </button>
+                  <button class="mp-btn-sec" onclick="playNextTrack()">
+                    <img src="${PNGS.nextBtn}" alt="next">
+                  </button>
+                </div>
+                <div class="mp-progress-container">
+                  <span id="mpCurrentTime">0:00</span>
+                  <div class="mp-progress-bar" onclick="seekMusicBar(event)"><div class="mp-progress-fill" id="mpProgressFill" style="width: 0%;"></div></div>
+                  <span id="mpCurrentDuration">03:45</span>
+                </div>
+              </div>
+
+              <div class="mp-volume-zone">
+                <img src="${PNGS.volume}" alt="volume">
+                <input type="range" class="mp-volume-slider" min="0" max="100" value="80" oninput="setMusicVolume(this.value)">
+              </div>
+            </div>
+          </div>`;
+      } else if (targetUrl === 'native:notes') {
+        bodyContent = `
+          <div class="notes-app">
+            <h3>Notes</h3>
+            <textarea class="notes-textarea" placeholder="Type your notes here..."></textarea>
+          </div>`;
+      } else if (targetUrl === 'native:calculator') {
+        bodyContent = `
+          <div class="calc-app">
+            <div class="calc-display" id="calcDisplay">0</div>
+            <div class="calc-grid">
+              <button class="calc-btn" onclick="calcInput('C')">C</button>
+              <button class="calc-btn" onclick="calcInput('(')">(</button>
+              <button class="calc-btn" onclick="calcInput(')')">)</button>
+              <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+              <button class="calc-btn" onclick="calcInput('7')">7</button>
+              <button class="calc-btn" onclick="calcInput('8')">8</button>
+              <button class="calc-btn" onclick="calcInput('9')">9</button>
+              <button class="calc-btn op" onclick="calcInput('*')">×</button>
+              <button class="calc-btn" onclick="calcInput('4')">4</button>
+              <button class="calc-btn" onclick="calcInput('5')">5</button>
+              <button class="calc-btn" onclick="calcInput('6')">6</button>
+              <button class="calc-btn op" onclick="calcInput('-')">-</button>
+              <button class="calc-btn" onclick="calcInput('1')">1</button>
+              <button class="calc-btn" onclick="calcInput('2')">2</button>
+              <button class="calc-btn" onclick="calcInput('3')">3</button>
+              <button class="calc-btn op" onclick="calcInput('+')">+</button>
+              <button class="calc-btn" onclick="calcInput('0')">0</button>
+              <button class="calc-btn" onclick="calcInput('.')">.</button>
+              <button class="calc-btn op" style="grid-column: span 2;" onclick="calcInput('=')">=</button>
+            </div>
+          </div>`;
+      } else {
+        bodyContent = `
+          <div style="display:flex; flex-direction:column; height:100%;">
+            <iframe id="iframe-${appId}" src="${targetUrl}"></iframe>
+          </div>`;
+      }
+
+      appWin.innerHTML = `
+        <div class="resize-handle n"></div>
+        <div class="resize-handle s"></div>
+        <div class="resize-handle w"></div>
+        <div class="resize-handle e"></div>
+        <div class="resize-handle nw"></div>
+        <div class="resize-handle ne"></div>
+        <div class="resize-handle sw"></div>
+        <div class="resize-handle se"></div>
+        
+        <div class="window-header">
+          <div class="window-title">
+            <img src="${iconUrl}" alt="icon">
+            <span>${title}</span>
+          </div>
+          <div class="window-controls">
+            <button class="win-btn" title="Minimize" onclick="fakeCloseApp('${appId}')">🗕</button>
+            <button class="win-btn" title="Toggle Windowed/Fullscreen" onclick="toggleWindowMode('${appId}')">
+              <img src="https://img.icons8.com/?size=100&id=6KAje0riRDTQ&format=png&color=000000" alt="Resize">
+            </button>
+            <button class="win-btn close" title="Close" onclick="closeApp('${appId}')">✕</button>
+          </div>
+        </div>
+        <div class="window-body">
+          ${bodyContent}
+        </div>
+      `;
+
+      desktop.appendChild(appWin);
+
+      openApps[appId] = {
+        title,
+        iconUrl,
+        targetUrl,
+        isMinimized: false,
+        element: appWin
+      };
+
+      bringToFront(appWin);
+      makeDraggable(appWin);
+      makeResizable(appWin);
+
+      if (targetUrl === 'native:music') {
+        renderPlaylistsSidebar();
+        executeMusicSearch('Drake');
+      }
+
+      appWin.addEventListener('mousedown', () => bringToFront(appWin));
+      updateShelfAutoHideState();
+      renderDockItems();
+    }
+
+    // Calculator Logic
+    let calcVal = '0';
+    function calcInput(char) {
+      const display = document.getElementById('calcDisplay');
+      if (!display) return;
+
+      if (char === 'C') {
+        calcVal = '0';
+      } else if (char === '=') {
+        try { calcVal = eval(calcVal).toString(); } catch { calcVal = 'Error'; }
+      } else {
+        if (calcVal === '0' || calcVal === 'Error') calcVal = char;
+        else calcVal += char;
+      }
+      display.textContent = calcVal;
+    }
+
+    // Alt + Tab Navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+        altTabAppKeys = Object.keys(openApps);
+        if (altTabAppKeys.length === 0) return;
+
+        if (!altTabOverlay.classList.contains('active')) {
+          altTabIndex = 0;
+          altTabOverlay.classList.add('active');
+        } else {
+          altTabIndex = (altTabIndex + 1) % altTabAppKeys.length;
         }
+        renderAltTabCards();
+      }
+    });
 
-        function setWallpaper(url, type) {
-            const container = document.getElementById('wallpaper-container');
-            container.innerHTML = '';
-            if (type === 'video') {
-                const vid = document.createElement('video');
-                vid.src = url;
-                vid.autoplay = true;
-                vid.loop = true;
-                vid.muted = true;
-                container.appendChild(vid);
-            } else {
-                const img = document.createElement('img');
-                img.src = url;
-                container.appendChild(img);
-            }
-            localStorage.setItem('aero_saved_wallpaper', url);
-            localStorage.setItem('aero_saved_wallpaper_type', type);
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Alt' && altTabOverlay.classList.contains('active')) {
+        altTabOverlay.classList.remove('active');
+        if (altTabAppKeys.length > 0) {
+          const selectedAppId = altTabAppKeys[altTabIndex];
+          const app = openApps[selectedAppId];
+          if (app) {
+            app.element.classList.remove('hidden');
+            app.isMinimized = false;
+            bringToFront(app.element);
+            updateShelfAutoHideState();
+            renderDockItems();
+          }
         }
+      }
+    });
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedColor = localStorage.getItem('aero_icon_color');
-            if (savedColor) {
-                document.getElementById('icon-color-picker').value = '#' + savedColor;
-                applyIconColor();
+    function renderAltTabCards() {
+      altTabOverlay.innerHTML = '';
+      altTabAppKeys.forEach((key, idx) => {
+        const app = openApps[key];
+        const card = document.createElement('div');
+        card.className = `alttab-card ${idx === altTabIndex ? 'selected' : ''}`;
+        card.innerHTML = `
+          <img src="${app.iconUrl}">
+          <span>${app.title}</span>
+        `;
+        altTabOverlay.appendChild(card);
+      });
+    }
+
+    function renderDockItems() {
+      shelfCenter.innerHTML = '';
+      Object.keys(openApps).forEach((appId) => {
+        const app = openApps[appId];
+        const dockIcon = document.createElement('div');
+        dockIcon.className = `shelf-app-icon active`;
+        dockIcon.title = app.title;
+        dockIcon.innerHTML = `<img src="${app.iconUrl}" alt="${app.title}">`;
+
+        dockIcon.onclick = () => {
+          if (app.isMinimized || app.element.classList.contains('hidden')) {
+            app.element.classList.remove('hidden');
+            app.isMinimized = false;
+            bringToFront(app.element);
+          } else if (app.element.style.zIndex == highestZIndex) {
+            fakeCloseApp(appId);
+          } else {
+            bringToFront(app.element);
+          }
+          updateShelfAutoHideState();
+          renderDockItems();
+        };
+
+        shelfCenter.appendChild(dockIcon);
+      });
+    }
+
+    function bringToFront(win) {
+      highestZIndex++;
+      win.style.zIndex = highestZIndex;
+    }
+
+    function fakeCloseApp(appId) {
+      const app = openApps[appId];
+      if (app) {
+        app.element.classList.add('hidden');
+        app.isMinimized = true;
+        updateShelfAutoHideState();
+        renderDockItems();
+      }
+    }
+
+    function closeApp(appId) {
+      const app = openApps[appId];
+      if (app) {
+        app.element.remove();
+        delete openApps[appId];
+        updateShelfAutoHideState();
+        renderDockItems();
+      }
+    }
+
+    function toggleWindowMode(appId) {
+      const app = openApps[appId];
+      if (app) {
+        app.element.classList.toggle('windowed');
+        updateShelfAutoHideState();
+      }
+    }
+
+    function setShelfPosition(pos) {
+      shelf.className = `shelf pos-${pos}`;
+      shelfTriggerZone.className = `shelf-trigger-zone pos-${pos}`;
+      currentPosition = pos;
+
+      if (isAutohideEnabled) {
+        shelf.classList.add('autohide');
+        shelfTriggerZone.classList.add('active');
+      }
+
+      repositionLauncher();
+      renderDockItems();
+    }
+
+    function toggleAlwaysHideShelf() {
+      isAutohideEnabled = !isAutohideEnabled;
+      const label = document.getElementById('autohideLabel');
+
+      if (isAutohideEnabled) {
+        shelf.classList.add('autohide');
+        shelfTriggerZone.classList.add('active');
+        label.textContent = 'Disable Autohide Shelf';
+      } else {
+        shelf.classList.remove('autohide', 'reveal');
+        shelfTriggerZone.classList.remove('active');
+        label.textContent = 'Autohide Shelf';
+      }
+      updateShelfAutoHideState();
+    }
+
+    function updateShelfAutoHideState() {
+      const activeFullscreenApp = document.querySelector('.app-window:not(.windowed):not(.hidden)');
+      if (activeFullscreenApp || isAutohideEnabled) {
+        shelf.classList.add('app-fullscreen-hide');
+        shelfTriggerZone.classList.add('active');
+      } else {
+        shelf.classList.remove('app-fullscreen-hide', 'reveal');
+        if (!isAutohideEnabled) {
+          shelfTriggerZone.classList.remove('active');
+        }
+      }
+    }
+
+    shelfTriggerZone.addEventListener('mouseenter', () => shelf.classList.add('reveal'));
+    shelf.addEventListener('mouseleave', () => {
+      if (isAutohideEnabled || document.querySelector('.app-window:not(.windowed):not(.hidden)')) {
+        shelf.classList.remove('reveal');
+      }
+    });
+
+    function openWallpaperModal() {
+      document.getElementById('wallpaperModal').classList.add('active');
+      contextMenu.classList.remove('active');
+    }
+
+    function closeWallpaperModal() {
+      document.getElementById('wallpaperModal').classList.remove('active');
+    }
+
+    function makeDraggable(win) {
+      const header = win.querySelector('.window-header');
+      let isDragging = false, startX, startY, initialLeft, initialTop;
+
+      header.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.win-btn')) return;
+        if (!win.classList.contains('windowed')) return;
+
+        isDragging = true;
+        win.classList.add('dragging');
+        startX = e.clientX; startY = e.clientY;
+        initialLeft = win.offsetLeft; initialTop = win.offsetTop;
+
+        const onMouseMove = (e) => {
+          if (!isDragging) return;
+          win.style.left = `${initialLeft + e.clientX - startX}px`;
+          win.style.top = `${initialTop + e.clientY - startY}px`;
+        };
+
+        const onMouseUp = () => {
+          isDragging = false;
+          win.classList.remove('dragging');
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+    }
+
+    function makeResizable(win) {
+      const handles = win.querySelectorAll('.resize-handle');
+      handles.forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+          e.preventDefault(); e.stopPropagation();
+          win.classList.add('resizing');
+          let startX = e.clientX, startY = e.clientY;
+          let startWidth = parseInt(document.defaultView.getComputedStyle(win).width, 10);
+          let startHeight = parseInt(document.defaultView.getComputedStyle(win).height, 10);
+          let startLeft = win.offsetLeft, startTop = win.offsetTop;
+
+          const doResize = (e) => {
+            if (handle.classList.contains('e') || handle.classList.contains('se') || handle.classList.contains('ne')) win.style.width = `${startWidth + e.clientX - startX}px`;
+            if (handle.classList.contains('s') || handle.classList.contains('se') || handle.classList.contains('sw')) win.style.height = `${startHeight + e.clientY - startY}px`;
+            if (handle.classList.contains('w') || handle.classList.contains('nw') || handle.classList.contains('sw')) {
+              const newWidth = startWidth - (e.clientX - startX);
+              if (newWidth > 250) { win.style.width = `${newWidth}px`; win.style.left = `${startLeft + (e.clientX - startX)}px`; }
             }
-
-            const savedTheme = localStorage.getItem('aero_selected_theme') || 'blue';
-            setTheme(savedTheme);
-
-            const savedUrl = localStorage.getItem('aero_saved_wallpaper');
-            const savedType = localStorage.getItem('aero_saved_wallpaper_type');
-            if (savedUrl) {
-                setWallpaper(savedUrl, savedType);
+            if (handle.classList.contains('n') || handle.classList.contains('nw') || handle.classList.contains('ne')) {
+              const newHeight = startHeight - (e.clientY - startY);
+              if (newHeight > 150) { win.style.height = `${newHeight}px`; win.style.top = `${startTop + (e.clientY - startY)}px`; }
             }
+          };
 
-            fetchGitHubWallpapersAutomatically();
+          const stopResize = () => {
+            win.classList.remove('resizing');
+            window.removeEventListener('mousemove', doResize);
+            window.removeEventListener('mouseup', stopResize);
+          };
+
+          window.addEventListener('mousemove', doResize);
+          window.addEventListener('mouseup', stopResize);
         });
-    </script>
+      });
+    }
+
+    window.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const menuWidth = contextMenu.offsetWidth || 220;
+      const menuHeight = contextMenu.offsetHeight || 180;
+      let posX = e.clientX, posY = e.clientY;
+
+      if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
+      if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
+
+      contextMenu.style.left = `${posX}px`; contextMenu.style.top = `${posY}px`;
+      contextMenu.classList.add('active');
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!contextMenu.contains(e.target)) contextMenu.classList.remove('active');
+    });
+
+    function toggleLauncher(e) {
+      if (e) e.stopPropagation();
+      launcher.classList.toggle('active');
+      if (launcher.classList.contains('active')) repositionLauncher();
+    }
+
+    desktop.addEventListener('click', () => launcher.classList.remove('active'));
+
+    const searchInput = document.getElementById('searchInput');
+    const defaultView = document.getElementById('defaultView');
+    const searchView = document.getElementById('searchView');
+    const bestMatchText = document.getElementById('bestMatchText');
+    const googleSearchText = document.getElementById('googleSearchText');
+
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      if (query.length > 0) {
+        defaultView.classList.add('hidden'); searchView.classList.add('active');
+        bestMatchText.textContent = `${query} - Apps`;
+        googleSearchText.textContent = `${query} - Google Search`;
+      } else {
+        defaultView.classList.remove('hidden'); searchView.classList.remove('active');
+      }
+    });
+  </script>
 </body>
 </html>

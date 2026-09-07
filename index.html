@@ -84,7 +84,8 @@
       z-index: 10;
     }
 
-    .app-window.dragging, .app-window.resizing {
+    .app-window.dragging, .app-window.resizing,
+    .launcher.dragging, .launcher.resizing {
       transition: none !important;
     }
 
@@ -168,17 +169,22 @@
       border: none;
     }
 
+    /* Prevent iframe interference while dragging or resizing */
+    body.is-interacting iframe {
+      pointer-events: none !important;
+    }
+
     /* Resizable Handles */
-    .resize-handle { position: absolute; z-index: 99; display: none; }
-    .app-window.windowed .resize-handle { display: block; }
-    .resize-handle.n  { top: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
-    .resize-handle.s  { bottom: 0; left: 0; right: 0; height: 6px; cursor: ns-resize; }
-    .resize-handle.w  { top: 0; bottom: 0; left: 0; width: 6px; cursor: ew-resize; }
-    .resize-handle.e  { top: 0; bottom: 0; right: 0; width: 6px; cursor: ew-resize; }
-    .resize-handle.nw { top: 0; left: 0; width: 10px; height: 10px; cursor: nwse-resize; }
-    .resize-handle.ne { top: 0; right: 0; width: 10px; height: 10px; cursor: nesw-resize; }
-    .resize-handle.sw { bottom: 0; left: 0; width: 10px; height: 10px; cursor: nesw-resize; }
-    .resize-handle.se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: nwse-resize; }
+    .resize-handle { position: absolute; z-index: 999; display: none; }
+    .app-window.windowed .resize-handle, .launcher .resize-handle { display: block; }
+    .resize-handle.n  { top: -3px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
+    .resize-handle.s  { bottom: -3px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
+    .resize-handle.w  { top: 0; bottom: 0; left: -3px; width: 8px; cursor: ew-resize; }
+    .resize-handle.e  { top: 0; bottom: 0; right: -3px; width: 8px; cursor: ew-resize; }
+    .resize-handle.nw { top: -3px; left: -3px; width: 12px; height: 12px; cursor: nwse-resize; }
+    .resize-handle.ne { top: -3px; right: -3px; width: 12px; height: 12px; cursor: nesw-resize; }
+    .resize-handle.sw { bottom: -3px; left: -3px; width: 12px; height: 12px; cursor: nesw-resize; }
+    .resize-handle.se { bottom: -3px; right: -3px; width: 12px; height: 12px; cursor: nwse-resize; }
 
     /* Right Click Context Menu */
     .context-menu {
@@ -234,14 +240,14 @@
 
     .context-item:hover .submenu { display: flex; }
 
-    /* Launcher Menu */
+    /* Launcher Menu - Standalone Floating Window */
     .launcher {
-      position: absolute;
+      position: fixed;
       width: 620px;
-      max-width: 95vw;
-      height: 78vh;
-      max-height: 680px;
-      background: rgba(12, 12, 12, 0.75);
+      height: 580px;
+      min-width: 320px;
+      min-height: 350px;
+      background: rgba(12, 12, 12, 0.85);
       backdrop-filter: blur(35px);
       -webkit-backdrop-filter: blur(35px);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -252,26 +258,79 @@
       box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
       z-index: 1200;
       opacity: 0;
-      transform: scale(0.97);
       pointer-events: none;
       transition: opacity 0.25s cubic-bezier(0, 0, 0.2, 1), transform 0.25s cubic-bezier(0, 0, 0.2, 1);
-      overflow-y: auto;
+      overflow: hidden;
     }
 
-    .launcher.active {
+    /* Target positions relative to shelf layout */
+    .launcher.pos-bottom {
+      bottom: 60px;
+      left: 12px;
+      top: auto;
+      right: auto;
+      transform: translateY(15px) scale(0.97);
+    }
+    .launcher.pos-bottom.active {
       opacity: 1;
-      transform: scale(1);
+      transform: translateY(0) scale(1);
       pointer-events: auto;
+    }
+
+    .launcher.pos-left {
+      top: 12px;
+      left: 64px;
+      bottom: auto;
+      right: auto;
+      transform: translateX(-15px) scale(0.97);
+    }
+    .launcher.pos-left.active {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .launcher.pos-right {
+      top: 12px;
+      right: 64px;
+      bottom: auto;
+      left: auto;
+      transform: translateX(15px) scale(0.97);
+    }
+    .launcher.pos-right.active {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .launcher.dragged-active {
+      transform: scale(1) !important;
+    }
+
+    .launcher-header-drag {
+      width: 100%;
+      padding-bottom: 12px;
+      margin-top: -12px;
+      cursor: move;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     .launcher-drag-handle {
       width: 40px;
       height: 5px;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.3);
       border-radius: 3px;
-      margin: -12px auto 12px auto;
-      cursor: grab;
-      flex-shrink: 0;
+    }
+
+    .launcher-content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding-right: 4px;
     }
 
     .launcher-search {
@@ -279,6 +338,7 @@
       margin-bottom: 20px;
       display: flex;
       align-items: center;
+      flex-shrink: 0;
     }
 
     .launcher-search input {
@@ -469,7 +529,7 @@
 
     /* Wallpaper Selection Modal */
     .wallpaper-modal {
-      position: absolute; top: 50%; left: 50%;
+      position: fixed; top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0.95);
       width: 560px; max-width: 90vw; max-height: 80vh;
       background: rgba(18, 18, 18, 0.85);
@@ -513,9 +573,7 @@
     .wallpaper-option video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; pointer-events: none; }
     .wallpaper-option:hover { transform: scale(1.03); border-color: #ffffff; }
 
-    /* ========================================================= */
-    /* --- ENHANCED MUSIC PLAYER UI & PLAYLIST/POPUP STYLING --- */
-    /* ========================================================= */
+    /* Music Player Styles */
     .music-player-pro {
       height: 100%;
       background: #09090b;
@@ -576,7 +634,6 @@
       color: #ffffff;
     }
 
-    /* Playlist Section inside Sidebar */
     .mp-playlists-box {
       display: flex;
       flex-direction: column;
@@ -813,7 +870,6 @@
       filter: invert(27%) sepia(91%) saturate(2352%) hue-rotate(331deg) brightness(97%) contrast(96%);
     }
 
-    /* Playlist Selection Dropdown Menu */
     .playlist-popup-menu {
       position: absolute;
       right: 0;
@@ -860,7 +916,6 @@
       color: #ffffff;
     }
 
-    /* Bottom Player Controls Bar */
     .mp-player-bar {
       height: 92px;
       background: #000000;
@@ -1083,9 +1138,21 @@
     </div>
   </div>
 
-  <!-- Translucent Launcher Menu -->
-  <div class="launcher" id="launcherMenu">
-    <div class="launcher-drag-handle" id="launcherDragHandle" title="Drag to move menu"></div>
+  <!-- Translucent Launcher Menu - Floating Window -->
+  <div class="launcher pos-bottom" id="launcherMenu">
+    <!-- Resizable handles for launcher -->
+    <div class="resize-handle n"></div>
+    <div class="resize-handle s"></div>
+    <div class="resize-handle w"></div>
+    <div class="resize-handle e"></div>
+    <div class="resize-handle nw"></div>
+    <div class="resize-handle ne"></div>
+    <div class="resize-handle sw"></div>
+    <div class="resize-handle se"></div>
+
+    <div class="launcher-header-drag" id="launcherDragHandle" title="Drag to move launcher">
+      <div class="launcher-drag-handle"></div>
+    </div>
     
     <div class="launcher-search">
       <img src="https://img.icons8.com/color/48/google-logo.png" class="search-google-logo" alt="Google">
@@ -1096,64 +1163,66 @@
       </div>
     </div>
 
-    <div class="default-view" id="defaultView">
-      <div class="section-header">
-        <span>Continue where you left off</span>
-        <span>▲</span>
-      </div>
+    <div class="launcher-content-scroll">
+      <div class="default-view" id="defaultView">
+        <div class="section-header">
+          <span>Continue where you left off</span>
+          <span>▲</span>
+        </div>
 
-      <div class="recents-grid">
-        <div class="recent-item" onclick="openApp('Music Studio Pro', 'https://img.icons8.com/color/96/youtube-music.png', 'native:music')">
-          <div class="recent-icon"><img src="https://img.icons8.com/color/48/audio.png" alt="Audio"></div>
-          <div class="recent-info">
-            <h4 id="recentTrackTitle">Janice STFU</h4>
-            <p id="recentTrackSub">Drake · Working Audio Player</p>
+        <div class="recents-grid">
+          <div class="recent-item" onclick="openApp('Music Studio Pro', 'https://img.icons8.com/color/96/youtube-music.png', 'native:music')">
+            <div class="recent-icon"><img src="https://img.icons8.com/color/48/audio.png" alt="Audio"></div>
+            <div class="recent-info">
+              <h4 id="recentTrackTitle">Janice STFU</h4>
+              <p id="recentTrackSub">Drake · Working Audio Player</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-grid" id="mainAppGrid">
+          <div class="app-icon" onclick="openApp('Music Studio Pro', 'https://img.icons8.com/color/96/youtube-music.png', 'native:music')">
+            <div class="icon-img"><img src="https://img.icons8.com/color/96/youtube-music.png" alt="Music"></div>
+            <span>Music Pro</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Sticky Notes', 'https://img.icons8.com/color/96/note.png', 'native:notes')">
+            <div class="icon-img"><img src="https://img.icons8.com/color/96/note.png" alt="Notes"></div>
+            <span>Notes</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Calculator', 'https://img.icons8.com/color/96/calculator.png', 'native:calculator')">
+            <div class="icon-img"><img src="https://img.icons8.com/color/96/calculator.png" alt="Calculator"></div>
+            <span>Calculator</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Frutiger App Store', 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'96\' height=\'96\' viewBox=\'0 0 96 96\'><rect width=\'96\' height=\'96\' rx=\'22\' fill=\'%23007AFF\'/><path d=\'M32 24 H64 V36 H44 V42 H60 V54 H44 V72 H32 Z\' fill=\'%23FFFFFF\'/></svg>', 'appstore.html')">
+            <div class="icon-img"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'><rect width='96' height='96' rx='22' fill='%23007AFF'/><path d='M32 24 H64 V36 H44 V42 H60 V54 H44 V72 H32 Z' fill='%23FFFFFF'/></svg>" alt="Store"></div>
+            <span>App Store</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Wikipedia', 'https://img.icons8.com/color/96/wikipedia.png', 'https://www.wikipedia.org')">
+            <div class="icon-img"><img src="https://img.icons8.com/color/96/wikipedia.png" alt="Wikipedia"></div>
+            <span>Wikipedia</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Anime Cloud', 'https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF', 'https://school-rgb.github.io/anime-movies-in-html/')">
+            <div class="icon-img"><img src="https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF" alt="Anime"></div>
+            <span>animecloud</span>
           </div>
         </div>
       </div>
 
-      <div class="app-grid">
-        <div class="app-icon" onclick="openApp('Music Studio Pro', 'https://img.icons8.com/color/96/youtube-music.png', 'native:music')">
-          <div class="icon-img"><img src="https://img.icons8.com/color/96/youtube-music.png" alt="Music"></div>
-          <span>Music Pro</span>
+      <!-- Search Results View -->
+      <div class="search-view" id="searchView">
+        <div>
+          <div class="search-category-title">Best Match</div>
+          <div class="search-result-item">
+            <img src="https://img.icons8.com/color/48/document.png" alt="File">
+            <span id="bestMatchText">Search result</span>
+          </div>
         </div>
-        <div class="app-icon" onclick="openApp('Sticky Notes', 'https://img.icons8.com/color/96/note.png', 'native:notes')">
-          <div class="icon-img"><img src="https://img.icons8.com/color/96/note.png" alt="Notes"></div>
-          <span>Notes</span>
-        </div>
-        <div class="app-icon" onclick="openApp('Calculator', 'https://img.icons8.com/color/96/calculator.png', 'native:calculator')">
-          <div class="icon-img"><img src="https://img.icons8.com/color/96/calculator.png" alt="Calculator"></div>
-          <span>Calculator</span>
-        </div>
-        <div class="app-icon" onclick="openApp('frutiger app store', 'https://img.icons8.com/?size=100&id=84923&format=png&color=FFFFFFF', 'APP/store')">
-          <div class="icon-img"><img src="https://img.icons8.com/?size=100&id=84923&format=png&color=FFFFFF" alt="Chrome"></div>
-          <span>frutiger app store</span>
-        </div>
-        <div class="app-icon" onclick="openApp('games', 'https://img.icons8.com/color/96/wikipedia.png', 'https://www.wikipedia.org')">
-          <div class="icon-img"><img src="https://img.icons8.com/color/96/wikipedia.png" alt="Wikipedia"></div>
-          <span>Wikipedia</span>
-        </div>
-        <div class="app-icon" onclick="openApp('Bing Search', 'https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF', 'https://school-rgb.github.io/anime-movies-in-html/')">
-          <div class="icon-img"><img src="https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF" alt="Bing"></div>
-          <span>animecloud</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Search Results View -->
-    <div class="search-view" id="searchView">
-      <div>
-        <div class="search-category-title">Best Match</div>
-        <div class="search-result-item">
-          <img src="https://img.icons8.com/color/48/document.png" alt="File">
-          <span id="bestMatchText">Search result</span>
-        </div>
-      </div>
-      <div>
-        <div class="search-category-title">Search Engine</div>
-        <div class="search-result-item">
-          <img src="https://img.icons8.com/color/48/google-logo.png" alt="Google">
-          <span id="googleSearchText">Search Google</span>
+        <div>
+          <div class="search-category-title">Search Engine</div>
+          <div class="search-result-item">
+            <img src="https://img.icons8.com/color/48/google-logo.png" alt="Google">
+            <span id="googleSearchText">Search Google</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1188,6 +1257,8 @@
     const shelfCenter = document.getElementById('shelfCenter');
     const shelfTriggerZone = document.getElementById('shelfTriggerZone');
     const launcher = document.getElementById('launcherMenu');
+    const launcherDragHandle = document.getElementById('launcherDragHandle');
+    const wallpaperModal = document.getElementById('wallpaperModal');
     const wallpaperContainer = document.getElementById('desktopWallpaperContainer');
     const altTabOverlay = document.getElementById('altTabOverlay');
     const masterAudio = document.getElementById('masterAudio');
@@ -1197,24 +1268,26 @@
     let isAutohideEnabled = false;
     let isVideoLooping = true;
     let isRainActive = true;
+    let currentWallpaperUrl = '';
+    let currentWallpaperType = 'image';
+    let installedApps = [];
     
     const openApps = {};
     let altTabAppKeys = [];
     let altTabIndex = 0;
 
-    // Music Player State & API Integration with Working Audio & Custom Playlists
     let musicSearchResults = [];
     let currentTrackIdx = -1;
     let isMusicPlaying = false;
     let likedTracks = new Set();
     let userPlaylists = ["Favorites", "Workout Vibes", "Late Night"];
-    let activeViewMode = 'discover'; // 'discover' or 'liked' or specific playlist name
+    let savedMusicTracks = [];
+    let activeViewMode = 'discover';
 
-    // High quality PNG assets for Music UI
     const PNGS = {
       search: "https://img.icons8.com/?size=100&id=132&format=png&color=FFFFFF",
       discover: "https://img.icons8.com/?size=100&id=83220&format=png&color=A1A1AA",
-      library: "https://img.icons8.com/?size=100&id=85038&format=png&color=A1A1AA", // Heart icon for library
+      library: "https://img.icons8.com/?size=100&id=85038&format=png&color=A1A1AA",
       heartOutline: "https://img.icons8.com/?size=100&id=85038&format=png&color=71717A",
       heartFilled: "https://img.icons8.com/?size=100&id=85038&format=png&color=EF4444",
       playBtn: "https://img.icons8.com/?size=100&id=398&format=png&color=000000",
@@ -1226,6 +1299,102 @@
       more: "https://img.icons8.com/?size=100&id=98963&format=png&color=71717A"
     };
 
+    /* State Persistence Engine */
+    function saveSystemState() {
+      const state = {
+        isAutohideEnabled,
+        isRainActive,
+        isVideoLooping,
+        currentPosition,
+        currentWallpaperUrl,
+        currentWallpaperType,
+        installedApps,
+        userPlaylists,
+        likedTracks: Array.from(likedTracks),
+        savedMusicTracks: musicSearchResults
+      };
+      localStorage.setItem('chromeos_system_state', JSON.stringify(state));
+    }
+
+    function loadSystemState() {
+      const saved = localStorage.getItem('chromeos_system_state');
+      if (!saved) return;
+      try {
+        const state = JSON.parse(saved);
+        if (state.isAutohideEnabled !== undefined) {
+          isAutohideEnabled = state.isAutohideEnabled;
+          if (isAutohideEnabled) {
+            shelf.classList.add('autohide');
+            shelfTriggerZone.classList.add('active');
+            const label = document.getElementById('autohideLabel');
+            if (label) label.textContent = 'Disable Autohide Shelf';
+          }
+        }
+        if (state.isRainActive !== undefined) {
+          isRainActive = state.isRainActive;
+          const btn = document.getElementById('rainModalBtn');
+          if (btn) btn.textContent = `Rain Effect: ${isRainActive ? 'ON' : 'OFF'}`;
+          const canvasElem = document.getElementById('rainCanvas');
+          if (canvasElem) canvasElem.style.display = isRainActive ? 'block' : 'none';
+        }
+        if (state.isVideoLooping !== undefined) {
+          isVideoLooping = state.isVideoLooping;
+          const btn = document.getElementById('loopVideoModalBtn');
+          if (btn) btn.textContent = `Loop Video: ${isVideoLooping ? 'ON' : 'OFF'}`;
+        }
+        if (state.currentPosition) {
+          setShelfPosition(state.currentPosition);
+        }
+        if (state.currentWallpaperUrl) {
+          setWallpaper(state.currentWallpaperUrl, state.currentWallpaperType || 'image', false);
+        }
+        if (Array.isArray(state.installedApps)) {
+          installedApps = state.installedApps;
+          installedApps.forEach(app => addInstalledAppToGrid(app.name, app.image, app.url, false));
+        }
+        if (Array.isArray(state.userPlaylists)) {
+          userPlaylists = state.userPlaylists;
+        }
+        if (Array.isArray(state.likedTracks)) {
+          likedTracks = new Set(state.likedTracks);
+        }
+        if (Array.isArray(state.savedMusicTracks) && state.savedMusicTracks.length > 0) {
+          musicSearchResults = state.savedMusicTracks;
+        }
+      } catch (e) {
+        console.error("Failed to load saved state", e);
+      }
+    }
+
+    /* Message receiver line to add installed apps into OS */
+    window.addEventListener('message', function(event) {
+      if (event.data && event.data.type === 'INSTALL_APP') {
+        const { name, image, url } = event.data;
+        addInstalledAppToGrid(name, image, url, true);
+      }
+    });
+
+    function addInstalledAppToGrid(name, image, url, shouldSave = true) {
+      const grid = document.getElementById('mainAppGrid');
+      if (!grid) return;
+
+      const appCard = document.createElement('div');
+      appCard.className = 'app-icon';
+      appCard.onclick = () => openApp(name, image, url);
+      appCard.innerHTML = `
+        <div class="icon-img"><img src="${image}" alt="${name}"></div>
+        <span>${name}</span>
+      `;
+      grid.appendChild(appCard);
+
+      if (shouldSave) {
+        if (!installedApps.some(app => app.name === name && app.url === url)) {
+          installedApps.push({ name, image, url });
+          saveSystemState();
+        }
+      }
+    }
+
     function toggleVideoLooping() {
       isVideoLooping = !isVideoLooping;
       const btn = document.getElementById('loopVideoModalBtn');
@@ -1236,6 +1405,7 @@
         bgVideo.loop = isVideoLooping;
         bgVideo.muted = true;
       }
+      saveSystemState();
     }
 
     function toggleRainEffect() {
@@ -1244,6 +1414,7 @@
       if (btn) btn.textContent = `Rain Effect: ${isRainActive ? 'ON' : 'OFF'}`;
       const canvasElem = document.getElementById('rainCanvas');
       if (canvasElem) canvasElem.style.display = isRainActive ? 'block' : 'none';
+      saveSystemState();
     }
 
     /* Rain Canvas Engine */
@@ -1305,7 +1476,9 @@
 
         if (validMediaFiles.length > 0) {
           populateWallpaperModal(validMediaFiles);
-          setWallpaper(validMediaFiles[0].download_url, validMediaFiles[0].name.toLowerCase().endsWith('.mp4') ? 'video' : 'image');
+          if (!currentWallpaperUrl) {
+            setWallpaper(validMediaFiles[0].download_url, validMediaFiles[0].name.toLowerCase().endsWith('.mp4') ? 'video' : 'image');
+          }
         } else {
           loadFallbackWallpapers();
         }
@@ -1320,7 +1493,9 @@
         { name: "wallpaper2.png", download_url: "https://raw.githubusercontent.com/school-rgb/frutiger-os-wallpaper/main/Frutiger%20Aero%20Wallpaper%202.png" }
       ];
       populateWallpaperModal(fallbacks);
-      setWallpaper(fallbacks[0].download_url, 'image');
+      if (!currentWallpaperUrl) {
+        setWallpaper(fallbacks[0].download_url, 'image');
+      }
     }
 
     function populateWallpaperModal(mediaList) {
@@ -1343,7 +1518,9 @@
       });
     }
 
-    function setWallpaper(url, type) {
+    function setWallpaper(url, type, shouldSave = true) {
+      currentWallpaperUrl = url;
+      currentWallpaperType = type;
       wallpaperContainer.innerHTML = '';
       if (type === 'video') {
         wallpaperContainer.style.backgroundImage = 'none';
@@ -1358,9 +1535,8 @@
         wallpaperContainer.style.backgroundImage = `url('${url}')`;
       }
       closeWallpaperModal();
+      if (shouldSave) saveSystemState();
     }
-
-    fetchGitHubWallpapers();
 
     function updateClock() {
       const now = new Date();
@@ -1372,21 +1548,6 @@
     }
     setInterval(updateClock, 1000);
     updateClock();
-
-    function repositionLauncher() {
-      const gap = 12;
-      launcher.style.top = 'auto'; launcher.style.bottom = 'auto';
-      launcher.style.left = 'auto'; launcher.style.right = 'auto';
-
-      if (currentPosition === 'bottom') {
-        launcher.style.left = `${gap}px`; launcher.style.bottom = `${48 + gap}px`;
-      } else if (currentPosition === 'left') {
-        launcher.style.left = `${52 + gap}px`; launcher.style.bottom = `${gap}px`;
-      } else if (currentPosition === 'right') {
-        launcher.style.right = `${52 + gap}px`; launcher.style.bottom = `${gap}px`;
-      }
-    }
-    repositionLauncher();
 
     // --- NETEASE MUSIC API & FUNCTIONAL AUDIO ENGINE ---
     async function executeMusicSearch(keyword, limit = 25) {
@@ -1408,6 +1569,7 @@
           activeViewMode = 'discover';
           updateSidebarActiveState();
           renderMusicProPlaylist();
+          saveSystemState();
         } else {
           if (playlistElem) playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#71717a; font-size:13px;">No tracks found for "${keyword}"</div>`;
         }
@@ -1433,6 +1595,7 @@
         likedTracks.add(trackStrId);
       }
       renderMusicProPlaylist();
+      saveSystemState();
     }
 
     function switchMusicView(mode) {
@@ -1455,6 +1618,7 @@
         if (!userPlaylists.includes(trimmed)) {
           userPlaylists.push(trimmed);
           renderPlaylistsSidebar();
+          saveSystemState();
         }
       }
     }
@@ -1478,7 +1642,6 @@
 
     function togglePlaylistMenu(e, idx) {
       e.stopPropagation();
-      // Close any other open popup menus first
       document.querySelectorAll('.playlist-popup-menu').forEach(m => {
         if (m.id !== `popup-${idx}`) m.classList.remove('active');
       });
@@ -1495,10 +1658,10 @@
       if (!track.playlists) track.playlists = new Set();
       track.playlists.add(playlistName);
       
-      // Hide popup
       const popup = document.getElementById(`popup-${trackIdx}`);
       if (popup) popup.classList.remove('active');
       alert(`Added "${track.name || track.title}" to playlist "${playlistName}"`);
+      saveSystemState();
     }
 
     function renderMusicProPlaylist() {
@@ -1521,7 +1684,6 @@
       }
 
       listToRender.forEach((track, displayIdx) => {
-        // Find true index in global search results
         const realIdx = musicSearchResults.indexOf(track);
         const isPlaying = realIdx === currentTrackIdx;
         const trackId = String(track.id || realIdx);
@@ -1539,7 +1701,6 @@
           ? `<img src="${PNGS.playRow}" alt="playing">` 
           : (displayIdx + 1);
 
-        // Build popup playlist options HTML
         let playlistOptionsHtml = '';
         userPlaylists.forEach(pl => {
           playlistOptionsHtml += `<div class="playlist-popup-item" onclick="event.stopPropagation(); addTrackToPlaylist(${realIdx}, '${pl}')"><span>${pl}</span></div>`;
@@ -1551,7 +1712,7 @@
             ${coverImg}
             <div class="mp-track-names">
               <h5>${track.name || track.title || 'Unknown Title'}</h5>
-              <p>${track.artist || track.author || 'Drake'}</p>
+              <p>${track.artist || track.author || 'Artist'}</p>
             </div>
           </div>
           <div class="mp-track-album">${track.album || 'Single / NetEase'}</div>
@@ -1596,7 +1757,6 @@
         }
       }
 
-      // Load functional audio url from Meting API response (track.url)
       if (track.url) {
         masterAudio.src = track.url;
         masterAudio.play().then(() => {
@@ -1604,7 +1764,7 @@
           const mainBtnImg = document.getElementById('mpPlayBtnImg');
           if (mainBtnImg) mainBtnImg.src = PNGS.pauseBtn;
         }).catch(err => {
-          console.error("Audio playback error (browser policy or direct stream block):", err);
+          console.error("Audio playback error:", err);
         });
       }
 
@@ -1659,14 +1819,12 @@
       masterAudio.currentTime = pct * masterAudio.duration;
     }
 
-    // Update progress bar as audio plays
     masterAudio.addEventListener('timeupdate', () => {
       if (!masterAudio.duration) return;
       const pct = (masterAudio.currentTime / masterAudio.duration) * 100;
       const fill = document.getElementById('mpProgressFill');
       if (fill) fill.style.width = `${pct}%`;
 
-      // Format time strings
       const curMin = Math.floor(masterAudio.currentTime / 60);
       const curSec = Math.floor(masterAudio.currentTime % 60).toString().padStart(2, '0');
       const durMin = Math.floor(masterAudio.duration / 60) || 0;
@@ -1680,11 +1838,6 @@
 
     masterAudio.addEventListener('ended', () => {
       playNextTrack();
-    });
-
-    // Close any popup menus when clicking outside inside the app window
-    window.addEventListener('click', () => {
-      document.querySelectorAll('.playlist-popup-menu').forEach(m => m.classList.remove('active'));
     });
 
     // Window Management System
@@ -1728,9 +1881,7 @@
 
                 <div>
                   <div class="mp-sidebar-title">Playlists</div>
-                  <div class="mp-playlists-box" id="userPlaylistsContainer">
-                    <!-- Dynamic playlist list links -->
-                  </div>
+                  <div class="mp-playlists-box" id="userPlaylistsContainer"></div>
                   <button class="mp-create-playlist-btn" onclick="createNewPlaylistPrompt()">+ New Playlist</button>
                 </div>
               </div>
@@ -1751,9 +1902,7 @@
                   <div style="text-align:right;">Actions</div>
                 </div>
 
-                <div class="mp-playlist" id="mpPlaylistContainer">
-                  <!-- Tracks loaded dynamically via NetEase API metadata -->
-                </div>
+                <div class="mp-playlist" id="mpPlaylistContainer"></div>
               </div>
             </div>
             
@@ -1871,12 +2020,16 @@
       };
 
       bringToFront(appWin);
-      makeDraggable(appWin);
+      makeDraggable(appWin, appWin.querySelector('.window-header'));
       makeResizable(appWin);
 
       if (targetUrl === 'native:music') {
         renderPlaylistsSidebar();
-        executeMusicSearch('Drake');
+        if (musicSearchResults.length === 0) {
+          executeMusicSearch('Drake');
+        } else {
+          renderMusicProPlaylist();
+        }
       }
 
       appWin.addEventListener('mousedown', () => bringToFront(appWin));
@@ -1994,6 +2147,24 @@
     function closeApp(appId) {
       const app = openApps[appId];
       if (app) {
+        if (appId === 'win-music-studio-pro' || app.targetUrl === 'native:music') {
+          masterAudio.pause();
+          masterAudio.currentTime = 0;
+          masterAudio.removeAttribute('src');
+          masterAudio.load();
+          isMusicPlaying = false;
+
+          const mainBtnImg = document.getElementById('mpPlayBtnImg');
+          if (mainBtnImg) {
+            mainBtnImg.src = PNGS.playBtn;
+          }
+        }
+
+        const iframe = app.element.querySelector('iframe');
+        if (iframe) {
+          iframe.src = 'about:blank';
+        }
+
         app.element.remove();
         delete openApps[appId];
         updateShelfAutoHideState();
@@ -2012,6 +2183,11 @@
     function setShelfPosition(pos) {
       shelf.className = `shelf pos-${pos}`;
       shelfTriggerZone.className = `shelf-trigger-zone pos-${pos}`;
+      launcher.className = `launcher pos-${pos}` + (launcher.classList.contains('active') ? ' active' : '');
+      launcher.style.top = '';
+      launcher.style.left = '';
+      launcher.style.bottom = '';
+      launcher.style.right = '';
       currentPosition = pos;
 
       if (isAutohideEnabled) {
@@ -2019,8 +2195,8 @@
         shelfTriggerZone.classList.add('active');
       }
 
-      repositionLauncher();
       renderDockItems();
+      saveSystemState();
     }
 
     function toggleAlwaysHideShelf() {
@@ -2037,6 +2213,7 @@
         label.textContent = 'Autohide Shelf';
       }
       updateShelfAutoHideState();
+      saveSystemState();
     }
 
     function updateShelfAutoHideState() {
@@ -2060,36 +2237,53 @@
     });
 
     function openWallpaperModal() {
-      document.getElementById('wallpaperModal').classList.add('active');
+      wallpaperModal.classList.add('active');
       contextMenu.classList.remove('active');
     }
 
     function closeWallpaperModal() {
-      document.getElementById('wallpaperModal').classList.remove('active');
+      wallpaperModal.classList.remove('active');
     }
 
-    function makeDraggable(win) {
-      const header = win.querySelector('.window-header');
+    /* Fixed Universal Draggable Helper */
+    function makeDraggable(element, handle) {
       let isDragging = false, startX, startY, initialLeft, initialTop;
 
-      header.addEventListener('mousedown', (e) => {
+      handle.addEventListener('mousedown', (e) => {
         if (e.target.closest('.win-btn')) return;
-        if (!win.classList.contains('windowed')) return;
 
         isDragging = true;
-        win.classList.add('dragging');
-        startX = e.clientX; startY = e.clientY;
-        initialLeft = win.offsetLeft; initialTop = win.offsetTop;
+        document.body.classList.add('is-interacting');
+        element.classList.add('dragging');
+        
+        if (element.classList.contains('launcher')) {
+          element.classList.add('dragged-active');
+        }
+
+        startX = e.clientX; 
+        startY = e.clientY;
+        
+        const rect = element.getBoundingClientRect();
+        initialLeft = rect.left; 
+        initialTop = rect.top;
+
+        element.style.left = `${initialLeft}px`;
+        element.style.top = `${initialTop}px`;
+        element.style.bottom = 'auto';
+        element.style.right = 'auto';
 
         const onMouseMove = (e) => {
           if (!isDragging) return;
-          win.style.left = `${initialLeft + e.clientX - startX}px`;
-          win.style.top = `${initialTop + e.clientY - startY}px`;
+          const deltaX = e.clientX - startX;
+          const deltaY = e.clientY - startY;
+          element.style.left = `${initialLeft + deltaX}px`;
+          element.style.top = `${initialTop + deltaY}px`;
         };
 
         const onMouseUp = () => {
           isDragging = false;
-          win.classList.remove('dragging');
+          document.body.classList.remove('is-interacting');
+          element.classList.remove('dragging');
           window.removeEventListener('mousemove', onMouseMove);
           window.removeEventListener('mouseup', onMouseUp);
         };
@@ -2099,32 +2293,59 @@
       });
     }
 
-    function makeResizable(win) {
-      const handles = win.querySelectorAll('.resize-handle');
+    /* Fixed Universal Resizable Helper */
+    function makeResizable(element) {
+      const handles = element.querySelectorAll('.resize-handle');
       handles.forEach(handle => {
         handle.addEventListener('mousedown', (e) => {
-          e.preventDefault(); e.stopPropagation();
-          win.classList.add('resizing');
-          let startX = e.clientX, startY = e.clientY;
-          let startWidth = parseInt(document.defaultView.getComputedStyle(win).width, 10);
-          let startHeight = parseInt(document.defaultView.getComputedStyle(win).height, 10);
-          let startLeft = win.offsetLeft, startTop = win.offsetTop;
+          e.preventDefault(); 
+          e.stopPropagation();
+          
+          document.body.classList.add('is-interacting');
+          element.classList.add('resizing');
+          
+          let startX = e.clientX;
+          let startY = e.clientY;
+          let rect = element.getBoundingClientRect();
+          let startWidth = rect.width;
+          let startHeight = rect.height;
+          let startLeft = rect.left;
+          let startTop = rect.top;
+
+          element.style.left = `${startLeft}px`;
+          element.style.top = `${startTop}px`;
+          element.style.bottom = 'auto';
+          element.style.right = 'auto';
 
           const doResize = (e) => {
-            if (handle.classList.contains('e') || handle.classList.contains('se') || handle.classList.contains('ne')) win.style.width = `${startWidth + e.clientX - startX}px`;
-            if (handle.classList.contains('s') || handle.classList.contains('se') || handle.classList.contains('sw')) win.style.height = `${startHeight + e.clientY - startY}px`;
+            let dx = e.clientX - startX;
+            let dy = e.clientY - startY;
+
+            if (handle.classList.contains('e') || handle.classList.contains('se') || handle.classList.contains('ne')) {
+              element.style.width = `${Math.max(280, startWidth + dx)}px`;
+            }
+            if (handle.classList.contains('s') || handle.classList.contains('se') || handle.classList.contains('sw')) {
+              element.style.height = `${Math.max(180, startHeight + dy)}px`;
+            }
             if (handle.classList.contains('w') || handle.classList.contains('nw') || handle.classList.contains('sw')) {
-              const newWidth = startWidth - (e.clientX - startX);
-              if (newWidth > 250) { win.style.width = `${newWidth}px`; win.style.left = `${startLeft + (e.clientX - startX)}px`; }
+              let newWidth = startWidth - dx;
+              if (newWidth > 280) { 
+                element.style.width = `${newWidth}px`; 
+                element.style.left = `${startLeft + dx}px`; 
+              }
             }
             if (handle.classList.contains('n') || handle.classList.contains('nw') || handle.classList.contains('ne')) {
-              const newHeight = startHeight - (e.clientY - startY);
-              if (newHeight > 150) { win.style.height = `${newHeight}px`; win.style.top = `${startTop + (e.clientY - startY)}px`; }
+              let newHeight = startHeight - dy;
+              if (newHeight > 180) { 
+                element.style.height = `${newHeight}px`; 
+                element.style.top = `${startTop + dy}px`; 
+              }
             }
           };
 
           const stopResize = () => {
-            win.classList.remove('resizing');
+            document.body.classList.remove('is-interacting');
+            element.classList.remove('resizing');
             window.removeEventListener('mousemove', doResize);
             window.removeEventListener('mouseup', stopResize);
           };
@@ -2134,6 +2355,9 @@
         });
       });
     }
+
+    makeDraggable(launcher, launcherDragHandle);
+    makeResizable(launcher);
 
     window.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -2149,13 +2373,29 @@
     });
 
     window.addEventListener('click', (e) => {
-      if (!contextMenu.contains(e.target)) contextMenu.classList.remove('active');
+      if (!contextMenu.contains(e.target)) {
+        contextMenu.classList.remove('active');
+      }
+
+      if (wallpaperModal.classList.contains('active') && !wallpaperModal.contains(e.target)) {
+        if (!e.target.closest('.context-item')) {
+          closeWallpaperModal();
+        }
+      }
+
+      document.querySelectorAll('.playlist-popup-menu').forEach(m => {
+        if (!m.contains(e.target) && !e.target.closest('.mp-action-btn')) {
+          m.classList.remove('active');
+        }
+      });
     });
 
     function toggleLauncher(e) {
       if (e) e.stopPropagation();
       launcher.classList.toggle('active');
-      if (launcher.classList.contains('active')) repositionLauncher();
+      if (launcher.classList.contains('active')) {
+        bringToFront(launcher);
+      }
     }
 
     desktop.addEventListener('click', () => launcher.classList.remove('active'));
@@ -2176,6 +2416,9 @@
         defaultView.classList.remove('hidden'); searchView.classList.remove('active');
       }
     });
+
+    loadSystemState();
+    fetchGitHubWallpapers();
   </script>
 </body>
 </html>

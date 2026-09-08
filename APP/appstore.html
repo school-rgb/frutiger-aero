@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Frutiger App Store</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: #0f0f12;
+      color: #ffffff;
+      padding: 24px;
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 6px;
+    }
+    p.subtitle {
+      font-size: 13px;
+      color: #8e8e93;
+      margin-bottom: 24px;
+    }
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .app-card {
+      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .app-card:hover {
+      transform: translateY(-3px);
+      background: #242426;
+    }
+    .app-card img {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      object-fit: cover;
+      margin-bottom: 12px;
+    }
+    .app-card h3 {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+    .app-card p {
+      font-size: 11px;
+      color: #8e8e93;
+      margin-bottom: 14px;
+    }
+    .install-btn {
+      background: #0a84ff;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+    }
+    .install-btn:hover {
+      background: #0071e3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Frutiger App Store</h1>
+  <p class="subtitle">Select an app to automatically add it to your launcher menu</p>
+
+  <div class="store-grid">
+    <div class="app-card">
+      <img src="https://img.icons8.com/color/96/discord-logo.png" alt="Discord">
+      <h3>Discord</h3>
+      <p>Chat & Community</p>
+      <button class="install-btn" onclick="installApp('Discord', 'https://img.icons8.com/color/96/discord-logo.png', 'https://discord.com/app')">Install App</button>
+    </div>
+
+    <div class="app-card">
+      <img src="https://img.icons8.com/color/96/github.png" alt="GitHub">
+      <h3>GitHub</h3>
+      <p>Developer Platform</p>
+      <button class="install-btn" onclick="installApp('GitHub', 'https://img.icons8.com/color/96/github.png', 'https://github.com')">Install App</button>
+    </div>
+
+    <div class="app-card">
+      <img src="https://img.icons8.com/color/96/youtube-play.png" alt="YouTube">
+      <h3>YouTube</h3>
+      <p>Video & Streaming</p>
+      <button class="install-btn" onclick="installApp('YouTube', 'https://img.icons8.com/color/96/youtube-play.png', 'https://youtube.com')">Install App</button>
+    </div>
+  </div>
+
+  <script>
+    /* Message sender function */
+    function installApp(appName, imageUrl, appUrl) {
+      window.parent.postMessage({
+        type: 'INSTALL_APP',
+        name: appName,
+        image: imageUrl,
+        url: appUrl
+      }, '*');
+      alert(appName + ' was added to your desktop!');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes</title>
+    <style>
+        :root {
+            --bg-sidebar: #f5f5f7;
+            --bg-editor: #ffffff;
+            --border-color: #d1d1d6;
+            --text-main: #000000;
+            --text-secondary: #8e8e93;
+            --placeholder-color: #aeaeb2;
+            --accent-color: #ff9500; /* Apple Orange */
+            --active-note: #ffcc00;
+            --hover-item: #e5e5ea;
+            --search-bg: #e3e3e8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-editor);
+            color: var(--text-main);
+        }
+
+        .app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 320px;
+            height: 100%;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .icon-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .search-box {
+            padding: 0 16px 14px 16px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border-radius: 10px;
+            border: none;
+            background-color: var(--search-bg);
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .note-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e5ea;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .note-item:hover {
+            background-color: var(--hover-item);
+        }
+
+        .note-item.active {
+            background-color: var(--active-note);
+            border-radius: 8px;
+            margin: 0 8px;
+            width: calc(100% - 16px);
+            border-bottom: none;
+        }
+
+        .note-item.active .note-title,
+        .note-item.active .note-preview,
+        .note-item.active .note-date,
+        .note-item.active .note-snippet {
+            color: #000000;
+        }
+
+        .note-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-main);
+        }
+
+        .note-preview {
+            display: flex;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .note-date {
+            white-space: nowrap;
+        }
+
+        .note-snippet {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Editor Styles */
+        .editor-pane {
+            flex: 1;
+            height: 100%;
+            background-color: var(--bg-editor);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-toolbar {
+            height: 50px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .note-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .editor-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            outline: none;
+            overflow-y: auto;
+        }
+
+        .title-input {
+            width: 100%;
+            border: none;
+            font-size: 24px;
+            font-weight: bold;
+            outline: none;
+            margin-bottom: 16px;
+            background: transparent;
+            color: var(--text-main);
+        }
+
+        .title-input::placeholder,
+        .body-textarea::placeholder {
+            color: var(--placeholder-color);
+        }
+
+        .body-textarea {
+            width: 100%;
+            flex: 1;
+            border: none;
+            font-size: 16px;
+            line-height: 1.5;
+            outline: none;
+            resize: none;
+            background: transparent;
+            color: var(--text-main);
+        }
+
+        /* Responsive design for Mobile / Smaller Screens */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                transition: transform 0.3s ease;
+            }
+
+            .editor-pane {
+                width: 100%;
+                position: absolute;
+                left: 100%;
+                top: 0;
+                transition: transform 0.3s ease;
+            }
+
+            .app-container.show-editor .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .app-container.show-editor .editor-pane {
+                transform: translateX(-100%);
+            }
+
+            .back-btn {
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>Notes</h1>
+                <div class="sidebar-actions">
+                    <button class="icon-btn" id="newNoteBtn" title="Compose Note">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search">
+                </div>
+            </div>
+            <ul class="notes-list" id="notesList"></ul>
+        </aside>
+
+        <!-- Editor Pane -->
+        <main class="editor-pane" id="editorPane">
+            <div id="activeEditor" style="display: flex; height: 100%; flex-direction: column;">
+                <div class="editor-toolbar">
+                    <div class="toolbar-left">
+                        <button class="back-btn" id="backBtn">‹ Notes</button>
+                        <div class="note-info" id="noteTimestamp"></div>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="icon-btn" id="deleteNoteBtn" title="Delete Note">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="editor-content">
+                    <input type="text" class="title-input" id="noteTitleInput" placeholder="Title">
+                    <textarea class="body-textarea" id="noteBodyInput" placeholder="Start typing..."></textarea>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const appContainer = document.getElementById('appContainer');
+        const notesList = document.getElementById('notesList');
+        const newNoteBtn = document.getElementById('newNoteBtn');
+        const deleteNoteBtn = document.getElementById('deleteNoteBtn');
+        const searchInput = document.getElementById('searchInput');
+        const backBtn = document.getElementById('backBtn');
+        
+        const noteTitleInput = document.getElementById('noteTitleInput');
+        const noteBodyInput = document.getElementById('noteBodyInput');
+        const noteTimestamp = document.getElementById('noteTimestamp');
+
+        let notes = JSON.parse(localStorage.getItem('iphone_notes_orange_white')) || [];
+        let currentNoteId = null;
+
+        function init() {
+            if (notes.length === 0) {
+                createNewNote();
+            } else {
+                renderNotesList();
+                if (window.innerWidth > 768) {
+                    selectNote(notes[0].id);
+                } else {
+                    appContainer.classList.remove('show-editor');
+                }
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('iphone_notes_orange_white', JSON.stringify(notes));
+        }
+
+        function renderNotesList(filterText = '') {
+            notesList.innerHTML = '';
+            
+            const filteredNotes = notes.filter(note => {
+                const query = filterText.toLowerCase();
+                return note.title.toLowerCase().includes(query) || note.body.toLowerCase().includes(query);
+            });
+
+            filteredNotes.sort((a, b) => b.updatedAt - a.updatedAt);
+
+            if (filteredNotes.length === 0) {
+                notesList.innerHTML = '<li style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">No notes found</li>';
+                return;
+            }
+
+            filteredNotes.forEach(note => {
+                const li = document.createElement('li');
+                li.className = `note-item ${note.id === currentNoteId ? 'active' : ''}`;
+                li.onclick = () => selectNote(note.id);
+
+                const formattedDate = formatDate(note.updatedAt);
+
+                li.innerHTML = `
+                    <div class="note-title">${escapeHTML(note.title) || 'New Note'}</div>
+                    <div class="note-preview">
+                        <span class="note-date">${formattedDate}</span>
+                        <span class="note-snippet">${escapeHTML(note.body) || 'No additional text'}</span>
+                    </div>
+                `;
+                notesList.appendChild(li);
+            });
+        }
+
+        function selectNote(id) {
+            currentNoteId = id;
+            const note = notes.find(n => n.id === id);
+
+            if (!note) return;
+
+            noteTitleInput.value = note.title;
+            noteBodyInput.value = note.body;
+            noteTimestamp.textContent = formatTimestamp(note.updatedAt);
+
+            appContainer.classList.add('show-editor');
+            renderNotesList(searchInput.value);
+        }
+
+        function createNewNote() {
+            const newNote = {
+                id: Date.now().toString(),
+                title: '',
+                body: '',
+                updatedAt: Date.now()
+            };
+
+            notes.unshift(newNote);
+            saveToStorage();
+            selectNote(newNote.id);
+            noteTitleInput.focus();
+        }
+
+        function handleNoteInput() {
+            if (!currentNoteId) return;
+
+            const note = notes.find(n => n.id === currentNoteId);
+            if (note) {
+                note.title = noteTitleInput.value;
+                note.body = noteBodyInput.value;
+                note.updatedAt = Date.now();
+
+                noteTimestamp.textContent = formatTimestamp(note.updatedAt);
+                saveToStorage();
+                renderNotesList(searchInput.value);
+            }
+        }
+
+        function deleteCurrentNote() {
+            if (!currentNoteId) return;
+
+            notes = notes.filter(n => n.id !== currentNoteId);
+            saveToStorage();
+
+            if (notes.length > 0) {
+                selectNote(notes[0].id);
+            } else {
+                createNewNote();
+            }
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
+                return date.toLocaleDateString([], { weekday: 'short' });
+            } else {
+                return date.toLocaleDateString([], { month: 'numeric', day: 'numeric', year: '2-digit' });
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return `${date.toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        newNoteBtn.addEventListener('click', createNewNote);
+        deleteNoteBtn.addEventListener('click', deleteCurrentNote);
+        noteTitleInput.addEventListener('input', handleNoteInput);
+        noteBodyInput.addEventListener('input', handleNoteInput);
+
+        searchInput.addEventListener('input', (e) => {
+            renderNotesList(e.target.value);
+        });
+
+        backBtn.addEventListener('click', () => {
+            appContainer.classList.remove('show-editor');
+        });
+
+        init();
+    </script>
+</body>
+</html>

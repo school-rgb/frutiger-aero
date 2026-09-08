@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>frutiger games</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Games Hub">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="https://twoyears666.github.io/game/ios.png">
+<style>
+/* --- Base Reset --- */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; overflow-x: hidden; }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+  background-color: #000000; 
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 1000' width='100%' height='100%' preserveAspectRatio='none'><path d='M 0,140 Q 140,140 140,0' fill='none' stroke='%23828282' stroke-width='1.5'/><path d='M 0,165 Q 165,165 165,0' fill='none' stroke='%23ffffff' stroke-width='1.5'/><path d='M 1000,860 Q 860,860 860,1000' fill='none' stroke='%23828282' stroke-width='1.5'/><path d='M 1000,835 Q 835,835 835,1000' fill='none' stroke='%23ffffff' stroke-width='1.5'/></svg>");
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #ffffff; 
+  min-height: 100vh; 
+  min-height: -webkit-fill-available; 
+  display: flex; 
+  flex-direction: column; 
+}
+
+/* --- Navbar --- */
+.navbar { 
+  height: 60px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 0 20px; 
+  background-color: rgba(0, 0, 0, 0.9); 
+  backdrop-filter: blur(10px); 
+  -webkit-backdrop-filter: blur(10px); 
+  border-bottom: 1px solid #222; 
+  position: sticky; 
+  top: 0; 
+  z-index: 100; 
+  flex-shrink: 0; 
+  gap: 15px;
+}
+.nav-left { 
+  font-size: 1.2rem; 
+  font-weight: 800; 
+  letter-spacing: 0.5px; 
+  cursor: pointer; 
+  white-space: nowrap;
+}
+
+/* --- Search Bar in Navbar --- */
+.nav-search {
+  flex: 0 1 300px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 14px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #555;
+  background-color: #222;
+}
+
+/* --- Main Content Area (Grid Layout) --- */
+.main-content { 
+  flex: 1; 
+  padding: 30px; 
+  padding-bottom: max(30px, env(safe-area-inset-bottom)); 
+  width: 100%;
+}
+
+/* --- Multi-row/column Grid Layout --- */
+.grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+  gap: 25px; 
+  justify-content: center; 
+  align-items: center; 
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --- Card Styles --- */
+.card { 
+  width: 100%; 
+  aspect-ratio: 1 / 1; 
+  border-radius: 24px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  text-decoration: none; 
+  color: white; 
+  transition: transform 0.2s, border-color 0.2s; 
+  position: relative; 
+  overflow: hidden; 
+  background-color: #111; 
+  border: 1px solid #222; 
+  cursor: pointer;
+}
+.card:active { transform: scale(0.96); }
+
+/* --- Image Background --- */
+.card-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; z-index: 0; }
+
+/* --- Overlay --- */
+.card-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.85)); z-index: 1; }
+
+/* --- Text Content --- */
+.card-content { position: relative; z-index: 2; text-align: center; width: 90%; pointer-events: none; }
+.card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+.card-desc { font-size: 0.85rem; color: #ccc; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+/* --- Add Button --- */
+.add-card { background: #111; border: 2px dashed #333; }
+.add-icon { font-size: 50px; color: #555; margin-bottom: 10px; font-weight: 300; }
+.add-text { font-size: 1.1rem; color: #777; }
+
+/* --- SECOND MENU: Game Details View (Hidden by default) --- */
+#detailView {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #000000;
+  background-size: cover;
+  background-position: center;
+  z-index: 500;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 40px 60px;
+}
+
+.detail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.85) 60%, #000000 100%);
+  z-index: 1;
+}
+
+.detail-close-btn {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  width: 44px;
+  height: 44px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  z-index: 3;
+  transition: background-color 0.2s, transform 0.2s;
+}
+.detail-close-btn:hover { background-color: #333; transform: scale(1.05); }
+
+.detail-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin-bottom: 50px;
+}
+
+.detail-title {
+  font-size: 50px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.detail-metadata {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.detail-rating {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  backdrop-filter: blur(5px);
+}
+.detail-rating span { color: #fbbf24; }
+
+.detail-genre {
+  background-color: #222;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #bbb;
+  margin-bottom: 28px;
+  max-width: 700px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.play-btn {
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  transition: background-color 0.2s;
+}
+.play-btn:hover { background-color: #ddd; }
+
+.download-btn {
+  background: #222;
+  color: #ffffff;
+  border: 1px solid #444;
+  padding: 14px 28px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.download-btn:hover { background-color: #333; border-color: #666; }
+
+/* --- THIRD MENU: In-app Game Player View (Full Screen Overlay) --- */
+#gamePlayerView {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: #000;
+  z-index: 1000;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.player-header {
+  height: 50px;
+  background: #111;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid #222;
+  flex-shrink: 0;
+}
+
+.player-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #aaa;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.player-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn {
+  background: #222;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+.action-btn:hover { background: #333; }
+
+.player-iframe-container {
+  flex: 1;
+  width: 100%;
+  height: calc(100% - 50px);
+  background: #000;
+  display: flex;
+  position: relative;
+}
+
+.player-iframe-container iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  display: block;
+  flex: 1;
+}
+
+/* --- Add Game Modal Styles --- */
+.add-modal {
+  display: none;
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.85);
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(5px);
+}
+
+.add-modal-content {
+  background-color: #111;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid #222;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+.add-modal-title {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #fff;
+  text-align: center;
+}
+
+.form-group { margin-bottom: 15px; }
+
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: #555; }
+
+.btn-submit {
+  width: 100%;
+  padding: 15px;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+.btn-submit:hover { background-color: #ddd; }
+
+@media (max-width: 600px) { 
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 10px; }
+  .nav-search { flex: 0 1 180px; }
+  #detailView { padding: 30px 20px; }
+  .detail-title { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-left" onclick="returnHome()">My Games Hub</div>
+  <div class="nav-search">
+    <input type="text" id="searchInput" class="search-input" placeholder="Search..." oninput="filterGames()">
+  </div>
+</nav>
+
+<main class="main-content" id="homeView">
+  <div class="grid" id="gameGrid">
+
+    <div class="card add-card" onclick="openAddModal()">
+      <div class="add-icon">+</div>
+      <div class="add-text">Add Game</div>
+    </div>
+
+  </div>
+</main>
+
+<div id="detailView">
+  <div class="detail-overlay"></div>
+  <button class="detail-close-btn" onclick="closeDetailView()" aria-label="Close">&#x2715;</button>
+
+  <div class="detail-content">
+    <h1 class="detail-title" id="detailTitle">Game Name</h1>
+    
+    <div class="detail-metadata">
+      <div class="detail-rating"><span>★</span> <span id="detailRatingVal">9.0</span> / 10</div>
+      <div class="detail-genre" id="detailGenre">HTML5</div>
+    </div>
+
+    <p class="detail-description" id="detailDesc">
+      Experience smooth gameplay directly inside your hub. Click play to launch instantly.
+    </p>
+
+    <div class="detail-actions">
+      <button class="play-btn" id="playNowBtn" onclick="launchGameFromDetails()">
+        <span>▶</span> Play Game
+      </button>
+      <button class="download-btn" onclick="downloadCurrentGame()">
+        <span>⬇</span> Download Game
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="gamePlayerView">
+  <div class="player-header">
+    <div class="player-title" id="playerTitle">Playing</div>
+    <div class="player-actions">
+      <button class="action-btn" onclick="openInNewTab()">Open External</button>
+      <button class="action-btn" onclick="returnHome()">Home</button>
+    </div>
+  </div>
+  <div class="player-iframe-container">
+    <iframe id="gameIframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+  </div>
+</div>
+
+<div id="addModal" class="add-modal">
+  <div class="add-modal-content">
+    <div class="add-modal-title">Add New Game</div>
+    <div class="form-group">
+      <input type="text" id="inputName" class="form-input" placeholder="Game Name">
+    </div>
+    <div class="form-group">
+      <input type="text" id="inputImg" class="form-input" placeholder="Image URL (https://...)">
+    </div>
+    <div class="form-group">
+      <input type="text" id="inputUrl" class="form-input" placeholder="Web URL (https://...)">
+    </div>
+    <div class="form-group">
+      <input type="text" id="inputDesc" class="form-input" placeholder="Description">
+    </div>
+    <button class="btn-submit" onclick="confirmAddGame()">Confirm Add</button>
+  </div>
+</div>
+
+<script>
+// --- Configuration Constants and Data State ---
+const BASE_CDN_NETWORK = "https://raw.githubusercontent.com/school-rgb/Hydra-assets/main/";
+const GAMES_FOLDER_NETWORK = "gmes/";
+const FALLBACK_IMG = "https://img.icons8.com/?size=100&id=gp2EGUQ15At9&format=png&color=999999";
+
+// ENTER THE FULL EXACT GAME NAME HERE TO HIDE AND BLOCK IT
+const HIDDEN_GAMES = [
+  "Geometry Dash Lite (REMAKE)",
+    "Plants vs. Zombies 2 Gardenless",
+    "Geometry Dash Lite",
+  "Subway Surfers New Orleans",
+  "Subway Surfers San Francisco",
+  "Cross Yr Oad",
+];
+
+let DATA = {
+  games: []
+};
+
+let activeGameName = '';
+let activeGameUrl = '';
+let activeGameImg = '';
+let activeGameDesc = '';
+let currentGameUrl = '';
+let currentGameCode = '';
+
+function safeArray(arr) {
+  return Array.isArray(arr) ? arr : [];
+}
+
+function dedupeGames(games) {
+  const seen = new Set();
+  return games.filter(g => {
+    if (!g || !g.url) return false;
+    if (seen.has(g.url)) return false;
+    seen.add(g.url);
+    return true;
+  });
+}
+
+// LOAD NETWORK SOURCE WITH FORCED BROWSER CACHE BUSTING
+async function loadNetworkGames() {
+  try {
+    const cacheBuster = '?t=' + new Date().getTime();
+    const r = await fetch(BASE_CDN_NETWORK + "gmes.json" + cacheBuster, { cache: 'no-store' });
+    if (!r.ok) {
+      loadFromCacheFallback();
+      return;
+    }
+    const d = await r.json();
+    let rawArray = safeArray(d);
+        
+    const freshData = dedupeGames(rawArray.map(g => {
+      if (!g || typeof g !== "object") return null;
+
+      let file = g.file_name || g.link || g.url || g.file || g.path || g.html;
+      let title = g.title || g.name || g.game || "Untitled Game";
+
+      if (!file) return null;
+      
+      file = String(file).replace(/^\/+/, "");
+      let rawGameUrl = file.startsWith("http") ? file : (BASE_CDN_NETWORK + (file.startsWith(GAMES_FOLDER_NETWORK) ? file : GAMES_FOLDER_NETWORK + file));
+
+      let thumb = g.thumb || g.image || g.img || g.thumbnail || FALLBACK_IMG;
+      if (thumb !== FALLBACK_IMG && !thumb.startsWith("http")) {
+        thumb = BASE_CDN_NETWORK + thumb.replace(/^\/+/, "");
+      }
+      
+      return { 
+        name: title,
+        description: g.description || g.desc || "",
+        img: thumb,
+        url: rawGameUrl,
+        source: "network"
+      };
+    }).filter(Boolean));
+
+    // Filter using exact full names as specified
+    const filteredData = freshData.filter(game => {
+      const gameTitle = game.name.trim().toLowerCase();
+      return !HIDDEN_GAMES.some(hiddenName => gameTitle === hiddenName.trim().toLowerCase());
+    });
+
+    const cachedData = localStorage.getItem('my_games_cache');
+    const freshString = JSON.stringify(filteredData);
+
+    if (cachedData !== freshString) {
+      localStorage.setItem('my_games_cache', freshString);
+    }
+
+    DATA.games = filteredData;
+    renderGames();
+
+  } catch (e) {
+    console.error("Error loading games from network, falling back to cache:", e);
+    loadFromCacheFallback();
+  }
+}
+
+function loadFromCacheFallback() {
+  const cachedData = localStorage.getItem('my_games_cache');
+  if (cachedData) {
+    try {
+      const cachedParsed = JSON.parse(cachedData);
+      DATA.games = cachedParsed.filter(game => {
+        const gameTitle = game.name.trim().toLowerCase();
+        return !HIDDEN_GAMES.some(hiddenName => gameTitle === hiddenName.trim().toLowerCase());
+      });
+    } catch(err) {
+      DATA.games = [];
+    }
+  } else {
+    DATA.games = [];
+  }
+  renderGames();
+}
+
+// Render games into the grid
+function renderGames() {
+  const grid = document.getElementById('gameGrid');
+  const dynamicCards = grid.querySelectorAll('.remote-card');
+  dynamicCards.forEach(card => card.remove());
+
+  const addCard = grid.querySelector('.add-card');
+
+  DATA.games.forEach(game => {
+    const newCard = document.createElement('div');
+    newCard.className = 'card remote-card';
+    newCard.setAttribute('data-name', game.name.toLowerCase());
+    
+    newCard.onclick = () => openDetailView(game.name, game.url, game.img, game.description);
+    
+    let bgStyle = game.img ? `background-image: url('${game.img}');` : 'background: linear-gradient(135deg, #222, #000);';
+    
+    newCard.innerHTML = ` 
+      <div class="card-bg" style="${bgStyle}"></div> 
+      <div class="card-overlay"></div> 
+      <div class="card-content"> 
+        <div class="card-title">${game.name}</div> 
+        <div class="card-desc">${game.description || 'Click to view'}</div> 
+      </div>`;
+      
+    grid.insertBefore(newCard, addCard);
+  });
+}
+
+// Filter games based on search input
+function filterGames() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const remoteCards = document.querySelectorAll('.remote-card');
+
+  remoteCards.forEach(card => {
+    const name = card.getAttribute('data-name') || '';
+    if (name.includes(query)) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+// Open Second Menu (Game Details View)
+async function openDetailView(name, url, img, desc) {
+  activeGameName = name;
+  activeGameUrl = url;
+  activeGameImg = img || FALLBACK_IMG;
+  activeGameDesc = desc || 'Experience smooth gameplay directly inside your hub.';
+
+  document.getElementById('detailTitle').innerText = activeGameName;
+  document.getElementById('detailDesc').innerText = activeGameDesc;
+  document.getElementById('detailView').style.backgroundImage = `url('${activeGameImg}')`;
+  
+  document.getElementById('detailView').style.display = 'flex';
+
+  currentGameCode = '';
+  try {
+    const response = await fetch(activeGameUrl);
+    if (response.ok) {
+      currentGameCode = await response.text();
+    }
+  } catch (err) {
+    // Cross-origin or network error, will fall back to URL opening
+  }
+}
+
+// Close Second Menu and return to Home
+function closeDetailView() {
+  document.getElementById('detailView').style.display = 'none';
+}
+
+// Triggered from Second Menu's "Play Game" button
+function launchGameFromDetails() {
+  closeDetailView();
+  currentGameUrl = activeGameUrl;
+
+  const playerView = document.getElementById('gamePlayerView');
+  playerView.style.display = 'flex';
+  
+  document.getElementById('playerTitle').innerText = activeGameName;
+  const iframe = document.getElementById('gameIframe');
+
+  if (currentGameCode) {
+    const blob = new Blob([currentGameCode], { type: 'text/html' });
+    iframe.src = URL.createObjectURL(blob);
+  } else {
+    iframe.src = activeGameUrl;
+  }
+}
+
+// Download the standalone HTML file of the current game so it can run itself
+async function downloadCurrentGame() {
+  if (!activeGameUrl) return;
+
+  try {
+    let codeToDownload = currentGameCode;
+    if (!codeToDownload) {
+      const response = await fetch(activeGameUrl);
+      if (response.ok) {
+        codeToDownload = await response.text();
+      } else {
+        window.open(activeGameUrl, '_blank');
+        return;
+      }
+    }
+
+    const blob = new Blob([codeToDownload], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    const safeFileName = activeGameName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    a.download = safeFileName + '.html';
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    window.open(activeGameUrl, '_blank');
+  }
+}
+
+// Open the game runner in a new browser tab/window
+function openInNewTab() {
+  if (!currentGameUrl) return;
+
+  if (currentGameCode) {
+    const blob = new Blob([currentGameCode], { type: 'text/html' });
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, '_blank');
+  } else {
+    window.open(currentGameUrl, '_blank');
+  }
+}
+
+// Reset everything and go back to Home
+function returnHome() {
+  document.getElementById('gamePlayerView').style.display = 'none';
+  document.getElementById('detailView').style.display = 'none';
+  document.getElementById('gameIframe').src = ''; 
+  currentGameUrl = '';
+  currentGameCode = '';
+}
+
+// Automatically fetch and render games on every page open
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadNetworkGames();
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const addModal = document.getElementById('addModal');
+  if (event.target == addModal) addModal.style.display = "none";
+}
+
+// Open add game modal
+function openAddModal() {
+  document.getElementById('addModal').style.display = 'flex';
+  document.getElementById('inputName').focus();
+}
+
+// Confirm adding a custom game
+function confirmAddGame() {
+  const name = document.getElementById('inputName').value;
+  const imgUrl = document.getElementById('inputImg').value;
+  const url = document.getElementById('inputUrl').value;
+  const desc = document.getElementById('inputDesc').value;
+
+  if (!name || !url) {
+    alert("Please fill in the game name and web link");
+    return;
+  }
+
+  const grid = document.getElementById('gameGrid');
+  const newCard = document.createElement('div');
+  newCard.className = 'card remote-card';
+  newCard.setAttribute('data-name', name.toLowerCase());
+  newCard.onclick = () => openDetailView(name, url, imgUrl, desc);
+  
+  let bgStyle = imgUrl ? `background-image: url('${imgUrl}');` : 'background: linear-gradient(135deg, #222, #000);';
+  
+  newCard.innerHTML = ` 
+    <div class="card-bg" style="${bgStyle}"></div> 
+    <div class="card-overlay"></div> 
+    <div class="card-content"> 
+      <div class="card-title">${name}</div> 
+      <div class="card-desc">${desc || 'Click to view'}</div> 
+    </div>`;
+    
+  grid.insertBefore(newCard, grid.lastElementChild);
+  
+  document.getElementById('addModal').style.display = 'none';
+  document.getElementById('inputName').value = '';
+  document.getElementById('inputImg').value = '';
+  document.getElementById('inputUrl').value = '';
+  document.getElementById('inputDesc').value = '';
+
+  filterGames();
+}
+</script>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChromeOS</title>
+  <title>New Tab</title>
   <style>
     * {
       box-sizing: border-box;
@@ -58,9 +58,10 @@
     /* --- WINDOW SYSTEM STYLES --- */
     .app-window {
       position: absolute;
-      inset: 0;
-      width: 100vw !important;
-      height: 100vh !important;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: #09090b;
       border-radius: 0;
       box-shadow: none;
@@ -69,15 +70,12 @@
       z-index: 800;
       overflow: hidden;
       border: none;
-      transition: top 0.2s cubic-bezier(0.2, 0, 0, 1), left 0.2s cubic-bezier(0.2, 0, 0, 1), width 0.2s cubic-bezier(0.2, 0, 0, 1), height 0.2s cubic-bezier(0.2, 0, 0, 1);
+      transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), height 0.2s cubic-bezier(0.2, 0, 0, 1);
     }
 
     .app-window.windowed {
-      position: absolute;
-      width: 950px !important;
-      height: 600px !important;
-      top: 6% !important;
-      left: 10% !important;
+      width: 950px;
+      height: 600px;
       border-radius: 16px;
       box-shadow: 0 20px 50px rgba(0,0,0,0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -102,6 +100,7 @@
       padding: 0 14px;
       cursor: move;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
     }
 
     .window-title {
@@ -169,7 +168,7 @@
       border: none;
     }
 
-    /* Prevent iframe interference while dragging or resizing */
+    /* Prevent iframe interaction blocks while dragging or resizing */
     body.is-interacting iframe {
       pointer-events: none !important;
     }
@@ -177,14 +176,14 @@
     /* Resizable Handles */
     .resize-handle { position: absolute; z-index: 999; display: none; }
     .app-window.windowed .resize-handle, .launcher .resize-handle { display: block; }
-    .resize-handle.n  { top: -3px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
-    .resize-handle.s  { bottom: -3px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
-    .resize-handle.w  { top: 0; bottom: 0; left: -3px; width: 8px; cursor: ew-resize; }
-    .resize-handle.e  { top: 0; bottom: 0; right: -3px; width: 8px; cursor: ew-resize; }
-    .resize-handle.nw { top: -3px; left: -3px; width: 12px; height: 12px; cursor: nwse-resize; }
-    .resize-handle.ne { top: -3px; right: -3px; width: 12px; height: 12px; cursor: nesw-resize; }
-    .resize-handle.sw { bottom: -3px; left: -3px; width: 12px; height: 12px; cursor: nesw-resize; }
-    .resize-handle.se { bottom: -3px; right: -3px; width: 12px; height: 12px; cursor: nwse-resize; }
+    .resize-handle.n  { top: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
+    .resize-handle.s  { bottom: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
+    .resize-handle.w  { top: 0; bottom: 0; left: -4px; width: 8px; cursor: ew-resize; }
+    .resize-handle.e  { top: 0; bottom: 0; right: -4px; width: 8px; cursor: ew-resize; }
+    .resize-handle.nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nwse-resize; }
+    .resize-handle.ne { top: -4px; right: -4px; width: 12px; height: 12px; cursor: nesw-resize; }
+    .resize-handle.sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: nesw-resize; }
+    .resize-handle.se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: nwse-resize; }
 
     /* Right Click Context Menu */
     .context-menu {
@@ -263,12 +262,9 @@
       overflow: hidden;
     }
 
-    /* Target positions relative to shelf layout */
     .launcher.pos-bottom {
       bottom: 60px;
       left: 12px;
-      top: auto;
-      right: auto;
       transform: translateY(15px) scale(0.97);
     }
     .launcher.pos-bottom.active {
@@ -280,8 +276,6 @@
     .launcher.pos-left {
       top: 12px;
       left: 64px;
-      bottom: auto;
-      right: auto;
       transform: translateX(-15px) scale(0.97);
     }
     .launcher.pos-left.active {
@@ -293,8 +287,6 @@
     .launcher.pos-right {
       top: 12px;
       right: 64px;
-      bottom: auto;
-      left: auto;
       transform: translateX(15px) scale(0.97);
     }
     .launcher.pos-right.active {
@@ -1860,6 +1852,11 @@
       appWin.className = 'app-window windowed';
       appWin.id = appId;
 
+      // Position new window centered with staggered positioning
+      const windowOffset = (Object.keys(openApps).length % 5) * 20;
+      appWin.style.left = `${Math.max(20, (window.innerWidth - 950) / 2 + windowOffset)}px`;
+      appWin.style.top = `${Math.max(20, (window.innerHeight - 600) / 2 + windowOffset)}px`;
+
       let bodyContent = '';
 
       if (targetUrl === 'native:music') {
@@ -2176,6 +2173,17 @@
       const app = openApps[appId];
       if (app) {
         app.element.classList.toggle('windowed');
+        if (!app.element.classList.contains('windowed')) {
+          app.element.style.top = '0px';
+          app.element.style.left = '0px';
+          app.element.style.width = '100vw';
+          app.element.style.height = '100vh';
+        } else {
+          app.element.style.width = '950px';
+          app.element.style.height = '600px';
+          app.element.style.left = `${Math.max(20, (window.innerWidth - 950) / 2)}px`;
+          app.element.style.top = `${Math.max(20, (window.innerHeight - 600) / 2)}px`;
+        }
         updateShelfAutoHideState();
       }
     }

@@ -115,6 +115,7 @@
     .window-title img {
       width: 18px;
       height: 18px;
+      border-radius: 4px;
     }
 
     .window-controls {
@@ -371,17 +372,26 @@
 
     .app-icon:hover { transform: translateY(-3px) scale(1.05); }
 
+    /* Uniform sizing and smooth rounded corners for all app icons */
     .icon-img {
-      width: 38px;
-      height: 38px;
+      width: 48px;
+      height: 48px;
       margin-bottom: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    .icon-img img { width: 100%; height: 100%; object-fit: contain; }
+    .icon-img img { 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover; 
+      border-radius: 12px; 
+    }
 
     .search-view { display: none; flex-direction: column; gap: 16px; }
     .search-view.active { display: flex; }
@@ -400,7 +410,7 @@
     }
 
     .search-result-item:hover { transform: translateX(3px); background: rgba(255, 255, 255, 0.12); }
-    .search-result-item img { width: 20px; height: 20px; }
+    .search-result-item img { width: 24px; height: 24px; border-radius: 6px; object-fit: cover; }
 
     /* Shelf / Dock */
     .shelf {
@@ -465,19 +475,16 @@
       position: relative; width: 36px; height: 36px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; border-radius: 10px; transition: transform 0.15s, background 0.15s;
+      overflow: hidden;
     }
 
     .shelf-app-icon:hover { transform: scale(1.08); background: rgba(255, 255, 255, 0.15); }
-    .shelf-app-icon img { width: 28px; height: 28px; object-fit: contain; }
+    .shelf-app-icon img { width: 28px; height: 28px; object-fit: cover; border-radius: 8px; }
 
+    /* Removed active line indicator under dock icons */
     .shelf-app-icon.active::after {
-      content: ''; position: absolute; background: #ffffff;
-      box-shadow: 0 0 6px rgba(255,255,255,0.8); border-radius: 2px; transition: all 0.2s ease;
+      display: none !important;
     }
-
-    .shelf.pos-bottom .shelf-app-icon.active::after { bottom: 1px; left: 25%; width: 50%; height: 3px; }
-    .shelf.pos-left .shelf-app-icon.active::after { left: 1px; top: 25%; height: 50%; width: 3px; }
-    .shelf.pos-right .shelf-app-icon.active::after { right: 1px; top: 25%; height: 50%; width: 3px; }
 
     .shelf-right { display: flex; align-items: center; gap: 6px; }
 
@@ -1038,7 +1045,7 @@
       cursor: pointer; border: 2px solid #2a2a2a; transition: transform 0.15s, border-color 0.15s;
     }
     .alttab-card.selected { border-color: #ffffff; transform: scale(1.08); background: #222222; }
-    .alttab-card img { width: 48px; height: 48px; }
+    .alttab-card img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
     .alttab-card span { font-size: 13px; font-weight: 600; color: #ffffff; text-align: center; }
   </style>
 </head>
@@ -1066,6 +1073,16 @@
       </div>
     </div>
     <div class="wallpaper-grid" id="wallpaperGridContainer"></div>
+  </div>
+
+  <!-- Context Menu for Installed Apps -->
+  <div class="context-menu" id="appContextMenu">
+    <div class="context-item" id="deleteAppBtn" style="color: #ff5555;">
+      <div class="context-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff5555" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      </div>
+      <span class="context-label">Delete this app</span>
+    </div>
   </div>
 
   <!-- Right Click Context Menu -->
@@ -1138,13 +1155,12 @@
           </div>
           <div class="app-icon" onclick="openApp('eye AI', 'https://img.icons8.com/color/96/chatgpt.png', 'https://chatgpt.com')">
             <div class="icon-img"><img src="https://img.icons8.com/color/96/chatgpt.png" alt="AI"></div>
-            <span></span>
+            <span>eye AI</span>
           </div>
           <div class="app-icon" onclick="openApp('Anime Cloud', 'https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF', 'https://school-rgb.github.io/anime-movies-in-html/')">
             <div class="icon-img"><img src="https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF" alt="Anime"></div>
             <span>animecloud</span>
           </div>
-          <!-- Additional 10 Apps with URLs -->
           <div class="app-icon" onclick="openApp('YouTube', 'https://img.icons8.com/color/96/youtube-play.png', 'https://www.youtube.com')">
             <div class="icon-img"><img src="https://img.icons8.com/color/96/youtube-play.png" alt="YouTube"></div>
             <span>YouTube</span>
@@ -1154,15 +1170,15 @@
             <span>GitHub</span>
           </div>
           <div class="app-icon" onclick="openApp('geometry dash', 'https://s3-new.macosicons.com/macosicons/parse/low_res_Geometry_Dash__Golden_Gate_Dark__CyaWUj7F8K-354ec142f4.png', 'APP/Geometry Dash (1).html')">
-            <div class="icon-img"><img src="https://s3-new.macosicons.com/macosicons/parse/low_res_Geometry_Dash__Golden_Gate_Dark__CyaWUj7F8K-354ec142f4.png" alt="Reddit"></div>
+            <div class="icon-img"><img src="https://s3-new.macosicons.com/macosicons/parse/low_res_Geometry_Dash__Golden_Gate_Dark__CyaWUj7F8K-354ec142f4.png" alt="Geometry Dash"></div>
             <span>geometry dash</span>
           </div>
           <div class="app-icon" onclick="openApp('Plants vs. Zombies 2 Gardenless', 'https://s3-new.macosicons.com/macosicons/parse/Plants_VS._Zombies_HxtDQygBeH_lowResPng-9c49ff8e12.png', 'APP/Plants vs. Zombies 2 Gardenless.html')">
-            <div class="icon-img"><img src="https://s3-new.macosicons.com/macosicons/parse/Plants_VS._Zombies_HxtDQygBeH_lowResPng-9c49ff8e12.png" alt="Twitter"></div>
+            <div class="icon-img"><img src="https://s3-new.macosicons.com/macosicons/parse/Plants_VS._Zombies_HxtDQygBeH_lowResPng-9c49ff8e12.png" alt="PvZ 2"></div>
             <span>Plants vs. Zombies 2 Gardenless</span>
           </div>
           <div class="app-icon" onclick="openApp('Subway Surfers', 'https://macmagazine.com.br/wp-content/uploads/2012/09/17-icone-subway-surfers.png', 'APP/Subway Surfers.html')">
-            <div class="icon-img"><img src="https://macmagazine.com.br/wp-content/uploads/2012/09/17-icone-subway-surfers.png" alt="APP/Subway Surfers.html"></div>
+            <div class="icon-img"><img src="https://macmagazine.com.br/wp-content/uploads/2012/09/17-icone-subway-surfers.png" alt="Subway Surfers"></div>
             <span>Subway Surfers</span>
           </div>
           <div class="app-icon" onclick="openApp('CodePen', 'https://img.icons8.com/color/96/codepen.png', '')">
@@ -1218,6 +1234,7 @@
   <script>
     const desktop = document.getElementById('desktop');
     const contextMenu = document.getElementById('contextMenu');
+    const appContextMenu = document.getElementById('appContextMenu');
     const shelf = document.getElementById('shelf');
     const shelfCenter = document.getElementById('shelfCenter');
     const shelfTriggerZone = document.getElementById('shelfTriggerZone');
@@ -1338,13 +1355,54 @@
       }
     });
 
+    function showAppContextMenu(e, name, url, element) {
+      e.preventDefault();
+      e.stopPropagation();
+      contextMenu.classList.remove('active');
+      
+      const menuWidth = 220;
+      const menuHeight = 50;
+      let posX = e.clientX, posY = e.clientY;
+
+      if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
+      if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
+
+      appContextMenu.style.left = `${posX}px`;
+      appContextMenu.style.top = `${posY}px`;
+      appContextMenu.classList.add('active');
+
+      const deleteBtn = document.getElementById('deleteAppBtn');
+      deleteBtn.onclick = () => {
+        appContextMenu.classList.remove('active');
+        deleteInstalledApp(name, url, element);
+      };
+    }
+
+    function deleteInstalledApp(name, url, element) {
+      installedApps = installedApps.filter(app => !(app.name === name && app.url === url));
+      saveSystemState();
+      
+      if (element) {
+        element.remove();
+      }
+
+      // Notify open App Store or other frames of uninstallation
+      const iframes = document.querySelectorAll('iframe');
+      iframes.forEach(iframe => {
+        try {
+          iframe.contentWindow.postMessage({ type: 'UNINSTALL_APP', name, url }, '*');
+        } catch (err) {}
+      });
+    }
+
     function addInstalledAppToGrid(name, image, url, shouldSave = true) {
       const grid = document.getElementById('mainAppGrid');
       if (!grid) return;
 
       const appCard = document.createElement('div');
-      appCard.className = 'app-icon';
+      appCard.className = 'app-icon installed-app';
       appCard.onclick = () => openApp(name, image, url);
+      appCard.oncontextmenu = (e) => showAppContextMenu(e, name, url, appCard);
       appCard.innerHTML = `
         <div class="icon-img"><img src="${image}" alt="${name}"></div>
         <span>${name}</span>
@@ -2329,6 +2387,7 @@
 
     window.addEventListener('contextmenu', (e) => {
       e.preventDefault();
+      if (appContextMenu) appContextMenu.classList.remove('active');
       const menuWidth = contextMenu.offsetWidth || 220;
       const menuHeight = contextMenu.offsetHeight || 180;
       let posX = e.clientX, posY = e.clientY;
@@ -2343,6 +2402,10 @@
     window.addEventListener('click', (e) => {
       if (!contextMenu.contains(e.target)) {
         contextMenu.classList.remove('active');
+      }
+
+      if (appContextMenu && !appContextMenu.contains(e.target)) {
+        appContextMenu.classList.remove('active');
       }
 
       if (wallpaperModal.classList.contains('active') && !wallpaperModal.contains(e.target)) {
@@ -2406,7 +2469,7 @@
             <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
               ${filtered.length > 0 ? filtered.map(app => `
                 <div class="search-result-item" onclick="openApp('${app.name}', '${app.image.replace(/'/g, "\\'")}', '${app.url}')">
-                  <img src="${app.image}" alt="${app.name}" style="width: 24px; height: 24px; object-fit: contain;">
+                  <img src="${app.image}" alt="${app.name}" style="width: 24px; height: 24px; object-fit: cover; border-radius: 6px;">
                   <span>${app.name}</span>
                 </div>
               `).join('') : '<div style="color: #71717a; font-size: 13px; padding: 10px;">No apps found</div>'}

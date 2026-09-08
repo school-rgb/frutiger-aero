@@ -1,1 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banana AI - GPT-OSS 120B & Qwen Vision</title>
+    <!-- Custom Banana App Icon Favicon -->
+    <link rel="icon" href="https://s3-new.macosicons.com/macosicons/parse/Nano_Banana_Pro__Google_Gemini_3.0__AI__Liquid_Glass__BGy9DUCRso_lowResPng-bd48b4ee2f.png">
+    <style>
+        :root {
+            --bg-sidebar: #121212;
+            --bg-chat: #000000;
+            --border-color: #2c2c2e;
+            --text-main: #ffffff;
+            --text-secondary: #8e8e93;
+            --placeholder-color: #636366;
+            --accent-color: #ffffff;
+            --active-chat: #2c2c2e;
+            --hover-item: #1c1c1e;
+            --search-bg: #2c2c2e;
+            --bubble-user: #2c2c2e;
+            --bubble-ai: #1c1c1e;
+            --action-hover: rgba(255, 255, 255, 0.15);
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-chat);
+            color: var(--text-main);
+        }
+
+        .app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 320px;
+            height: 100%;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        .sidebar-header {
+            padding: 20px 16px 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .sidebar-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .icon-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .search-box {
+            padding: 0 16px 14px 16px;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 8px 12px 8px 32px;
+            border-radius: 10px;
+            border: none;
+            background-color: var(--search-bg);
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .chat-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .chat-item:hover {
+            background-color: var(--hover-item);
+        }
+
+        .chat-item.active {
+            background-color: var(--active-chat);
+            border-radius: 8px;
+            margin: 0 8px;
+            width: calc(100% - 16px);
+            border-bottom: none;
+        }
+
+        .chat-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-main);
+        }
+
+        .chat-preview {
+            display: flex;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .chat-date {
+            white-space: nowrap;
+        }
+
+        .chat-snippet {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Chat Pane Styles */
+        .chat-pane {
+            flex: 1;
+            height: 100%;
+            background-color: var(--bg-chat);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-toolbar {
+            height: 60px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .toolbar-left, .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .chat-header-info h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .chat-header-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Messages Area */
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Message Wrappers for Hover Actions & Separation */
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            position: relative;
+        }
+
+        .message-wrapper.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+
+        .message-wrapper.ai {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        /* Separate Image Card (Not inside text bubble) */
+        .msg-image-card {
+            margin-bottom: 6px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background-color: var(--search-bg);
+            max-width: 300px;
+        }
+
+        .msg-image-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 250px;
+            object-fit: cover;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 15px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message.user {
+            background-color: var(--bubble-user);
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.ai {
+            background-color: var(--bubble-ai);
+            color: #ffffff;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Message Action Toolbars */
+        .msg-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message-wrapper.user:hover .msg-actions {
+            opacity: 1;
+        }
+
+        .msg-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .msg-action-btn:hover {
+            color: var(--text-main);
+            background-color: var(--action-hover);
+        }
+
+        .msg-action-btn.active {
+            color: #ffffff;
+        }
+
+        /* AI Actions always visible under bubble */
+        .ai-actions {
+            opacity: 1;
+            margin-top: 6px;
+        }
+
+        /* Image Preview Container */
+        .image-preview-container {
+            display: none;
+            padding: 8px 16px;
+            background-color: var(--search-bg);
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+            gap: 10px;
+        }
+
+        .image-preview-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .image-preview-info {
+            font-size: 13px;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        .remove-img-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+        }
+
+        .remove-img-btn:hover {
+            color: var(--text-main);
+        }
+
+        /* Input Area */
+        .chat-input-area {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--bg-chat);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background-color: var(--search-bg);
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+            resize: none;
+            max-height: 120px;
+        }
+
+        .chat-input::placeholder {
+            color: var(--placeholder-color);
+        }
+
+        .send-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .send-btn:hover {
+            opacity: 0.85;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: absolute;
+                left: 0;
+                top: 0;
+                transition: transform 0.3s ease;
+            }
+
+            .chat-pane {
+                width: 100%;
+                position: absolute;
+                left: 100%;
+                top: 0;
+                transition: transform 0.3s ease;
+            }
+
+            .app-container.show-chat .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .app-container.show-chat .chat-pane {
+                transform: translateX(-100%);
+            }
+
+            .back-btn {
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo-container">
+                    <img src="https://s3-new.macosicons.com/macosicons/parse/Nano_Banana_Pro__Google_Gemini_3.0__AI__Liquid_Glass__BGy9DUCRso_lowResPng-bd48b4ee2f.png" alt="Banana AI Logo" class="brand-icon">
+                    <h1>Banana AI</h1>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="icon-btn" id="newChatBtn" title="New Chat">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search chats">
+                </div>
+            </div>
+            <ul class="chat-list" id="chatList"></ul>
+        </aside>
+
+        <!-- Chat Pane -->
+        <main class="chat-pane" id="chatPane">
+            <div class="chat-toolbar">
+                <div class="toolbar-left">
+                    <button class="back-btn" id="backBtn">‹ Chats</button>
+                    <div class="chat-header-info">
+                        <h2 id="chatHeaderTitle">Banana AI</h2>
+                        <p>GPT-OSS 120B • Qwen Vision & Branching</p>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <button class="icon-btn" id="deleteChatBtn" title="Delete Chat">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <!-- Image Preview Box -->
+            <div class="image-preview-container" id="imagePreviewContainer">
+                <img src="" alt="Preview" class="image-preview-thumb" id="previewImg">
+                <div class="image-preview-info" id="previewInfo">Image attached for Qwen Homework Solver</div>
+                <button class="remove-img-btn" id="removeImgBtn" title="Remove image">✕</button>
+            </div>
+
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+
+            <div class="chat-input-area">
+                <button class="icon-btn" id="attachBtn" title="Attach Image">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                    </svg>
+                </button>
+                <button class="icon-btn" id="micBtn" title="Use Microphone">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+                <textarea class="chat-input" id="chatInput" placeholder="Message Banana AI, speak, or attach homework..." rows="1"></textarea>
+                <button class="send-btn" id="sendBtn" title="Send Message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const appContainer = document.getElementById('appContainer');
+        const chatList = document.getElementById('chatList');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const deleteChatBtn = document.getElementById('deleteChatBtn');
+        const searchInput = document.getElementById('searchInput');
+        const backBtn = document.getElementById('backBtn');
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatHeaderTitle = document.getElementById('chatHeaderTitle');
+
+        const attachBtn = document.getElementById('attachBtn');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const previewImg = document.getElementById('previewImg');
+        const removeImgBtn = document.getElementById('removeImgBtn');
+        const micBtn = document.getElementById('micBtn');
+
+        let chats = JSON.parse(localStorage.getItem('banana_ai_chats')) || [];
+        let currentChatId = null;
+        let selectedImageBase64 = null;
+        let activeListenUtterance = null;
+        let activeListenBtn = null;
+
+        // Default keys pool including your key
+        const defaultKeys = [
+            "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",
+            "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",
+            "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",
+            "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",
+            "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"
+        ];
+
+        function init() {
+            let savedKeysString = localStorage.getItem('groq_api_keys');
+            if (!savedKeysString) {
+                savedKeysString = defaultKeys.join('\n');
+                localStorage.setItem('groq_api_keys', savedKeysString);
+            }
+
+            if (chats.length === 0) {
+                createNewChat();
+            } else {
+                renderChatList();
+                if (window.innerWidth > 768) {
+                    selectChat(chats[0].id);
+                } else {
+                    appContainer.classList.remove('show-chat');
+                }
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('banana_ai_chats', JSON.stringify(chats));
+        }
+
+        function getRandomKey() {
+            const rawText = localStorage.getItem('groq_api_keys') || '';
+            const keys = rawText
+                .split('\n')
+                .map(k => k.trim())
+                .filter(k => k.startsWith('gsk_') && !k.includes('Placeholder'));
+            
+            if (keys.length === 0) {
+                const allLines = rawText.split('\n').map(k => k.trim()).filter(Boolean);
+                if (allLines.length > 0) {
+                    return allLines[Math.floor(Math.random() * allLines.length)];
+                }
+                return null;
+            }
+            return keys[Math.floor(Math.random() * keys.length)];
+        }
+
+        function renderChatList(filterText = '') {
+            chatList.innerHTML = '';
+            
+            const filteredChats = chats.filter(chat => {
+                const query = filterText.toLowerCase();
+                const titleMatch = chat.title.toLowerCase().includes(query);
+                const messageMatch = chat.messages.some(m => m.text && m.text.toLowerCase().includes(query));
+                return titleMatch || messageMatch;
+            });
+
+            filteredChats.sort((a, b) => b.updatedAt - a.updatedAt);
+
+            if (filteredChats.length === 0) {
+                chatList.innerHTML = '<li style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 14px;">No chats found</li>';
+                return;
+            }
+
+            filteredChats.forEach(chat => {
+                const li = document.createElement('li');
+                li.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+                li.onclick = () => selectChat(chat.id);
+
+                const lastMsg = chat.messages[chat.messages.length - 1];
+                const snippet = lastMsg ? (lastMsg.text || '[Image]') : 'New chat';
+                const formattedDate = formatDate(chat.updatedAt);
+
+                li.innerHTML = `
+                    <div class="chat-title">${escapeHTML(chat.title)}</div>
+                    <div class="chat-preview">
+                        <span class="chat-date">${formattedDate}</span>
+                        <span class="chat-snippet">${escapeHTML(snippet)}</span>
+                    </div>
+                `;
+                chatList.appendChild(li);
+            });
+        }
+
+        function selectChat(id) {
+            currentChatId = id;
+            const chat = chats.find(c => c.id === id);
+            if (!chat) return;
+
+            chatHeaderTitle.textContent = chat.title;
+            renderMessages(chat);
+
+            appContainer.classList.add('show-chat');
+            renderChatList(searchInput.value);
+        }
+
+        function renderMessages(chat) {
+            chatMessages.innerHTML = '';
+            chat.messages.forEach(msg => {
+                const wrapper = document.createElement('div');
+                wrapper.className = `message-wrapper ${msg.sender}`;
+
+                // Render image outside text bubble if present
+                if (msg.imageUrl) {
+                    const imgCard = document.createElement('div');
+                    imgCard.className = 'msg-image-card';
+                    const img = document.createElement('img');
+                    img.src = msg.imageUrl;
+                    imgCard.appendChild(img);
+                    wrapper.appendChild(imgCard);
+                }
+
+                if (msg.text) {
+                    const bubble = document.createElement('div');
+                    bubble.className = `message ${msg.sender}`;
+                    bubble.textContent = msg.text;
+                    wrapper.appendChild(bubble);
+                }
+
+                // Action buttons toolbar per message
+                const actionsBar = document.createElement('div');
+                actionsBar.className = `msg-actions ${msg.sender === 'ai' ? 'ai-actions' : ''}`;
+
+                if (msg.sender === 'user') {
+                    // Edit (pen) and Copy buttons on hover for user messages
+                    actionsBar.innerHTML = `
+                        <button class="msg-action-btn" data-action="edit" data-id="${msg.id}" title="Edit prompt">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="msg-action-btn" data-action="copy" data-id="${msg.id}" title="Copy text">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    `;
+                } else {
+                    // Like, Dislike, Branch, and Listen buttons for AI responses
+                    const isLiked = msg.liked ? 'active' : '';
+                    const isDisliked = msg.disliked ? 'active' : '';
+                    actionsBar.innerHTML = `
+                        <button class="msg-action-btn ${isLiked}" data-action="like" data-id="${msg.id}" title="Thumbs Up">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+                        </button>
+                        <button class="msg-action-btn ${isDisliked}" data-action="dislike" data-id="${msg.id}" title="Thumbs Down">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg>
+                        </button>
+                        <button class="msg-action-btn" data-action="branch" data-id="${msg.id}" title="Branch Chat from here">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"></line><circle cx="18" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M18 9a9 9 0 0 1-9 9"></path></svg>
+                        </button>
+                        <button class="msg-action-btn" data-action="listen" data-id="${msg.id}" title="Listen / Read Aloud">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        </button>
+                    `;
+                }
+
+                wrapper.appendChild(actionsBar);
+                chatMessages.appendChild(wrapper);
+            });
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Message Event Delegation Handler
+        chatMessages.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            const action = btn.dataset.action;
+            const msgId = btn.dataset.id;
+            
+            const chat = chats.find(c => c.id === currentChatId);
+            if (!chat) return;
+
+            const msgIndex = chat.messages.findIndex(m => m.id === msgId);
+            if (msgIndex === -1) return;
+            const msg = chat.messages[msgIndex];
+
+            if (action === 'edit') {
+                // Truncate messages from this point onward and load text into input box to retry
+                chat.messages = chat.messages.slice(0, msgIndex);
+                chatInput.value = msg.text || '';
+                saveToStorage();
+                renderMessages(chat);
+                renderChatList(searchInput.value);
+                chatInput.focus();
+                chatInput.style.height = 'auto';
+                chatInput.style.height = chatInput.scrollHeight + 'px';
+            } else if (action === 'copy') {
+                navigator.clipboard.writeText(msg.text || '');
+                const originalTitle = btn.title;
+                btn.title = 'Copied!';
+                setTimeout(() => btn.title = originalTitle, 1500);
+            } else if (action === 'like') {
+                msg.liked = !msg.liked;
+                if (msg.liked) msg.disliked = false;
+                saveToStorage();
+                renderMessages(chat);
+            } else if (action === 'dislike') {
+                msg.disliked = !msg.disliked;
+                if (msg.disliked) msg.liked = false;
+                saveToStorage();
+                renderMessages(chat);
+            } else if (action === 'branch') {
+                // Branch chat up to this specific AI response
+                const branchedMessages = JSON.parse(JSON.stringify(chat.messages.slice(0, msgIndex + 1)));
+                const newChat = {
+                    id: Date.now().toString(),
+                    title: `${chat.title} (Branch)`,
+                    messages: branchedMessages,
+                    updatedAt: Date.now()
+                };
+                chats.unshift(newChat);
+                saveToStorage();
+                selectChat(newChat.id);
+            } else if (action === 'listen') {
+                playSpeech(msg.text, btn);
+            }
+        });
+
+        function playSpeech(text, btn) {
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-speech is not supported in this browser.');
+                return;
+            }
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                if (activeListenBtn === btn) {
+                    activeListenBtn = null;
+                    return;
+                }
+            }
+            if (!text) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            activeListenBtn = btn;
+            btn.classList.add('active');
+
+            utterance.onend = () => {
+                btn.classList.remove('active');
+                activeListenBtn = null;
+            };
+            utterance.onerror = () => {
+                btn.classList.remove('active');
+                activeListenBtn = null;
+            };
+
+            window.speechSynthesis.speak(utterance);
+            activeListenUtterance = utterance;
+        }
+
+        function createNewChat() {
+            const newChat = {
+                id: Date.now().toString(),
+                title: 'New Chat',
+                messages: [
+                    { id: 'msg_' + Date.now(), sender: 'ai', text: "Hello! I am Banana AI 🍌, powered by OpenAI GPT-OSS 120B (with Qwen Vision homework solver & chat branching). How can I help you today?" }
+                ],
+                updatedAt: Date.now()
+            };
+
+            chats.unshift(newChat);
+            saveToStorage();
+            selectChat(newChat.id);
+            chatInput.focus();
+        }
+
+        function deleteCurrentChat() {
+            if (!currentChatId) return;
+
+            chats = chats.filter(c => c.id !== currentChatId);
+            saveToStorage();
+
+            if (chats.length > 0) {
+                selectChat(chats[0].id);
+            } else {
+                createNewChat();
+            }
+        }
+
+        async function handleSendMessage() {
+            const text = chatInput.value.trim();
+            const hasImage = selectedImageBase64 !== null;
+            if (!text && !hasImage) return;
+
+            const apiKey = getRandomKey();
+            if (!apiKey) {
+                alert('No API keys available!');
+                return;
+            }
+
+            const chat = chats.find(c => c.id === currentChatId);
+            if (!chat) return;
+
+            const currentImage = selectedImageBase64;
+
+            // Reset image attachment UI
+            selectedImageBase64 = null;
+            imageInput.value = '';
+            imagePreviewContainer.style.display = 'none';
+
+            // Push user message with unique ID
+            chat.messages.push({ 
+                id: 'msg_user_' + Date.now(),
+                sender: 'user', 
+                text: text, 
+                imageUrl: currentImage 
+            });
+            chat.updatedAt = Date.now();
+
+            if (chat.title === 'New Chat') {
+                const titleBase = text || 'Homework Image';
+                chat.title = titleBase.length > 25 ? titleBase.substring(0, 25) + '...' : titleBase;
+            }
+
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            saveToStorage();
+            renderMessages(chat);
+            renderChatList(searchInput.value);
+
+            // Temporary indicator text
+            const indicatorText = hasImage ? '📚 Solving homework with Qwen Vision...' : '🍌 Thinking with GPT-OSS 120B...';
+            const tempId = 'temp_' + Date.now();
+            chat.messages.push({ id: tempId, sender: 'ai', text: indicatorText });
+            renderMessages(chat);
+
+            try {
+                let reply = '';
+
+                if (hasImage) {
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'qwen/qwen3.6-27b',
+                            reasoning_effort: 'none',
+                            messages: [
+                                { 
+                                    role: 'system', 
+                                    content: 'You are an expert, direct homework tutor. When given an image of a homework page, test, or problem set, provide clear, accurate step-by-step solutions or answers directly without any internal chain-of-thought.' 
+                                },
+                                {
+                                    role: 'user',
+                                    content: [
+                                        { type: 'text', text: text || 'Please solve this homework question or page and give the direct answer clearly.' },
+                                        { type: 'image_url', image_url: { url: currentImage } }
+                                    ]
+                                }
+                            ],
+                            temperature: 0.2,
+                            max_completion_tokens: 2048
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error?.message || `Request failed with status ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    reply = data.choices[0].message.content;
+
+                } else {
+                    const apiMessages = chat.messages
+                        .filter(m => m.id !== tempId)
+                        .map(m => ({
+                            role: m.sender === 'user' ? 'user' : 'assistant',
+                            content: m.text
+                        }));
+
+                    reply = await callGroqAPI(apiMessages, apiKey);
+                }
+
+                chat.messages = chat.messages.filter(m => m.id !== tempId);
+                chat.messages.push({ id: 'msg_ai_' + Date.now(), sender: 'ai', text: reply });
+            } catch (error) {
+                chat.messages = chat.messages.filter(m => m.id !== tempId);
+                chat.messages.push({ id: 'msg_err_' + Date.now(), sender: 'ai', text: `⚠️ API Error: ${error.message}` });
+            }
+
+            chat.updatedAt = Date.now();
+            saveToStorage();
+            renderMessages(chat);
+            renderChatList(searchInput.value);
+        }
+
+        async function callGroqAPI(messages, apiKey) {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'openai/gpt-oss-120b',
+                    messages: [
+                        { role: 'system', content: 'You are Banana AI, a highly intelligent, sharp, and helpful AI assistant powered by GPT-OSS-120B with a cheerful personality who occasionally uses banana puns or references.' },
+                        ...messages
+                    ],
+                    temperature: 0.7,
+                    max_completion_tokens: 2048
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error?.message || `Request failed with status ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+
+            if (date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } else if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
+                return date.toLocaleDateString([], { weekday: 'short' });
+            } else {
+                return date.toLocaleDateString([], { month: 'numeric', day: 'numeric', year: '2-digit' });
+            }
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        // Microphone Voice-to-Text Setup
+        let recognition = null;
+        let isRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.style.color = '#ff3b30';
+                chatInput.placeholder = "Listening... Speak now...";
+            };
+
+            recognition.onresult = (event) => {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    transcript += event.results[i][0].transcript;
+                }
+                chatInput.value = transcript;
+            };
+
+            recognition.onerror = () => {
+                stopRecognition();
+            };
+
+            recognition.onend = () => {
+                stopRecognition();
+            };
+        }
+
+        function toggleMic() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in this browser. Try Chrome or Safari.');
+                return;
+            }
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function stopRecognition() {
+            isRecording = false;
+            micBtn.style.color = 'var(--accent-color)';
+            chatInput.placeholder = "Message Banana AI, speak, or attach homework...";
+        }
+
+        micBtn.addEventListener('click', toggleMic);
+
+        // Image Attachment Handling
+        attachBtn.addEventListener('click', () => imageInput.click());
+
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    selectedImageBase64 = uploadEvent.target.result;
+                    previewImg.src = selectedImageBase64;
+                    imagePreviewContainer.style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeImgBtn.addEventListener('click', () => {
+            selectedImageBase64 = null;
+            imageInput.value = '';
+            imagePreviewContainer.style.display = 'none';
+        });
+
+        // Event Listeners
+        newChatBtn.addEventListener('click', createNewChat);
+        deleteChatBtn.addEventListener('click', deleteCurrentChat);
+        sendBtn.addEventListener('click', handleSendMessage);
+
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage();
+            }
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            renderChatList(e.target.value);
+        });
+
+        backBtn.addEventListener('click', () => {
+            appContainer.classList.remove('show-chat');
+        });
+
+        init();
+    </script>
+</body>
+</html>

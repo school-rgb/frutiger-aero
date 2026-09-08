@@ -10,21 +10,22 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #111;
+            background-color: #000;
         }
         #splashContainer {
             width: 100vw;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            cursor: pointer;
         }
         img {
-            max-width: 100%;
-            max-height: 100vh;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        /* Hidden iframe that will take over the screen when triggered */
         #mainFrame {
             display: none;
             width: 100vw;
@@ -40,49 +41,37 @@
 <body>
 
     <div id="splashContainer">
-        <!-- Replace 'your-image.png' with your actual image file name -->
         <img id="splashImage" src="Add a little bit of body text (2).png" alt="Splash">
     </div>
 
-    <!-- This will hold your main HTML file inside this page -->
-    <iframe id="main.html"></iframe>
+    <iframe id="mainFrame"></iframe>
 
-    <!-- Replace 'your-sound.mp3' with your actual MP3 file name -->
     <audio id="soundEffect" src="win95.mp3"></audio>
 
     <script>
-        let enterPressCount = 0;
-        let isLoaded = false;
-        const mainFile = "main.html"; // Your main HTML file
+        let clickCount = 0;
+        let isTriggered = false;
+        const mainFile = "main.html";
 
-        function openInside() {
-            if (isLoaded) return;
-            isLoaded = true;
+        window.addEventListener("click", function(event) {
+            if (isTriggered) return;
 
-            const splash = document.getElementById("splashContainer");
-            const frame = document.getElementById("mainFrame");
+            clickCount++;
+            
+            if (clickCount === 2) {
+                isTriggered = true;
 
-            splash.style.display = "none";
-            frame.src = mainFile;
-            frame.style.display = "block";
-        }
+                const sound = document.getElementById("soundEffect");
+                sound.play().catch(error => {
+                    console.log("Audio play blocked or failed:", error);
+                });
 
-        window.addEventListener("keydown", function(event) {
-            if (event.key === "Enter") {
-                enterPressCount++;
-                
-                if (enterPressCount === 2) {
-                    const sound = document.getElementById("soundEffect");
-                    sound.play().catch(error => {
-                        console.log("Audio play blocked or failed:", error);
-                    });
+                const splash = document.getElementById("splashContainer");
+                const frame = document.getElementById("mainFrame");
 
-                    // Open the file inside once the sound ends
-                    sound.onended = openInside;
-
-                    // Fallback timer (1.5 seconds) in case the sound fails or doesn't trigger onended
-                    setTimeout(openInside, 1500);
-                }
+                splash.style.display = "none";
+                frame.src = mainFile;
+                frame.style.display = "block";
             }
         });
     </script>

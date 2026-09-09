@@ -1,16 +1,52 @@
-
 <!-- Ultimate Game Stash file--> 
 <!-- For the regularly updating doc go to https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/ -->
 
-
 <base href="https://cdn.jsdelivr.net/gh/bubbls/subwaysurfersmerge/">
 <html>
+<head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
     <title>Subway Surfers</title>  
     <link rel="icon" href="img/FirstAvatar.png">
-      <script type="text/javascript" src="4399.z.js"></script>
-  <script>
+    
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000;
+        }
+
+        /* Black Screen Overlay */
+        #custom-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding-top: 40px;
+            z-index: 99999;
+            transition: opacity 0.6s ease-out;
+            box-sizing: border-box;
+        }
+
+        /* Top-Centered Logo */
+        .loader-logo {
+            max-width: 40%;
+            max-height: 35vh;
+            object-fit: contain;
+        }
+    </style>
+
+    <script type="text/javascript" src="4399.z.js"></script>
+    <script>
         window.config = {
             loader: "unity",
             debug: false,
@@ -32,23 +68,47 @@
         window.mergedBlobUrls = {};
         window.assetsReady = false;
 
+        function deleteLoadingScreen() {
+            const loader = document.getElementById('custom-loader');
+            if (loader) {
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    if (loader.parentNode) {
+                        loader.parentNode.removeChild(loader);
+                    }
+                }, 600);
+            }
+        }
+
+        function hideLoadingScreen() {
+            setTimeout(() => {
+                deleteLoadingScreen();
+            }, 3000);
+        }
+
+        async function fetchPart(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) return null;
+                const buffer = await response.arrayBuffer();
+                return buffer;
+            } catch (error) {
+                return null;
+            }
+        }
+
         async function mergeSplitFile(fileUrlBase, numParts = 2) {
             const partUrls = Array.from({ length: numParts }, (_, i) => 
                 `${fileUrlBase}.part${i + 1}`
             );
 
             try {
-                const responses = await Promise.all(
-                    partUrls.map(url => fetch(url))
-                );
-
-                if (responses.some(r => !r.ok)) {
-                    return null;
+                const parts = [];
+                for (let i = 0; i < partUrls.length; i++) {
+                    const buffer = await fetchPart(partUrls[i]);
+                    if (!buffer) return null;
+                    parts.push(buffer);
                 }
-
-                const parts = await Promise.all(
-                    responses.map(r => r.arrayBuffer())
-                );
 
                 const combinedBlob = new Blob(parts, {
                     type: 'application/octet-stream'
@@ -122,21 +182,27 @@
                         window.mergedBlobUrls[filename] = blobUrl;
                     } 
                 }
-                
+
                 window.assetsPrepared = true;
                 window.assetsReady = true;
+                
+                hideLoadingScreen();
                 
             } catch (error) {
                 window.assetsPrepared = false;
                 window.assetsReady = true;
+                hideLoadingScreen();
             }
         }
 
         prepareGameAssets();
-
     </script>
 </head>
 <body>
+    <div id="custom-loader">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a3/Subway_Surfers_logo.svg/1280px-Subway_Surfers_logo.svg.png" alt="Subway Surfers Logo" class="loader-logo">
+    </div>
+
     <script src="master-loader.js"></script>
 </body>
 </html>

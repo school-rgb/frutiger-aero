@@ -1246,7 +1246,14 @@
     let altTabAppKeys = [];
     let altTabIndex = 0;
 
-    let musicSearchResults = [];
+    // Built-in reliable Lofi study tracks that bypass school API restrictions
+    const defaultLofiTracks = [
+      { id: "lofi-1", name: "Chill Lofi Study Beats", artist: "Lofi Chill", album: "Study Session", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3", pic: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300" },
+      { id: "lofi-2", name: "Midnight Coffee Ambient", artist: "Relaxing Vibes", album: "Late Night Study", url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-vibes-10287.mp3", pic: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300" },
+      { id: "lofi-3", name: "Rainy Day Lo-Fi", artist: "Sleepy Beats", album: "Lo-Fi Cafe", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=smooth-lofi-112187.mp3", pic: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300" }
+    ];
+
+    let musicSearchResults = [...defaultLofiTracks];
     let currentTrackIdx = -1;
     let isMusicPlaying = false;
     let likedTracks = new Set();
@@ -1374,7 +1381,6 @@
         element.remove();
       }
 
-      // Notify open App Store or other frames of uninstallation
       const iframes = document.querySelectorAll('iframe');
       iframes.forEach(iframe => {
         try {
@@ -1559,7 +1565,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // --- NETEASE MUSIC API & FUNCTIONAL AUDIO ENGINE ---
+    // --- MUSIC ENGINE WITH SCHOOL UNBLOCK FALLBACK ---
     async function executeMusicSearch(keyword, limit = 25) {
       if (!keyword) return;
       const url = `https://api.qijieya.cn/meting/?type=search&id=${encodeURIComponent(keyword)}&limit=${encodeURIComponent(limit)}&server=netease`;
@@ -1581,11 +1587,15 @@
           renderMusicProPlaylist();
           saveSystemState();
         } else {
-          if (playlistElem) playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#71717a; font-size:13px;">No tracks found for "${keyword}"</div>`;
+          throw new Error("Empty API response");
         }
       } catch (error) {
-        console.error("Music API Fetch Error:", error);
-        if (playlistElem) playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#ef4444; font-size:13px;">Error connecting to NetEase Music API</div>`;
+        console.warn("External API blocked or failed. Loading school-safe offline Lofi tracks.", error);
+        musicSearchResults = defaultLofiTracks;
+        activeViewMode = 'discover';
+        updateSidebarActiveState();
+        renderMusicProPlaylist();
+        saveSystemState();
       }
     }
 
@@ -1689,7 +1699,7 @@
       }
 
       if (listToRender.length === 0) {
-        container.innerHTML = `<div style="padding:40px; text-align:center; color:#71717a; font-size:13px;">No tracks found in this view. Try searching and liking or adding songs to playlists!</div>`;
+        container.innerHTML = `<div style="padding:40px; text-align:center; color:#71717a; font-size:13px;">No tracks found in this view. Try searching or switching views!</div>`;
         return;
       }
 
@@ -1725,7 +1735,7 @@
               <p>${track.artist || track.author || 'Artist'}</p>
             </div>
           </div>
-          <div class="mp-track-album">${track.album || 'Single / NetEase'}</div>
+          <div class="mp-track-album">${track.album || 'Single / Lofi'}</div>
           <div class="mp-track-duration">03:45</div>
           <div class="mp-track-actions">
             <button class="mp-action-btn ${isLiked ? 'active' : ''}" onclick="toggleLikeTrack(event, '${trackId}')" title="Like / Unlike">
@@ -1754,7 +1764,7 @@
       const coverElem = document.getElementById('mpCurrentCover');
       
       if (titleElem) titleElem.textContent = track.name || track.title || 'Unknown Track';
-      if (artistElem) artistElem.textContent = track.artist || track.author || 'NetEase Artist';
+      if (artistElem) artistElem.textContent = track.artist || track.author || 'Lofi Artist';
 
       if (coverElem) {
         if (track.pic) {
@@ -1898,7 +1908,7 @@
               </div>
               <div class="mp-content-area">
                 <div class="mp-search-bar-container">
-                  <input type="text" id="mpSearchInput" value="Drake" placeholder="Search NetEase songs, artists..." onkeydown="if(event.key==='Enter') triggerMusicSearchFromInput()">
+                  <input type="text" id="mpSearchInput" value="Lofi" placeholder="Search songs, artists..." onkeydown="if(event.key==='Enter') triggerMusicSearchFromInput()">
                   <button onclick="triggerMusicSearchFromInput()">
                     <img src="${PNGS.search}" alt="search">
                     <span>Search</span>
@@ -1923,8 +1933,8 @@
                   <div style="display:flex;align-items:center;justify-content:center;height:100%;">🎵</div>
                 </div>
                 <div style="overflow:hidden;">
-                  <h4 style="font-size:13px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="mpCurrentTitle">Janice STFU</h4>
-                  <p style="font-size:11px; color:#a1a1aa; margin-top:2px;" id="mpCurrentArtist">2026</p>
+                  <h4 style="font-size:13px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="mpCurrentTitle">Lofi Chill Beats</h4>
+                  <p style="font-size:11px; color:#a1a1aa; margin-top:2px;" id="mpCurrentArtist">Study Vibes</p>
                 </div>
               </div>
 
@@ -2030,11 +2040,7 @@
 
       if (targetUrl === 'native:music') {
         renderPlaylistsSidebar();
-        if (musicSearchResults.length === 0) {
-          executeMusicSearch('Drake');
-        } else {
-          renderMusicProPlaylist();
-        }
+        renderMusicProPlaylist();
       }
 
       appWin.addEventListener('mousedown', () => bringToFront(appWin));
@@ -2152,7 +2158,7 @@
     function closeApp(appId) {
       const app = openApps[appId];
       if (app) {
-        if (appId === 'win-music-studio-pro' || app.targetUrl === 'native:music') {
+        if (appId === 'win-youtube-music' || app.targetUrl === 'native:music') {
           masterAudio.pause();
           masterAudio.currentTime = 0;
           masterAudio.removeAttribute('src');
@@ -2430,40 +2436,34 @@
         searchView.classList.add('active');
 
         const allApps = [
-          { name: 'Music Studio Pro', image: 'https://img.icons8.com/color/96/youtube-music.png', url: 'native:music' },
-          { name: 'Notes', image: 'https://img.icons8.com/color/96/note.png', url: 'https://www.rapidtables.com/tools/notepad.html' },
-          { name: 'Calculator', image: 'https://img.icons8.com/color/96/calculator.png', url: 'native:calculator' },
-          { name: 'Frutiger App Store', image: 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'96\' height=\'96\' viewBox=\'0 0 96 96\'><rect width=\'96\' height=\'96\' rx=\'22\' fill=\'%231c1c1e\'/><text x=\'50%\' y=\'58%\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Google Sans, sans-serif\' font-size=\'42\' font-weight=\'bold\' fill=\'%23ffffff\'>A</text></svg>', url: 'appstore.html' },
-          { name: 'ChatGPT AI', image: 'https://img.icons8.com/color/96/chatgpt.png', url: 'https://chatgpt.com' },
-          { name: 'Anime Cloud', image: 'https://img.icons8.com/?size=100&id=85874&format=png&color=FFFFFF', url: 'https://school-rgb.github.io/anime-movies-in-html/' },
-          { name: 'YouTube', image: 'https://img.icons8.com/color/96/youtube-play.png', url: 'https://www.youtube.com' },
-          { name: 'GitHub', image: 'https://img.icons8.com/color/96/github.png', url: 'https://github.com' },
-          { name: 'Reddit', image: 'https://img.icons8.com/color/96/reddit.png', url: 'https://www.reddit.com' },
-          { name: 'Twitter / X', image: 'https://img.icons8.com/color/96/twitter.png', url: 'https://twitter.com' },
-          { name: 'Discord', image: 'https://img.icons8.com/color/96/discord-logo.png', url: 'https://discord.com/app' },
-          { name: 'CodePen', image: 'https://img.icons8.com/color/96/codepen.png', url: 'https://codepen.io' },
-          { name: 'Google Docs', image: 'https://img.icons8.com/color/96/google-docs.png', url: 'https://docs.google.com' },
-          { name: 'Canva', image: 'https://img.icons8.com/color/96/canva.png', url: 'https://www.canva.com' },
-          { name: 'Spotify', image: 'https://img.icons8.com/color/96/spotify.png', url: 'https://open.spotify.com' },
-          { name: 'Chess', image: 'https://img.icons8.com/color/96/chess.png', url: 'https://lichess.org' },
-          ...installedApps
+          { name: 'youtube music', image: 'https://s3-new.macosicons.com/macosicons/parse/YouTube_Music_uMLkLyLosI_lowResPng-666ed2b471.png', url: 'native:music' },
+          { name: 'Notes', image: 'https://s3-new.macosicons.com/macosicons/parse/Notes___Notion_3d9hiH596D_lowResPng-ac1e518731.png', url: 'APP/Notes.html' },
+          { name: 'Calculator', image: 'https://s3-new.macosicons.com/macosicons/parse/Calculator_X2nf0xqSyB_lowResPng-2d1849769a.png', url: 'native:calculator' },
+          { name: 'banana AI', image: 'https://s3-new.macosicons.com/macosicons/parse/Nano_Banana_Pro__Google_Gemini_3.0__AI__Liquid_Glass__BGy9DUCRso_lowResPng-bd48b4ee2f.png', url: 'APP/ai.html' },
+          { name: 'Anime Cloud', image: 'https://s3-new.macosicons.com/macosicons/parse/Adobe_Creative_Cloud_8LShPVGzjf_lowResPng-a6f930c87d.png', url: 'https://school-rgb.github.io/anime-movies-in-html/' },
+          { name: 'YouTube', image: 'https://s3-new.macosicons.com/macosicons/parse/YouTube__uniform_gray__9ybfHR4PPH_lowResPng-69278f7332.png', url: 'https://www.youtube.com' },
+          { name: 'frutiger game', image: 'https://s3-new.macosicons.com/macosicons/parse/Logitech_G_Hub_INojBjnA6O_lowResPng-2edb1ed2a1.png', url: 'APP/gamehub.html' },
+          { name: 'movies', image: 'https://s3-new.macosicons.com/macosicons/parse/Netflix__Liquid_Glass__XEYDfr6c2L_lowResPng-4534d600ca.png', url: 'APP/movies.html' },
+          { name: 'geometry dash', image: 'https://th.bing.com/th/id/R.67dcf797f79315589cc8b18f502f93f5?rik=A7ss82CSOJPrkg&riu=http%3a%2f%2fvignette2.wikia.nocookie.net%2fgeometry-dash%2fimages%2f9%2f90%2fGeometryDash.png%2frevision%2flatest%3fcb%3d20160224042843&ehk=Hvk2rFdCmF08iQinZYieMsLbvo4NDNdKYic8xB6GqZE%3d&risl=&pid=ImgRaw&r=0', url: 'APP/Geometry Dash (1).html' },
+          { name: 'Plants vs. Zombies 2 Gardenless', image: 'https://th.bing.com/th/id/OIP.dqZAfbbyk9LZmU43iotB3wHaHa?w=173&h=183&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3', url: 'APP/Plants vs. Zombies 2 Gardenless.html' },
+          { name: 'Subway Surfers', image: 'https://macmagazine.com.br/wp-content/uploads/2012/09/17-icone-subway-surfers.png', url: 'APP/Subway Surfers.html' },
+          { name: 'crossy road', image: 'https://tse3.mm.bing.net/th/id/OIP.h2WLBdFHanMVXtPH277EwAHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', url: 'APP/clcrossyroad.html' },
+          { name: 'Angry birds epic', image: 'https://assets-prd.ignimgs.com/2023/04/02/angrybirdsepic-1680456723551.jpg', url: 'APP/Angry birds epic.html' }
         ];
 
-        const filtered = allApps.filter(app => app.name.toLowerCase().includes(query));
-
-        searchView.innerHTML = `
-          <div>
-            <div class="search-category-title">Matching Apps (${filtered.length})</div>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-              ${filtered.length > 0 ? filtered.map(app => `
-                <div class="search-result-item" onclick="openApp('${app.name}', '${app.image.replace(/'/g, "\\'")}', '${app.url}')">
-                  <img src="${app.image}" alt="${app.name}" style="width: 24px; height: 24px; object-fit: cover; border-radius: 6px;">
-                  <span>${app.name}</span>
-                </div>
-              `).join('') : '<div style="color: #71717a; font-size: 13px; padding: 10px;">No apps found</div>'}
-            </div>
-          </div>
-        `;
+        searchView.innerHTML = '';
+        const filtered = allApps.filter(a => a.name.toLowerCase().includes(query));
+        if (filtered.length > 0) {
+          filtered.forEach(app => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.onclick = () => openApp(app.name, app.image, app.url);
+            item.innerHTML = `<img src="${app.image}"><span>${app.name}</span>`;
+            searchView.appendChild(item);
+          });
+        } else {
+          searchView.innerHTML = '<div style="color:#888; font-size:13px; padding:10px;">No apps found</div>';
+        }
       } else {
         defaultView.classList.remove('hidden');
         searchView.classList.remove('active');

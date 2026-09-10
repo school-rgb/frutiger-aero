@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Tab</title>
   <style>
+    /* IMPORTING YOUR CUSTOM FONT */
+    @font-face {
+      font-family: 'CustomFont';
+      src: url('Electroharmonix.otf') format('opentype');
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -22,7 +28,7 @@
     #desktopWallpaperContainer {
       position: absolute;
       inset: 0;
-      z-index: 0;
+      z-index: 0; /* Background layer */
       overflow: hidden;
       pointer-events: none;
       background-size: cover;
@@ -38,10 +44,30 @@
       inset: 0;
     }
 
+    /* --- PLAIN WHITE DAY DISPLAY --- */
+    #dayDisplay {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffffff;
+      font-family: 'CustomFont', sans-serif;
+      font-size: 4rem;
+      z-index: 1; /* ONLY overlaps wallpaper */
+      cursor: grab;
+      text-shadow: none;
+      background: transparent;
+      border: none;
+    }
+
+    #dayDisplay.dragging {
+      cursor: grabbing;
+    }
+
     #rainCanvas {
       position: absolute;
       inset: 0;
-      z-index: 1;
+      z-index: 2; /* Rain is above the day display */
       pointer-events: none;
       width: 100%;
       height: 100%;
@@ -52,7 +78,7 @@
       width: 100vw;
       position: relative;
       overflow: hidden;
-      z-index: 2;
+      z-index: 3; /* Desktop, apps, and everything else sit above */
     }
 
     /* --- WINDOW SYSTEM STYLES --- */
@@ -372,7 +398,6 @@
 
     .app-icon:hover { transform: translateY(-3px) scale(1.05); }
 
-    /* Uniform sizing and smooth rounded corners for all app icons */
     .icon-img {
       width: 48px;
       height: 48px;
@@ -481,7 +506,6 @@
     .shelf-app-icon:hover { transform: scale(1.08); background: rgba(255, 255, 255, 0.15); }
     .shelf-app-icon img { width: 28px; height: 28px; object-fit: cover; border-radius: 8px; }
 
-    /* Removed active line indicator under dock icons */
     .shelf-app-icon.active::after {
       display: none !important;
     }
@@ -541,490 +565,6 @@
     .wallpaper-option video { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; pointer-events: none; }
     .wallpaper-option:hover { transform: scale(1.03); border-color: #ffffff; }
 
-    /* Music Player Styles */
-    .music-player-pro {
-      height: 100%;
-      background: #09090b;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .mp-main-layout {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .mp-sidebar {
-      width: 220px;
-      background: #000000;
-      border-right: 1px solid #1a1a1e;
-      padding: 20px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .mp-sidebar-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: #52525b;
-      margin-bottom: 10px;
-      padding-left: 10px;
-    }
-
-    .mp-nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      color: #a1a1aa;
-      transition: all 0.15s ease;
-    }
-
-    .mp-nav-item img {
-      width: 18px;
-      height: 18px;
-      object-fit: contain;
-    }
-
-    .mp-nav-item:hover, .mp-nav-item.active {
-      background: #18181b;
-      color: #ffffff;
-    }
-
-    .mp-playlists-box {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      max-height: 150px;
-      overflow-y: auto;
-      margin-top: 4px;
-    }
-
-    .mp-playlist-link {
-      padding: 6px 12px;
-      font-size: 12px;
-      color: #71717a;
-      border-radius: 8px;
-      cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .mp-playlist-link:hover { background: #121215; color: #fff; }
-
-    .mp-create-playlist-btn {
-      background: none;
-      border: 1px dashed #3f3f46;
-      color: #a1a1aa;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 11px;
-      cursor: pointer;
-      text-align: center;
-      margin-top: 6px;
-      transition: all 0.15s;
-    }
-    .mp-create-playlist-btn:hover { background: #18181b; color: #fff; border-color: #71717a; }
-
-    .mp-content-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #070709;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .mp-search-bar-container {
-      padding: 16px 24px;
-      border-bottom: 1px solid #141417;
-      display: flex;
-      gap: 12px;
-      background: #000000;
-    }
-
-    .mp-search-bar-container input {
-      flex: 1;
-      background: #121215;
-      border: 1px solid #27272a;
-      border-radius: 10px;
-      padding: 10px 16px;
-      color: #ffffff;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .mp-search-bar-container input:focus {
-      border-color: #52525b;
-    }
-
-    .mp-search-bar-container button {
-      background: #18181b;
-      border: 1px solid #27272a;
-      color: #ffffff;
-      padding: 0 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.15s;
-    }
-
-    .mp-search-bar-container button img {
-      width: 14px;
-      height: 14px;
-    }
-
-    .mp-search-bar-container button:hover {
-      background: #27272a;
-    }
-
-    .mp-tracklist-header {
-      display: grid;
-      grid-template-columns: 48px 1fr 140px 100px 80px;
-      padding: 12px 24px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #71717a;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      border-bottom: 1px solid #141417;
-    }
-
-    .mp-playlist {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .mp-track-item {
-      display: grid;
-      grid-template-columns: 48px 1fr 140px 100px 80px;
-      align-items: center;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: transparent;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: background 0.15s ease, border-color 0.15s ease;
-      position: relative;
-    }
-
-    .mp-track-item:hover {
-      background: #121215;
-      border-color: #27272a;
-    }
-
-    .mp-track-item.playing {
-      background: #18181b;
-      border-color: #3f3f46;
-    }
-
-    .mp-track-num {
-      font-size: 13px;
-      color: #71717a;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .mp-track-num img {
-      width: 14px;
-      height: 14px;
-    }
-
-    .mp-track-info-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      overflow: hidden;
-    }
-
-    .mp-track-cover {
-      width: 42px;
-      height: 42px;
-      border-radius: 8px;
-      background: #18181b;
-      object-fit: cover;
-      flex-shrink: 0;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    }
-
-    .mp-track-names {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .mp-track-names h5 {
-      font-size: 13px;
-      font-weight: 500;
-      color: #ffffff;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .mp-track-names p {
-      font-size: 11px;
-      color: #a1a1aa;
-      margin-top: 2px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .mp-track-album {
-      font-size: 12px;
-      color: #71717a;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .mp-track-duration {
-      font-size: 12px;
-      color: #71717a;
-      font-family: monospace;
-    }
-
-    .mp-track-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 12px;
-      position: relative;
-    }
-
-    .mp-action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      opacity: 0.6;
-      transition: opacity 0.15s, transform 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .mp-action-btn img {
-      width: 16px;
-      height: 16px;
-    }
-
-    .mp-action-btn:hover {
-      opacity: 1;
-      transform: scale(1.15);
-    }
-
-    .mp-action-btn.active img {
-      filter: invert(27%) sepia(91%) saturate(2352%) hue-rotate(331deg) brightness(97%) contrast(96%);
-    }
-
-    .playlist-popup-menu {
-      position: absolute;
-      right: 0;
-      top: 100%;
-      width: 180px;
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      padding: 6px;
-      z-index: 999;
-      display: none;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .playlist-popup-menu.active {
-      display: flex;
-    }
-
-    .playlist-popup-title {
-      font-size: 10px;
-      font-weight: 700;
-      color: #71717a;
-      text-transform: uppercase;
-      padding: 6px 10px;
-      letter-spacing: 0.5px;
-    }
-
-    .playlist-popup-item {
-      padding: 8px 10px;
-      font-size: 12px;
-      color: #d4d4d8;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      transition: background 0.1s;
-    }
-
-    .playlist-popup-item:hover {
-      background: #27272a;
-      color: #ffffff;
-    }
-
-    .mp-player-bar {
-      height: 92px;
-      background: #000000;
-      border-top: 1px solid #18181b;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .mp-current-track {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      width: 250px;
-    }
-
-    .mp-current-cover {
-      width: 52px;
-      height: 52px;
-      border-radius: 10px;
-      background: #18181b;
-      border: 1px solid #27272a;
-      overflow: hidden;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    }
-
-    .mp-current-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .mp-controls-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-      max-width: 480px;
-    }
-
-    .mp-buttons {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-    }
-
-    .mp-btn-sec {
-      background: none;
-      border: none;
-      opacity: 0.7;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .mp-btn-sec img {
-      width: 18px;
-      height: 18px;
-    }
-
-    .mp-btn-sec:hover {
-      opacity: 1;
-      transform: scale(1.1);
-    }
-
-    .mp-btn-main {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.15s, background 0.15s;
-      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
-    }
-
-    .mp-btn-main img {
-      width: 18px;
-      height: 18px;
-    }
-
-    .mp-btn-main:hover {
-      transform: scale(1.06);
-      background: #e4e4e7;
-    }
-
-    .mp-progress-container {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 11px;
-      color: #71717a;
-      font-family: monospace;
-    }
-
-    .mp-progress-bar {
-      flex: 1;
-      height: 4px;
-      background: #27272a;
-      border-radius: 2px;
-      position: relative;
-      cursor: pointer;
-      overflow: hidden;
-    }
-
-    .mp-progress-fill {
-      width: 0%;
-      height: 100%;
-      background: #ffffff;
-      border-radius: 2px;
-    }
-
-    .mp-volume-zone {
-      width: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
-    .mp-volume-zone img {
-      width: 16px;
-      height: 16px;
-      opacity: 0.7;
-    }
-
-    .mp-volume-slider {
-      width: 90px;
-      accent-color: #ffffff;
-      cursor: pointer;
-    }
-
     /* Calculator App */
     .calc-app { padding: 16px; height: 100%; background: #000000; color: white; display: flex; flex-direction: column; gap: 12px; }
     .calc-display { height: 60px; background: #121212; border: 1px solid #222222; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding: 0 16px; font-size: 28px; font-family: monospace; color: #ffffff; }
@@ -1051,18 +591,16 @@
 </head>
 <body>
 
-  <!-- Background Wallpaper Container -->
   <div id="desktopWallpaperContainer"></div>
 
-  <!-- Rain Effect Overlay Canvas -->
+  <div id="dayDisplay"></div>
+
   <canvas id="rainCanvas"></canvas>
 
   <div class="desktop" id="desktop"></div>
 
-  <!-- Alt-Tab Overlay -->
   <div class="alttab-overlay" id="altTabOverlay"></div>
 
-  <!-- Wallpaper Selection Dialog -->
   <div class="wallpaper-modal" id="wallpaperModal">
     <div class="wallpaper-header">
       <h3>Select Media Wallpaper</h3>
@@ -1075,7 +613,6 @@
     <div class="wallpaper-grid" id="wallpaperGridContainer"></div>
   </div>
 
-  <!-- Context Menu for Installed Apps -->
   <div class="context-menu" id="appContextMenu">
     <div class="context-item" id="deleteAppBtn" style="color: #ff5555;">
       <div class="context-icon">
@@ -1085,7 +622,6 @@
     </div>
   </div>
 
-  <!-- Right Click Context Menu -->
   <div class="context-menu" id="contextMenu">
     <div class="context-item" onclick="toggleAlwaysHideShelf()">
       <div class="context-icon">
@@ -1113,9 +649,7 @@
     </div>
   </div>
 
-  <!-- Translucent Launcher Menu - Floating Window -->
   <div class="launcher pos-bottom" id="launcherMenu">
-    <!-- Resizable handles for launcher -->
     <div class="resize-handle n"></div>
     <div class="resize-handle s"></div>
     <div class="resize-handle w"></div>
@@ -1137,7 +671,7 @@
     <div class="launcher-content-scroll">
       <div class="default-view" id="defaultView">
         <div class="app-grid" id="mainAppGrid">
-          <div class="app-icon" onclick="openApp('youtube music', 'https://static.vecteezy.com/system/resources/previews/017/396/813/non_2x/youtube-music-icon-free-png.png', 'native:music')">
+          <div class="app-icon" onclick="openApp('youtube music', 'https://static.vecteezy.com/system/resources/previews/017/396/813/non_2x/youtube-music-icon-free-png.png', 'https://music.youtube.com')">
             <div class="icon-img"><img src="https://static.vecteezy.com/system/resources/previews/017/396/813/non_2x/youtube-music-icon-free-png.png" alt="Music"></div>
             <span>youtube music</span>
           </div>
@@ -1196,21 +730,17 @@
         </div>
       </div>
 
-      <!-- Search Results View -->
       <div class="search-view" id="searchView"></div>
     </div>
   </div>
 
-  <!-- Bottom Shelf Trigger Zone -->
   <div class="shelf-trigger-zone pos-bottom" id="shelfTriggerZone"></div>
 
-  <!-- Shelf / Dock -->
   <div class="shelf pos-bottom" id="shelf">
     <div class="shelf-left">
       <button class="launcher-btn" id="launcherBtn" onclick="toggleLauncher(event)"></button>
     </div>
     
-    <!-- Dynamic Center App Dock -->
     <div class="shelf-center" id="shelfCenter"></div>
 
     <div class="shelf-right">
@@ -1219,9 +749,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Hidden Master Audio Engine -->
-  <audio id="masterAudio" preload="auto"></audio>
 
   <script>
     const desktop = document.getElementById('desktop');
@@ -1235,7 +762,8 @@
     const wallpaperModal = document.getElementById('wallpaperModal');
     const wallpaperContainer = document.getElementById('desktopWallpaperContainer');
     const altTabOverlay = document.getElementById('altTabOverlay');
-    const masterAudio = document.getElementById('masterAudio');
+    const dayDisplay = document.getElementById('dayDisplay');
+    const wg = document.getElementById('wallpaperGridContainer');
     
     let highestZIndex = 100;
     let currentPosition = 'bottom';
@@ -1245,1236 +773,793 @@
     let currentWallpaperUrl = '';
     let currentWallpaperType = 'image';
     let installedApps = [];
+    let wallpapers = [];
     
     const openApps = {};
     let altTabAppKeys = [];
     let altTabIndex = 0;
 
-    // Built-in reliable Lofi study tracks that bypass school API restrictions
-    const defaultLofiTracks = [
-      { id: "lofi-1", name: "Chill Lofi Study Beats", artist: "Lofi Chill", album: "Study Session", url: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3", pic: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=300" },
-      { id: "lofi-2", name: "Midnight Coffee Ambient", artist: "Relaxing Vibes", album: "Late Night Study", url: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-vibes-10287.mp3", pic: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300" },
-      { id: "lofi-3", name: "Rainy Day Lo-Fi", artist: "Sleepy Beats", album: "Lo-Fi Cafe", url: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=smooth-lofi-112187.mp3", pic: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=300" }
-    ];
-
-    let musicSearchResults = [...defaultLofiTracks];
-    let currentTrackIdx = -1;
-    let isMusicPlaying = false;
-    let likedTracks = new Set();
-    let userPlaylists = ["Favorites", "Workout Vibes", "Late Night"];
-    let savedMusicTracks = [];
-    let activeViewMode = 'discover';
-
-    const PNGS = {
-      search: "https://img.icons8.com/?size=100&id=132&format=png&color=FFFFFF",
-      discover: "https://img.icons8.com/?size=100&id=83220&format=png&color=A1A1AA",
-      library: "https://img.icons8.com/?size=100&id=85038&format=png&color=A1A1AA",
-      heartOutline: "https://img.icons8.com/?size=100&id=85038&format=png&color=71717A",
-      heartFilled: "https://img.icons8.com/?size=100&id=85038&format=png&color=EF4444",
-      playBtn: "https://img.icons8.com/?size=100&id=398&format=png&color=000000",
-      pauseBtn: "https://img.icons8.com/?size=100&id=85882&format=png&color=000000",
-      prevBtn: "https://img.icons8.com/?size=100&id=5716&format=png&color=FFFFFF",
-      nextBtn: "https://img.icons8.com/?size=100&id=87484&format=png&color=FFFFFF",
-      volume: "https://img.icons8.com/?size=100&id=82883&format=png&color=FFFFFF",
-      playRow: "https://img.icons8.com/?size=100&id=85882&format=png&color=FFFFFF",
-      more: "https://img.icons8.com/?size=100&id=98963&format=png&color=71717A"
-    };
-
-    /* State Persistence Engine */
-    function saveSystemState() {
-      const state = {
-        isAutohideEnabled,
-        isRainActive,
-        isVideoLooping,
-        currentPosition,
-        currentWallpaperUrl,
-        currentWallpaperType,
-        installedApps,
-        userPlaylists,
-        likedTracks: Array.from(likedTracks),
-        savedMusicTracks: musicSearchResults
-      };
-      localStorage.setItem('chromeos_system_state', JSON.stringify(state));
+    // --- DAY DISPLAY LOGIC ---
+    const daysOfTheWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    
+    function updateDayText() {
+      const today = new Date();
+      dayDisplay.textContent = daysOfTheWeek[today.getDay()];
     }
+    
+    updateDayText();
+    setInterval(updateDayText, 60000);
 
-    function loadSystemState() {
-      const saved = localStorage.getItem('chromeos_system_state');
-      if (!saved) return;
-      try {
-        const state = JSON.parse(saved);
-        if (state.isAutohideEnabled !== undefined) {
-          isAutohideEnabled = state.isAutohideEnabled;
-          if (isAutohideEnabled) {
-            shelf.classList.add('autohide');
-            shelfTriggerZone.classList.add('active');
-            const label = document.getElementById('autohideLabel');
-            if (label) label.textContent = 'Disable Autohide Shelf';
-          }
-        }
-        if (state.isRainActive !== undefined) {
-          isRainActive = state.isRainActive;
-          const btn = document.getElementById('rainModalBtn');
-          if (btn) btn.textContent = `Rain Effect: ${isRainActive ? 'ON' : 'OFF'}`;
-          const canvasElem = document.getElementById('rainCanvas');
-          if (canvasElem) canvasElem.style.display = isRainActive ? 'block' : 'none';
-        }
-        if (state.isVideoLooping !== undefined) {
-          isVideoLooping = state.isVideoLooping;
-          const btn = document.getElementById('loopVideoModalBtn');
-          if (btn) btn.textContent = `Loop Video: ${isVideoLooping ? 'ON' : 'OFF'}`;
-        }
-        if (state.currentPosition) {
-          setShelfPosition(state.currentPosition);
-        }
-        if (state.currentWallpaperUrl) {
-          setWallpaper(state.currentWallpaperUrl, state.currentWallpaperType || 'image', false);
-        }
-        if (Array.isArray(state.installedApps)) {
-          installedApps = state.installedApps;
-          installedApps.forEach(app => addInstalledAppToGrid(app.name, app.image, app.url, false));
-        }
-        if (Array.isArray(state.userPlaylists)) {
-          userPlaylists = state.userPlaylists;
-        }
-        if (Array.isArray(state.likedTracks)) {
-          likedTracks = new Set(state.likedTracks);
-        }
-        if (Array.isArray(state.savedMusicTracks) && state.savedMusicTracks.length > 0) {
-          musicSearchResults = state.savedMusicTracks;
-        }
-      } catch (e) {
-        console.error("Failed to load saved state", e);
-      }
-    }
+    // Right-Click Dragging with 4x4 snapping for the Day Display
+    let isDraggingDay = false;
+    let dayDragOffsetX = 0;
+    let dayDragOffsetY = 0;
 
-    window.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'INSTALL_APP') {
-        const { name, image, url } = event.data;
-        addInstalledAppToGrid(name, image, url, true);
+    dayDisplay.addEventListener('mousedown', (e) => {
+      if (e.button === 2) {
+        e.preventDefault();
+        e.stopPropagation();
+        isDraggingDay = true;
+        dayDisplay.classList.add('dragging');
+
+        const rect = dayDisplay.getBoundingClientRect();
+        dayDisplay.style.transform = 'none';
+        dayDisplay.style.left = rect.left + 'px';
+        dayDisplay.style.top = rect.top + 'px';
+
+        dayDragOffsetX = e.clientX - rect.left;
+        dayDragOffsetY = e.clientY - rect.top;
       }
     });
 
-    function showAppContextMenu(e, name, url, element) {
+    window.addEventListener('mousemove', (e) => {
+      if (isDraggingDay) {
+        let newX = e.clientX - dayDragOffsetX;
+        let newY = e.clientY - dayDragOffsetY;
+
+        newX = Math.round(newX / 4) * 4;
+        newY = Math.round(newY / 4) * 4;
+
+        dayDisplay.style.left = newX + 'px';
+        dayDisplay.style.top = newY + 'px';
+      }
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 2 && isDraggingDay) {
+        isDraggingDay = false;
+        dayDisplay.classList.remove('dragging');
+      }
+    });
+
+    dayDisplay.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      contextMenu.classList.remove('active');
-      
-      const menuWidth = 220;
-      const menuHeight = 50;
-      let posX = e.clientX, posY = e.clientY;
+    });
+    // --- END DAY DISPLAY LOGIC ---
 
-      if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
-      if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
-
-      appContextMenu.style.left = `${posX}px`;
-      appContextMenu.style.top = `${posY}px`;
-      appContextMenu.classList.add('active');
-
-      const deleteBtn = document.getElementById('deleteAppBtn');
-      deleteBtn.onclick = () => {
-        appContextMenu.classList.remove('active');
-        deleteInstalledApp(name, url, element);
+    function saveState() {
+      const state = {
+        wallpaperSrc: currentWallpaperUrl,
+        wallpaperType: currentWallpaperType,
+        shelfPosition: currentPosition,
+        autohide: isAutohideEnabled,
+        loopVideo: isVideoLooping,
+        rainActive: isRainActive,
+        apps: Array.from(document.querySelectorAll('#mainAppGrid .app-icon')).map(app => ({
+          name: app.querySelector('span').textContent,
+          icon: app.querySelector('img').src,
+          url: app.getAttribute('onclick').match(/'([^']*)'/g)[2].replace(/'/g, '')
+        }))
       };
+      localStorage.setItem('osState', JSON.stringify(state));
     }
 
-    function deleteInstalledApp(name, url, element) {
-      installedApps = installedApps.filter(app => !(app.name === name && app.url === url));
-      saveSystemState();
-      
-      if (element) {
-        element.remove();
-      }
+    function loadState() {
+      const state = JSON.parse(localStorage.getItem('osState'));
+      if (state) {
+        if (state.apps && state.apps.length > 0) {
+          const grid = document.getElementById('mainAppGrid');
+          grid.innerHTML = '';
+          state.apps.forEach(app => {
+            const el = document.createElement('div');
+            el.className = 'app-icon';
+            el.setAttribute('onclick', `openApp('${app.name}', '${app.icon}', '${app.url}')`);
+            el.innerHTML = `<div class="icon-img"><img src="${app.icon}" alt="${app.name}"></div><span>${app.name}</span>`;
+            grid.appendChild(el);
+          });
+        }
+        
+        currentPosition = state.shelfPosition || 'bottom';
+        setShelfPosition(currentPosition);
 
-      const iframes = document.querySelectorAll('iframe');
-      iframes.forEach(iframe => {
-        try {
-          iframe.contentWindow.postMessage({ type: 'UNINSTALL_APP', name, url }, '*');
-        } catch (err) {}
+        isAutohideEnabled = state.autohide || false;
+        document.getElementById('autohideLabel').textContent = isAutohideEnabled ? "Disable Autohide" : "Autohide Shelf";
+        if(isAutohideEnabled) shelf.classList.add('autohide');
+
+        isVideoLooping = state.loopVideo !== false;
+        document.getElementById('loopVideoModalBtn').textContent = isVideoLooping ? "Loop Video: ON" : "Loop Video: OFF";
+
+        isRainActive = state.rainActive !== false;
+        document.getElementById('rainModalBtn').textContent = isRainActive ? "Rain Effect: ON" : "Rain Effect: OFF";
+        if(isRainActive) initRain(); else ctxRain.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+
+        if (state.wallpaperSrc) {
+          setWallpaper(state.wallpaperSrc, state.wallpaperType || 'image');
+        }
+      } else {
+        initRain();
+      }
+      updateInstalledApps();
+    }
+
+    // --- GitHub Wallpaper Fetcher ---
+    function renderWallpapers() {
+      wg.innerHTML = '';
+      wallpapers.forEach(wp => {
+        const div = document.createElement('div');
+        div.className = 'wallpaper-option';
+        const isVideo = wp.url.toLowerCase().endsWith('.mp4');
+
+        if(isVideo) {
+          const vid = document.createElement('video');
+          vid.src = wp.url;
+          vid.muted = true; 
+          vid.loop = true;
+          div.appendChild(vid);
+          div.addEventListener('mouseenter', () => vid.play());
+          div.addEventListener('mouseleave', () => vid.pause());
+        } else {
+          div.style.backgroundImage = `url('${wp.url}')`;
+        }
+        
+        div.onclick = () => { 
+          setWallpaper(wp.url, isVideo ? 'video' : 'image'); 
+          closeWallpaperModal(); 
+          saveState(); 
+        };
+        wg.appendChild(div);
       });
     }
 
-    function addInstalledAppToGrid(name, image, url, shouldSave = true) {
-      const grid = document.getElementById('mainAppGrid');
-      if (!grid) return;
+    async function fetchGitHubWallpapers() {
+      const repoOwner = 'school-rgb';
+      const repoName = 'frutiger-os-wallpaper';
+      const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/`;
 
-      const appCard = document.createElement('div');
-      appCard.className = 'app-icon installed-app';
-      appCard.onclick = () => openApp(name, image, url);
-      appCard.oncontextmenu = (e) => showAppContextMenu(e, name, url, appCard);
-      appCard.innerHTML = `
-        <div class="icon-img"><img src="${image}" alt="${name}"></div>
-        <span>${name}</span>
-      `;
-      grid.appendChild(appCard);
+      try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-      if (shouldSave) {
-        if (!installedApps.some(app => app.name === name && app.url === url)) {
-          installedApps.push({ name, image, url });
-          saveSystemState();
+        const files = await response.json();
+        const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.mp4'];
+
+        const remoteWallpapers = files
+          .filter(file => file.type === 'file' && imageExtensions.some(ext => file.name.toLowerCase().endsWith(ext)))
+          .map(file => ({
+            name: file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, ' '),
+            url: file.download_url
+          }));
+
+        wallpapers.push(...remoteWallpapers);
+        renderWallpapers();
+
+        const state = JSON.parse(localStorage.getItem('osState'));
+        if ((!state || !state.wallpaperSrc) && wallpapers.length > 0) {
+          setWallpaper(wallpapers[0].url, wallpapers[0].url.toLowerCase().endsWith('.mp4') ? 'video' : 'image');
         }
+      } catch (error) {
+        console.error('Failed to load GitHub wallpapers:', error);
+      }
+    }
+
+    function setWallpaper(src, type) {
+      currentWallpaperUrl = src;
+      currentWallpaperType = type;
+      if (type === 'image') {
+        wallpaperContainer.innerHTML = '';
+        wallpaperContainer.style.backgroundImage = `url(${src})`;
+      } else {
+        wallpaperContainer.style.backgroundImage = 'none';
+        wallpaperContainer.innerHTML = `<video src="${src}" autoplay muted ${isVideoLooping ? 'loop' : ''}></video>`;
       }
     }
 
     function toggleVideoLooping() {
       isVideoLooping = !isVideoLooping;
-      const btn = document.getElementById('loopVideoModalBtn');
-      if (btn) btn.textContent = `Loop Video: ${isVideoLooping ? 'ON' : 'OFF'}`;
+      document.getElementById('loopVideoModalBtn').textContent = isVideoLooping ? "Loop Video: ON" : "Loop Video: OFF";
+      const vid = wallpaperContainer.querySelector('video');
+      if (vid) vid.loop = isVideoLooping;
+      saveState();
+    }
 
-      const bgVideo = wallpaperContainer.querySelector('video');
-      if (bgVideo) {
-        bgVideo.loop = isVideoLooping;
-        bgVideo.muted = true;
+    // --- Rain Effect Engine ---
+    const rainCanvas = document.getElementById('rainCanvas');
+    const ctxRain = rainCanvas.getContext('2d');
+    let rainDrops = [];
+    let rainAnimationId;
+
+    function resizeRain() {
+      rainCanvas.width = window.innerWidth;
+      rainCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeRain);
+    resizeRain();
+
+    function initRain() {
+      if(!isRainActive) return;
+      rainDrops = [];
+      for(let i=0; i<150; i++) {
+        rainDrops.push({
+          x: Math.random() * rainCanvas.width,
+          y: Math.random() * rainCanvas.height,
+          l: Math.random() * 20 + 10,
+          s: Math.random() * 10 + 5
+        });
       }
-      saveSystemState();
+      drawRain();
+    }
+
+    function drawRain() {
+      if(!isRainActive) return;
+      ctxRain.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+      ctxRain.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctxRain.lineWidth = 1;
+      ctxRain.beginPath();
+      for(let i=0; i<rainDrops.length; i++) {
+        let d = rainDrops[i];
+        ctxRain.moveTo(d.x, d.y);
+        ctxRain.lineTo(d.x, d.y + d.l);
+        d.y += d.s;
+        if(d.y > rainCanvas.height) {
+          d.y = -d.l;
+          d.x = Math.random() * rainCanvas.width;
+        }
+      }
+      ctxRain.stroke();
+      rainAnimationId = requestAnimationFrame(drawRain);
     }
 
     function toggleRainEffect() {
       isRainActive = !isRainActive;
-      const btn = document.getElementById('rainModalBtn');
-      if (btn) btn.textContent = `Rain Effect: ${isRainActive ? 'ON' : 'OFF'}`;
-      const canvasElem = document.getElementById('rainCanvas');
-      if (canvasElem) canvasElem.style.display = isRainActive ? 'block' : 'none';
-      saveSystemState();
-    }
-
-    /* Rain Canvas Engine */
-    const canvas = document.getElementById('rainCanvas');
-    const ctx = canvas.getContext('2d');
-    let raindrops = [];
-
-    function resizeRainCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeRainCanvas);
-    resizeRainCanvas();
-
-    class Raindrop {
-      constructor() { this.reset(); }
-      reset() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * -canvas.height;
-        this.length = Math.random() * 20 + 10;
-        this.speed = Math.random() * 10 + 10;
-        this.opacity = Math.random() * 0.3 + 0.15;
-      }
-      update() {
-        this.y += this.speed;
-        if (this.y > canvas.height) this.reset();
-      }
-      draw() {
-        ctx.beginPath();
-        ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
-        ctx.lineWidth = 1.2;
-        ctx.moveTo(this.x, this.y);
-        ctx.lineTo(this.x, this.y + this.length);
-        ctx.stroke();
-      }
-    }
-
-    for (let i = 0; i < 120; i++) raindrops.push(new Raindrop());
-
-    function animateRain() {
-      if (isRainActive) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        raindrops.forEach(drop => { drop.update(); drop.draw(); });
-      }
-      requestAnimationFrame(animateRain);
-    }
-    animateRain();
-
-    async function fetchGitHubWallpapers() {
-      const apiEndpoint = "https://api.github.com/repos/school-rgb/frutiger-os-wallpaper/contents/";
-      try {
-        const response = await fetch(apiEndpoint);
-        if (!response.ok) throw new Error("Network error");
-        const files = await response.json();
-        const validMediaFiles = files.filter(file => {
-          const lowerName = file.name.toLowerCase();
-          return lowerName.endsWith('.png') || lowerName.endsWith('.mp4');
-        });
-
-        if (validMediaFiles.length > 0) {
-          populateWallpaperModal(validMediaFiles);
-          if (!currentWallpaperUrl) {
-            setWallpaper(validMediaFiles[0].download_url, validMediaFiles[0].name.toLowerCase().endsWith('.mp4') ? 'video' : 'image');
-          }
-        } else {
-          loadFallbackWallpapers();
-        }
-      } catch (err) {
-        loadFallbackWallpapers();
-      }
-    }
-
-    function loadFallbackWallpapers() {
-      const fallbacks = [
-        { name: "wallpaper1.png", download_url: "https://raw.githubusercontent.com/school-rgb/frutiger-os-wallpaper/main/Frutiger%20Aero%20Wallpaper%201.png" },
-        { name: "wallpaper2.png", download_url: "https://raw.githubusercontent.com/school-rgb/frutiger-os-wallpaper/main/Frutiger%20Aero%20Wallpaper%202.png" }
-      ];
-      populateWallpaperModal(fallbacks);
-      if (!currentWallpaperUrl) {
-        setWallpaper(fallbacks[0].download_url, 'image');
-      }
-    }
-
-    function populateWallpaperModal(mediaList) {
-      const grid = document.getElementById('wallpaperGridContainer');
-      grid.innerHTML = '';
-      mediaList.forEach(item => {
-        const url = item.download_url;
-        const isVideo = item.name.toLowerCase().endsWith('.mp4');
-        const opt = document.createElement('div');
-        opt.className = 'wallpaper-option';
-
-        if (isVideo) {
-          opt.innerHTML = `<video src="${url}#t=0.1" preload="metadata" muted></video>`;
-        } else {
-          opt.style.backgroundImage = `url('${url}')`;
-        }
-
-        opt.onclick = () => setWallpaper(url, isVideo ? 'video' : 'image');
-        grid.appendChild(opt);
-      });
-    }
-
-    function setWallpaper(url, type, shouldSave = true) {
-      currentWallpaperUrl = url;
-      currentWallpaperType = type;
-      wallpaperContainer.innerHTML = '';
-      if (type === 'video') {
-        wallpaperContainer.style.backgroundImage = 'none';
-        const vid = document.createElement('video');
-        vid.src = url;
-        vid.autoplay = true;
-        vid.loop = isVideoLooping;
-        vid.muted = true;
-        vid.playsInline = true;
-        wallpaperContainer.appendChild(vid);
+      document.getElementById('rainModalBtn').textContent = isRainActive ? "Rain Effect: ON" : "Rain Effect: OFF";
+      if(isRainActive) {
+        initRain();
       } else {
-        wallpaperContainer.style.backgroundImage = `url('${url}')`;
+        cancelAnimationFrame(rainAnimationId);
+        ctxRain.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
       }
-      closeWallpaperModal();
-      if (shouldSave) saveSystemState();
+      saveState();
     }
 
-    function updateClock() {
+    // Live Clock Update
+    setInterval(() => {
       const now = new Date();
-      let hours = now.getHours();
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      hours = hours % 12 || 12;
-      const clockElem = document.getElementById('clockTime');
-      if (clockElem) clockElem.textContent = `${hours}:${minutes}`;
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
+      let h = now.getHours(), m = now.getMinutes();
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      m = m < 10 ? '0'+m : m;
+      document.getElementById('clockTime').textContent = `${h}:${m} ${ampm}`;
+    }, 1000);
 
-    // --- MUSIC ENGINE WITH SCHOOL UNBLOCK FALLBACK ---
-    async function executeMusicSearch(keyword, limit = 25) {
-      if (!keyword) return;
-      const url = `https://api.qijieya.cn/meting/?type=search&id=${encodeURIComponent(keyword)}&limit=${encodeURIComponent(limit)}&server=netease`;
+    // Context Menu Logic
+    window.addEventListener('contextmenu', e => {
+      if (e.target.closest('#launcherMenu') || e.target.closest('.app-window') || e.target.closest('#dayDisplay')) return;
       
-      const playlistElem = document.getElementById('mpPlaylistContainer');
-      if (playlistElem) {
-        playlistElem.innerHTML = `<div style="padding:30px; text-align:center; color:#71717a; font-size:13px;">Searching tracks for "${keyword}"...</div>`;
-      }
-
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        
-        if (Array.isArray(data) && data.length > 0) {
-          musicSearchResults = data;
-          activeViewMode = 'discover';
-          updateSidebarActiveState();
-          renderMusicProPlaylist();
-          saveSystemState();
-        } else {
-          throw new Error("Empty API response");
-        }
-      } catch (error) {
-        console.warn("External API blocked or failed. Loading school-safe offline Lofi tracks.", error);
-        musicSearchResults = defaultLofiTracks;
-        activeViewMode = 'discover';
-        updateSidebarActiveState();
-        renderMusicProPlaylist();
-        saveSystemState();
-      }
-    }
-
-    function triggerMusicSearchFromInput() {
-      const input = document.getElementById('mpSearchInput');
-      if (input && input.value.trim() !== '') {
-        executeMusicSearch(input.value.trim());
-      }
-    }
-
-    function toggleLikeTrack(e, trackId) {
-      e.stopPropagation();
-      const trackStrId = String(trackId);
-      if (likedTracks.has(trackStrId)) {
-        likedTracks.delete(trackStrId);
-      } else {
-        likedTracks.add(trackStrId);
-      }
-      renderMusicProPlaylist();
-      saveSystemState();
-    }
-
-    function switchMusicView(mode) {
-      activeViewMode = mode;
-      updateSidebarActiveState();
-      renderMusicProPlaylist();
-    }
-
-    function updateSidebarActiveState() {
-      const discoverNav = document.getElementById('navDiscover');
-      const libraryNav = document.getElementById('navLibrary');
-      if (discoverNav) discoverNav.classList.toggle('active', activeViewMode === 'discover');
-      if (libraryNav) libraryNav.classList.toggle('active', activeViewMode === 'liked');
-    }
-
-    function createNewPlaylistPrompt() {
-      const playlistName = prompt("Enter new playlist name:");
-      if (playlistName && playlistName.trim() !== "") {
-        const trimmed = playlistName.trim();
-        if (!userPlaylists.includes(trimmed)) {
-          userPlaylists.push(trimmed);
-          renderPlaylistsSidebar();
-          saveSystemState();
-        }
-      }
-    }
-
-    function renderPlaylistsSidebar() {
-      const container = document.getElementById('userPlaylistsContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      userPlaylists.forEach(plName => {
-        const div = document.createElement('div');
-        div.className = `mp-playlist-link ${activeViewMode === 'pl:' + plName ? 'active' : ''}`;
-        div.textContent = plName;
-        div.onclick = () => {
-          activeViewMode = 'pl:' + plName;
-          updateSidebarActiveState();
-          renderMusicProPlaylist();
-        };
-        container.appendChild(div);
-      });
-    }
-
-    function togglePlaylistMenu(e, idx) {
-      e.stopPropagation();
-      document.querySelectorAll('.playlist-popup-menu').forEach(m => {
-        if (m.id !== `popup-${idx}`) m.classList.remove('active');
-      });
-
-      const popup = document.getElementById(`popup-${idx}`);
-      if (popup) {
-        popup.classList.toggle('active');
-      }
-    }
-
-    function addTrackToPlaylist(trackIdx, playlistName) {
-      const track = musicSearchResults[trackIdx];
-      if (!track) return;
-      if (!track.playlists) track.playlists = new Set();
-      track.playlists.add(playlistName);
-      
-      const popup = document.getElementById(`popup-${trackIdx}`);
-      if (popup) popup.classList.remove('active');
-      alert(`Added "${track.name || track.title}" to playlist "${playlistName}"`);
-      saveSystemState();
-    }
-
-    function renderMusicProPlaylist() {
-      const container = document.getElementById('mpPlaylistContainer');
-      if (!container) return;
-
-      container.innerHTML = '';
-
-      let listToRender = musicSearchResults;
-      if (activeViewMode === 'liked') {
-        listToRender = musicSearchResults.filter(t => likedTracks.has(String(t.id)));
-      } else if (activeViewMode.startsWith('pl:')) {
-        const plName = activeViewMode.substring(3);
-        listToRender = musicSearchResults.filter(t => t.playlists && t.playlists.has(plName));
-      }
-
-      if (listToRender.length === 0) {
-        container.innerHTML = `<div style="padding:40px; text-align:center; color:#71717a; font-size:13px;">No tracks found in this view. Try searching or switching views!</div>`;
-        return;
-      }
-
-      listToRender.forEach((track, displayIdx) => {
-        const realIdx = musicSearchResults.indexOf(track);
-        const isPlaying = realIdx === currentTrackIdx;
-        const trackId = String(track.id || realIdx);
-        const isLiked = likedTracks.has(trackId);
-
-        const item = document.createElement('div');
-        item.className = `mp-track-item ${isPlaying ? 'playing' : ''}`;
-        item.onclick = () => selectTrack(realIdx);
-
-        const coverImg = track.pic 
-          ? `<img src="${track.pic}" class="mp-track-cover" alt="cover">` 
-          : `<div class="mp-track-cover" style="display:flex;align-items:center;justify-content:center;">🎵</div>`;
-
-        const trackNumDisplay = isPlaying 
-          ? `<img src="${PNGS.playRow}" alt="playing">` 
-          : (displayIdx + 1);
-
-        let playlistOptionsHtml = '';
-        userPlaylists.forEach(pl => {
-          playlistOptionsHtml += `<div class="playlist-popup-item" onclick="event.stopPropagation(); addTrackToPlaylist(${realIdx}, '${pl}')"><span>${pl}</span></div>`;
-        });
-
-        item.innerHTML = `
-          <div class="mp-track-num">${trackNumDisplay}</div>
-          <div class="mp-track-info-left">
-            ${coverImg}
-            <div class="mp-track-names">
-              <h5>${track.name || track.title || 'Unknown Title'}</h5>
-              <p>${track.artist || track.author || 'Artist'}</p>
-            </div>
-          </div>
-          <div class="mp-track-album">${track.album || 'Single / Lofi'}</div>
-          <div class="mp-track-duration">03:45</div>
-          <div class="mp-track-actions">
-            <button class="mp-action-btn ${isLiked ? 'active' : ''}" onclick="toggleLikeTrack(event, '${trackId}')" title="Like / Unlike">
-              <img src="${isLiked ? PNGS.heartFilled : PNGS.heartOutline}" alt="like">
-            </button>
-            <button class="mp-action-btn" onclick="togglePlaylistMenu(event, ${realIdx})" title="Add to playlist">
-              <img src="${PNGS.more}" alt="more">
-            </button>
-            <div class="playlist-popup-menu" id="popup-${realIdx}">
-              <div class="playlist-popup-title">Add to Playlist</div>
-              ${playlistOptionsHtml}
-            </div>
-          </div>
-        `;
-        container.appendChild(item);
-      });
-    }
-
-    function selectTrack(idx) {
-      if (idx < 0 || idx >= musicSearchResults.length) return;
-      currentTrackIdx = idx;
-      const track = musicSearchResults[idx];
-
-      const titleElem = document.getElementById('mpCurrentTitle');
-      const artistElem = document.getElementById('mpCurrentArtist');
-      const coverElem = document.getElementById('mpCurrentCover');
-      
-      if (titleElem) titleElem.textContent = track.name || track.title || 'Unknown Track';
-      if (artistElem) artistElem.textContent = track.artist || track.author || 'Lofi Artist';
-
-      if (coverElem) {
-        if (track.pic) {
-          coverElem.innerHTML = `<img src="${track.pic}" alt="cover">`;
-        } else {
-          coverElem.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;">🎵</div>`;
-        }
-      }
-
-      if (track.url) {
-        masterAudio.src = track.url;
-        masterAudio.play().then(() => {
-          isMusicPlaying = true;
-          const mainBtnImg = document.getElementById('mpPlayBtnImg');
-          if (mainBtnImg) mainBtnImg.src = PNGS.pauseBtn;
-        }).catch(err => {
-          console.error("Audio playback error:", err);
-        });
-      }
-
-      renderMusicProPlaylist();
-    }
-
-    function togglePlayMusicPro() {
-      if (currentTrackIdx === -1 && musicSearchResults.length > 0) {
-        selectTrack(0);
-        return;
-      }
-      
-      if (masterAudio.paused) {
-        if (!masterAudio.src && musicSearchResults[currentTrackIdx]?.url) {
-          masterAudio.src = musicSearchResults[currentTrackIdx].url;
-        }
-        masterAudio.play().then(() => {
-          isMusicPlaying = true;
-          const mainBtnImg = document.getElementById('mpPlayBtnImg');
-          if (mainBtnImg) mainBtnImg.src = PNGS.pauseBtn;
-        }).catch(e => console.log(e));
-      } else {
-        masterAudio.pause();
-        isMusicPlaying = false;
-        const mainBtnImg = document.getElementById('mpPlayBtnImg');
-        if (mainBtnImg) mainBtnImg.src = PNGS.playBtn;
-      }
-    }
-
-    function playNextTrack() {
-      if (musicSearchResults.length === 0) return;
-      currentTrackIdx = (currentTrackIdx + 1) % musicSearchResults.length;
-      selectTrack(currentTrackIdx);
-    }
-
-    function playPrevTrack() {
-      if (musicSearchResults.length === 0) return;
-      currentTrackIdx = (currentTrackIdx - 1 + musicSearchResults.length) % musicSearchResults.length;
-      selectTrack(currentTrackIdx);
-    }
-
-    function setMusicVolume(val) {
-      masterAudio.volume = val / 100;
-    }
-
-    function seekMusicBar(e) {
-      if (!masterAudio.duration) return;
-      const progressBar = e.currentTarget;
-      const rect = progressBar.getBoundingClientRect();
-      const offsetX = e.clientX - rect.left;
-      const pct = offsetX / rect.width;
-      masterAudio.currentTime = pct * masterAudio.duration;
-    }
-
-    masterAudio.addEventListener('timeupdate', () => {
-      if (!masterAudio.duration) return;
-      const pct = (masterAudio.currentTime / masterAudio.duration) * 100;
-      const fill = document.getElementById('mpProgressFill');
-      if (fill) fill.style.width = `${pct}%`;
-
-      const curMin = Math.floor(masterAudio.currentTime / 60);
-      const curSec = Math.floor(masterAudio.currentTime % 60).toString().padStart(2, '0');
-      const durMin = Math.floor(masterAudio.duration / 60) || 0;
-      const durSec = Math.floor(masterAudio.duration % 60).toString().padStart(2, '0');
-      
-      const timeElem = document.getElementById('mpCurrentTime');
-      const durElem = document.getElementById('mpCurrentDuration');
-      if (timeElem) timeElem.textContent = `${curMin}:${curSec}`;
-      if (durElem) durElem.textContent = `${durMin}:${durSec}`;
-    });
-
-    masterAudio.addEventListener('ended', () => {
-      playNextTrack();
-    });
-
-    // Window Management System
-    function openApp(title, iconUrl, targetUrl) {
-      launcher.classList.remove('active');
-      const appId = 'win-' + title.replace(/\s+/g, '-').toLowerCase();
-
-      let appWin = document.getElementById(appId);
-      
-      if (appWin) {
-        appWin.classList.remove('hidden');
-        openApps[appId].isMinimized = false;
-        bringToFront(appWin);
-        updateShelfAutoHideState();
-        renderDockItems();
-        return;
-      }
-
-      appWin = document.createElement('div');
-      appWin.className = 'app-window windowed';
-      appWin.id = appId;
-
-      const windowOffset = (Object.keys(openApps).length % 5) * 20;
-      appWin.style.left = `${Math.max(20, (window.innerWidth - 950) / 2 + windowOffset)}px`;
-      appWin.style.top = `${Math.max(20, (window.innerHeight - 600) / 2 + windowOffset)}px`;
-
-      let bodyContent = '';
-
-      if (targetUrl === 'native:music') {
-        bodyContent = `
-          <div class="music-player-pro">
-            <div class="mp-main-layout">
-              <div class="mp-sidebar">
-                <div>
-                  <div class="mp-sidebar-title">Menu</div>
-                  <div class="mp-nav-item active" id="navDiscover" onclick="switchMusicView('discover')">
-                    <img src="${PNGS.discover}" alt="discover">
-                    <span>Discover</span>
-                  </div>
-                  <div class="mp-nav-item" id="navLibrary" onclick="switchMusicView('liked')">
-                    <img src="${PNGS.library}" alt="library">
-                    <span>My Library</span>
-                  </div>
-                </div>
-
-                <div>
-                  <div class="mp-sidebar-title">Playlists</div>
-                  <div class="mp-playlists-box" id="userPlaylistsContainer"></div>
-                  <button class="mp-create-playlist-btn" onclick="createNewPlaylistPrompt()">+ New Playlist</button>
-                </div>
-              </div>
-              <div class="mp-content-area">
-                <div class="mp-search-bar-container">
-                  <input type="text" id="mpSearchInput" value="Lofi" placeholder="Search songs, artists..." onkeydown="if(event.key==='Enter') triggerMusicSearchFromInput()">
-                  <button onclick="triggerMusicSearchFromInput()">
-                    <img src="${PNGS.search}" alt="search">
-                    <span>Search</span>
-                  </button>
-                </div>
-                
-                <div class="mp-tracklist-header">
-                  <div>#</div>
-                  <div>Title</div>
-                  <div>Album</div>
-                  <div>Duration</div>
-                  <div style="text-align:right;">Actions</div>
-                </div>
-
-                <div class="mp-playlist" id="mpPlaylistContainer"></div>
-              </div>
-            </div>
-            
-            <div class="mp-player-bar">
-              <div class="mp-current-track">
-                <div class="mp-current-cover" id="mpCurrentCover">
-                  <div style="display:flex;align-items:center;justify-content:center;height:100%;">🎵</div>
-                </div>
-                <div style="overflow:hidden;">
-                  <h4 style="font-size:13px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" id="mpCurrentTitle">Lofi Chill Beats</h4>
-                  <p style="font-size:11px; color:#a1a1aa; margin-top:2px;" id="mpCurrentArtist">Study Vibes</p>
-                </div>
-              </div>
-
-              <div class="mp-controls-center">
-                <div class="mp-buttons">
-                  <button class="mp-btn-sec" onclick="playPrevTrack()">
-                    <img src="${PNGS.prevBtn}" alt="prev">
-                  </button>
-                  <button class="mp-btn-main" onclick="togglePlayMusicPro()">
-                    <img id="mpPlayBtnImg" src="${PNGS.playBtn}" alt="play">
-                  </button>
-                  <button class="mp-btn-sec" onclick="playNextTrack()">
-                    <img src="${PNGS.nextBtn}" alt="next">
-                  </button>
-                </div>
-                <div class="mp-progress-container">
-                  <span id="mpCurrentTime">0:00</span>
-                  <div class="mp-progress-bar" onclick="seekMusicBar(event)"><div class="mp-progress-fill" id="mpProgressFill" style="width: 0%;"></div></div>
-                  <span id="mpCurrentDuration">03:45</span>
-                </div>
-              </div>
-
-              <div class="mp-volume-zone">
-                <img src="${PNGS.volume}" alt="volume">
-                <input type="range" class="mp-volume-slider" min="0" max="100" value="80" oninput="setMusicVolume(this.value)">
-              </div>
-            </div>
-          </div>`;
-      } else if (targetUrl === 'native:calculator') {
-        bodyContent = `
-          <div class="calc-app">
-            <div class="calc-display" id="calcDisplay">0</div>
-            <div class="calc-grid">
-              <button class="calc-btn" onclick="calcInput('C')">C</button>
-              <button class="calc-btn" onclick="calcInput('(')">(</button>
-              <button class="calc-btn" onclick="calcInput(')')">)</button>
-              <button class="calc-btn op" onclick="calcInput('/')">÷</button>
-              <button class="calc-btn" onclick="calcInput('7')">7</button>
-              <button class="calc-btn" onclick="calcInput('8')">8</button>
-              <button class="calc-btn" onclick="calcInput('9')">9</button>
-              <button class="calc-btn op" onclick="calcInput('*')">×</button>
-              <button class="calc-btn" onclick="calcInput('4')">4</button>
-              <button class="calc-btn" onclick="calcInput('5')">5</button>
-              <button class="calc-btn" onclick="calcInput('6')">6</button>
-              <button class="calc-btn op" onclick="calcInput('-')">-</button>
-              <button class="calc-btn" onclick="calcInput('1')">1</button>
-              <button class="calc-btn" onclick="calcInput('2')">2</button>
-              <button class="calc-btn" onclick="calcInput('3')">3</button>
-              <button class="calc-btn op" onclick="calcInput('+')">+</button>
-              <button class="calc-btn" onclick="calcInput('0')">0</button>
-              <button class="calc-btn" onclick="calcInput('.')">.</button>
-              <button class="calc-btn op" style="grid-column: span 2;" onclick="calcInput('=')">=</button>
-            </div>
-          </div>`;
-      } else {
-        bodyContent = `
-          <div style="display:flex; flex-direction:column; height:100%;">
-            <iframe id="iframe-${appId}" src="${targetUrl}"></iframe>
-          </div>`;
-      }
-
-      appWin.innerHTML = `
-        <div class="resize-handle n"></div>
-        <div class="resize-handle s"></div>
-        <div class="resize-handle w"></div>
-        <div class="resize-handle e"></div>
-        <div class="resize-handle nw"></div>
-        <div class="resize-handle ne"></div>
-        <div class="resize-handle sw"></div>
-        <div class="resize-handle se"></div>
-        
-        <div class="window-header">
-          <div class="window-title">
-            <img src="${iconUrl}" alt="icon">
-            <span>${title}</span>
-          </div>
-          <div class="window-controls">
-            <button class="win-btn" title="Minimize" onclick="fakeCloseApp('${appId}')">🗕</button>
-            <button class="win-btn" title="Toggle Windowed/Fullscreen" onclick="toggleWindowMode('${appId}')">
-              <img src="https://img.icons8.com/?size=100&id=6KAje0riRDTQ&format=png&color=000000" alt="Resize">
-            </button>
-            <button class="win-btn close" title="Close" onclick="closeApp('${appId}')">✕</button>
-          </div>
-        </div>
-        <div class="window-body">
-          ${bodyContent}
-        </div>
-      `;
-
-      desktop.appendChild(appWin);
-
-      openApps[appId] = {
-        title,
-        iconUrl,
-        targetUrl,
-        isMinimized: false,
-        element: appWin
-      };
-
-      bringToFront(appWin);
-      makeDraggable(appWin, appWin.querySelector('.window-header'));
-      makeResizable(appWin);
-
-      if (targetUrl === 'native:music') {
-        renderPlaylistsSidebar();
-        renderMusicProPlaylist();
-      }
-
-      appWin.addEventListener('mousedown', () => bringToFront(appWin));
-      updateShelfAutoHideState();
-      renderDockItems();
-    }
-
-    // Calculator Logic
-    let calcVal = '0';
-    function calcInput(char) {
-      const display = document.getElementById('calcDisplay');
-      if (!display) return;
-
-      if (char === 'C') {
-        calcVal = '0';
-      } else if (char === '=') {
-        try { calcVal = eval(calcVal).toString(); } catch { calcVal = 'Error'; }
-      } else {
-        if (calcVal === '0' || calcVal === 'Error') calcVal = char;
-        else calcVal += char;
-      }
-      display.textContent = calcVal;
-    }
-
-    // Alt + Tab Navigation
-    window.addEventListener('keydown', (e) => {
-      if (e.altKey && e.key === 'Tab') {
+      const appIconEl = e.target.closest('.app-icon');
+      if (appIconEl) {
         e.preventDefault();
-        altTabAppKeys = Object.keys(openApps);
-        if (altTabAppKeys.length === 0) return;
+        appContextMenu.style.display = 'flex';
+        appContextMenu.style.left = Math.min(e.pageX, window.innerWidth - 220) + 'px';
+        appContextMenu.style.top = Math.min(e.pageY, window.innerHeight - 80) + 'px';
+        appContextMenu.setAttribute('data-target-app', appIconEl.querySelector('span').textContent);
+        contextMenu.classList.remove('active');
+        return;
+      }
 
-        if (!altTabOverlay.classList.contains('active')) {
-          altTabIndex = 0;
-          altTabOverlay.classList.add('active');
-        } else {
-          altTabIndex = (altTabIndex + 1) % altTabAppKeys.length;
-        }
-        renderAltTabCards();
+      if (!e.target.closest('.shelf') && e.target === document.body || e.target.closest('.desktop')) {
+        e.preventDefault();
+        contextMenu.classList.add('active');
+        contextMenu.style.left = Math.min(e.pageX, window.innerWidth - 220) + 'px';
+        contextMenu.style.top = Math.min(e.pageY, window.innerHeight - 150) + 'px';
+        appContextMenu.style.display = 'none';
       }
     });
 
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'Alt' && altTabOverlay.classList.contains('active')) {
-        altTabOverlay.classList.remove('active');
-        if (altTabAppKeys.length > 0) {
-          const selectedAppId = altTabAppKeys[altTabIndex];
-          const app = openApps[selectedAppId];
-          if (app) {
-            app.element.classList.remove('hidden');
-            app.isMinimized = false;
-            bringToFront(app.element);
-            updateShelfAutoHideState();
-            renderDockItems();
-          }
-        }
+    window.addEventListener('click', e => {
+      if (!e.target.closest('.context-menu')) {
+        contextMenu.classList.remove('active');
+        appContextMenu.style.display = 'none';
       }
     });
 
-    function renderAltTabCards() {
-      altTabOverlay.innerHTML = '';
-      altTabAppKeys.forEach((key, idx) => {
-        const app = openApps[key];
-        const card = document.createElement('div');
-        card.className = `alttab-card ${idx === altTabIndex ? 'selected' : ''}`;
-        card.innerHTML = `
-          <img src="${app.iconUrl}">
-          <span>${app.title}</span>
-        `;
-        altTabOverlay.appendChild(card);
-      });
-    }
-
-    function renderDockItems() {
-      shelfCenter.innerHTML = '';
-      Object.keys(openApps).forEach((appId) => {
-        const app = openApps[appId];
-        const dockIcon = document.createElement('div');
-        dockIcon.className = `shelf-app-icon active`;
-        dockIcon.title = app.title;
-        dockIcon.innerHTML = `<img src="${app.iconUrl}" alt="${app.title}">`;
-
-        dockIcon.onclick = () => {
-          if (app.isMinimized || app.element.classList.contains('hidden')) {
-            app.element.classList.remove('hidden');
-            app.isMinimized = false;
-            bringToFront(app.element);
-          } else if (app.element.style.zIndex == highestZIndex) {
-            fakeCloseApp(appId);
-          } else {
-            bringToFront(app.element);
+    document.getElementById('deleteAppBtn').onclick = () => {
+      const targetAppName = appContextMenu.getAttribute('data-target-app');
+      if (targetAppName) {
+        const appIcons = document.querySelectorAll('#mainAppGrid .app-icon');
+        appIcons.forEach(app => {
+          if (app.querySelector('span').textContent === targetAppName) {
+            app.remove();
           }
-          updateShelfAutoHideState();
-          renderDockItems();
-        };
-
-        shelfCenter.appendChild(dockIcon);
-      });
-    }
-
-    function bringToFront(win) {
-      highestZIndex++;
-      win.style.zIndex = highestZIndex;
-    }
-
-    function fakeCloseApp(appId) {
-      const app = openApps[appId];
-      if (app) {
-        app.element.classList.add('hidden');
-        app.isMinimized = true;
-        updateShelfAutoHideState();
-        renderDockItems();
+        });
+        saveState();
+        updateInstalledApps();
+        appContextMenu.style.display = 'none';
       }
-    }
-
-    function closeApp(appId) {
-      const app = openApps[appId];
-      if (app) {
-        if (appId === 'win-youtube-music' || app.targetUrl === 'native:music') {
-          masterAudio.pause();
-          masterAudio.currentTime = 0;
-          masterAudio.removeAttribute('src');
-          masterAudio.load();
-          isMusicPlaying = false;
-
-          const mainBtnImg = document.getElementById('mpPlayBtnImg');
-          if (mainBtnImg) {
-            mainBtnImg.src = PNGS.playBtn;
-          }
-        }
-
-        const iframe = app.element.querySelector('iframe');
-        if (iframe) {
-          iframe.src = 'about:blank';
-        }
-
-        app.element.remove();
-        delete openApps[appId];
-        updateShelfAutoHideState();
-        renderDockItems();
-      }
-    }
-
-    function toggleWindowMode(appId) {
-      const app = openApps[appId];
-      if (app) {
-        app.element.classList.toggle('windowed');
-        if (!app.element.classList.contains('windowed')) {
-          app.element.style.top = '0px';
-          app.element.style.left = '0px';
-          app.element.style.width = '100vw';
-          app.element.style.height = '100vh';
-        } else {
-          app.element.style.width = '950px';
-          app.element.style.height = '600px';
-          app.element.style.left = `${Math.max(20, (window.innerWidth - 950) / 2)}px`;
-          app.element.style.top = `${Math.max(20, (window.innerHeight - 600) / 2)}px`;
-        }
-        updateShelfAutoHideState();
-      }
-    }
-
-    function setShelfPosition(pos) {
-      shelf.className = `shelf pos-${pos}`;
-      shelfTriggerZone.className = `shelf-trigger-zone pos-${pos}`;
-      launcher.className = `launcher pos-${pos}` + (launcher.classList.contains('active') ? ' active' : '');
-      launcher.style.top = '';
-      launcher.style.left = '';
-      launcher.style.bottom = '';
-      launcher.style.right = '';
-      currentPosition = pos;
-
-      if (isAutohideEnabled) {
-        shelf.classList.add('autohide');
-        shelfTriggerZone.classList.add('active');
-      }
-
-      renderDockItems();
-      saveSystemState();
-    }
+    };
 
     function toggleAlwaysHideShelf() {
       isAutohideEnabled = !isAutohideEnabled;
-      const label = document.getElementById('autohideLabel');
-
-      if (isAutohideEnabled) {
+      document.getElementById('autohideLabel').textContent = isAutohideEnabled ? "Disable Autohide" : "Autohide Shelf";
+      if(isAutohideEnabled) {
         shelf.classList.add('autohide');
         shelfTriggerZone.classList.add('active');
-        label.textContent = 'Disable Autohide Shelf';
       } else {
-        shelf.classList.remove('autohide', 'reveal');
+        shelf.classList.remove('autohide');
         shelfTriggerZone.classList.remove('active');
-        label.textContent = 'Autohide Shelf';
       }
-      updateShelfAutoHideState();
-      saveSystemState();
+      contextMenu.classList.remove('active');
+      saveState();
     }
 
-    function updateShelfAutoHideState() {
-      const activeFullscreenApp = document.querySelector('.app-window:not(.windowed):not(.hidden)');
-      if (activeFullscreenApp || isAutohideEnabled) {
+    function setShelfPosition(pos) {
+      shelf.classList.remove('pos-bottom', 'pos-left', 'pos-right');
+      shelfTriggerZone.classList.remove('pos-bottom', 'pos-left', 'pos-right');
+      launcher.classList.remove('pos-bottom', 'pos-left', 'pos-right', 'dragged-active');
+      
+      launcher.style.transform = '';
+      launcher.style.left = '';
+      launcher.style.top = '';
+      launcher.style.right = '';
+      launcher.style.bottom = '';
+
+      currentPosition = pos;
+      shelf.classList.add(`pos-${pos}`);
+      shelfTriggerZone.classList.add(`pos-${pos}`);
+      launcher.classList.add(`pos-${pos}`);
+
+      contextMenu.classList.remove('active');
+      saveState();
+    }
+
+    shelfTriggerZone.addEventListener('mouseenter', () => {
+      if(isAutohideEnabled || shelf.classList.contains('app-fullscreen-hide')) shelf.classList.add('reveal');
+    });
+    shelf.addEventListener('mouseleave', () => {
+      if(isAutohideEnabled || shelf.classList.contains('app-fullscreen-hide')) shelf.classList.remove('reveal');
+    });
+    shelf.addEventListener('mouseenter', () => {
+      if(isAutohideEnabled || shelf.classList.contains('app-fullscreen-hide')) shelf.classList.add('reveal');
+    });
+
+    function checkFullscreenApps() {
+      let hasMaximized = false;
+      for (const id in openApps) {
+        if (!openApps[id].window.classList.contains('hidden') && openApps[id].isMaximized) {
+          hasMaximized = true;
+          break;
+        }
+      }
+      if (hasMaximized && !isAutohideEnabled) {
         shelf.classList.add('app-fullscreen-hide');
         shelfTriggerZone.classList.add('active');
-      } else {
+      } else if (!isAutohideEnabled) {
         shelf.classList.remove('app-fullscreen-hide', 'reveal');
-        if (!isAutohideEnabled) {
-          shelfTriggerZone.classList.remove('active');
-        }
+        shelfTriggerZone.classList.remove('active');
       }
     }
 
-    shelfTriggerZone.addEventListener('mouseenter', () => shelf.classList.add('reveal'));
-    shelf.addEventListener('mouseleave', () => {
-      if (isAutohideEnabled || document.querySelector('.app-window:not(.windowed):not(.hidden)')) {
-        shelf.classList.remove('reveal');
-      }
-    });
-
-    function openWallpaperModal() {
-      wallpaperModal.classList.add('active');
-      contextMenu.classList.remove('active');
-    }
-
-    function closeWallpaperModal() {
-      wallpaperModal.classList.remove('active');
-    }
-
-    function makeDraggable(element, handle) {
-      let isDragging = false, startX, startY, initialLeft, initialTop;
-
-      handle.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.win-btn')) return;
-
-        isDragging = true;
-        document.body.classList.add('is-interacting');
-        element.classList.add('dragging');
-        
-        if (element.classList.contains('launcher')) {
-          element.classList.add('dragged-active');
-        }
-
-        startX = e.clientX; 
-        startY = e.clientY;
-        
-        const rect = element.getBoundingClientRect();
-        initialLeft = rect.left; 
-        initialTop = rect.top;
-
-        element.style.left = `${initialLeft}px`;
-        element.style.top = `${initialTop}px`;
-        element.style.bottom = 'auto';
-        element.style.right = 'auto';
-
-        const onMouseMove = (e) => {
-          if (!isDragging) return;
-          const deltaX = e.clientX - startX;
-          const deltaY = e.clientY - startY;
-          element.style.left = `${initialLeft + deltaX}px`;
-          element.style.top = `${initialTop + deltaY}px`;
-        };
-
-        const onMouseUp = () => {
-          isDragging = false;
-          document.body.classList.remove('is-interacting');
-          element.classList.remove('dragging');
-          window.removeEventListener('mousemove', onMouseMove);
-          window.removeEventListener('mouseup', onMouseUp);
-        };
-
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      });
-    }
-
-    function makeResizable(element) {
-      const handles = element.querySelectorAll('.resize-handle');
-      handles.forEach(handle => {
-        handle.addEventListener('mousedown', (e) => {
-          e.preventDefault(); 
-          e.stopPropagation();
-          
-          document.body.classList.add('is-interacting');
-          element.classList.add('resizing');
-          
-          let startX = e.clientX;
-          let startY = e.clientY;
-          let rect = element.getBoundingClientRect();
-          let startWidth = rect.width;
-          let startHeight = rect.height;
-          let startLeft = rect.left;
-          let startTop = rect.top;
-
-          element.style.left = `${startLeft}px`;
-          element.style.top = `${startTop}px`;
-          element.style.bottom = 'auto';
-          element.style.right = 'auto';
-
-          const doResize = (e) => {
-            let dx = e.clientX - startX;
-            let dy = e.clientY - startY;
-
-            if (handle.classList.contains('e') || handle.classList.contains('se') || handle.classList.contains('ne')) {
-              element.style.width = `${Math.max(280, startWidth + dx)}px`;
-            }
-            if (handle.classList.contains('s') || handle.classList.contains('se') || handle.classList.contains('sw')) {
-              element.style.height = `${Math.max(180, startHeight + dy)}px`;
-            }
-            if (handle.classList.contains('w') || handle.classList.contains('nw') || handle.classList.contains('sw')) {
-              let newWidth = startWidth - dx;
-              if (newWidth > 280) { 
-                element.style.width = `${newWidth}px`; 
-                element.style.left = `${startLeft + dx}px`; 
-              }
-            }
-            if (handle.classList.contains('n') || handle.classList.contains('nw') || handle.classList.contains('ne')) {
-              let newHeight = startHeight - dy;
-              if (newHeight > 180) { 
-                element.style.height = `${newHeight}px`; 
-                element.style.top = `${startTop + dy}px`; 
-              }
-            }
-          };
-
-          const stopResize = () => {
-            document.body.classList.remove('is-interacting');
-            element.classList.remove('resizing');
-            window.removeEventListener('mousemove', doResize);
-            window.removeEventListener('mouseup', stopResize);
-          };
-
-          window.addEventListener('mousemove', doResize);
-          window.addEventListener('mouseup', stopResize);
-        });
-      });
-    }
-
-    makeDraggable(launcher, launcherDragHandle);
-    makeResizable(launcher);
-
-    window.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      if (appContextMenu) appContextMenu.classList.remove('active');
-      const menuWidth = contextMenu.offsetWidth || 220;
-      const menuHeight = contextMenu.offsetHeight || 180;
-      let posX = e.clientX, posY = e.clientY;
-
-      if (posX + menuWidth > window.innerWidth) posX = window.innerWidth - menuWidth - 10;
-      if (posY + menuHeight > window.innerHeight) posY = window.innerHeight - menuHeight - 10;
-
-      contextMenu.style.left = `${posX}px`; contextMenu.style.top = `${posY}px`;
-      contextMenu.classList.add('active');
-    });
-
-    window.addEventListener('click', (e) => {
-      if (!contextMenu.contains(e.target)) {
-        contextMenu.classList.remove('active');
-      }
-
-      if (appContextMenu && !appContextMenu.contains(e.target)) {
-        appContextMenu.classList.remove('active');
-      }
-
-      if (wallpaperModal.classList.contains('active') && !wallpaperModal.contains(e.target)) {
-        if (!e.target.closest('.context-item')) {
-          closeWallpaperModal();
-        }
-      }
-
-      document.querySelectorAll('.playlist-popup-menu').forEach(m => {
-        if (!m.contains(e.target) && !e.target.closest('.mp-action-btn')) {
-          m.classList.remove('active');
-        }
-      });
-    });
+    function openWallpaperModal() { wallpaperModal.classList.add('active'); contextMenu.classList.remove('active'); }
+    function closeWallpaperModal() { wallpaperModal.classList.remove('active'); }
 
     function toggleLauncher(e) {
-      if (e) e.stopPropagation();
+      if(e) e.stopPropagation();
       launcher.classList.toggle('active');
-      if (launcher.classList.contains('active')) {
-        bringToFront(launcher);
-      }
+      updateInstalledApps();
     }
 
-    desktop.addEventListener('click', () => launcher.classList.remove('active'));
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.launcher') && !e.target.closest('#launcherBtn')) {
+        launcher.classList.remove('active');
+      }
+    });
+
+    let isDraggingLauncher = false;
+    let launcherOffsetX, launcherOffsetY;
+
+    launcherDragHandle.addEventListener('mousedown', (e) => {
+      isDraggingLauncher = true;
+      launcher.classList.add('dragging');
+      launcher.classList.add('dragged-active'); 
+      const rect = launcher.getBoundingClientRect();
+      launcher.style.transform = 'none'; 
+      launcher.style.left = rect.left + 'px';
+      launcher.style.top = rect.top + 'px';
+      launcher.style.bottom = 'auto';
+      launcher.style.right = 'auto';
+
+      launcherOffsetX = e.clientX - rect.left;
+      launcherOffsetY = e.clientY - rect.top;
+    });
+
+    let currentResizingElement = null;
+    let resizeDir = '';
+    let startW, startH, startX, startY, startLeft, startTop;
+
+    function initResize(e, el, dir) {
+      e.preventDefault();
+      e.stopPropagation();
+      currentResizingElement = el;
+      resizeDir = dir;
+      el.classList.add('resizing');
+      document.body.classList.add('is-interacting');
+      const rect = el.getBoundingClientRect();
+      startW = rect.width;
+      startH = rect.height;
+      startX = e.clientX;
+      startY = e.clientY;
+      startLeft = rect.left;
+      startTop = rect.top;
+    }
+
+    document.querySelectorAll('.launcher .resize-handle').forEach(handle => {
+      handle.addEventListener('mousedown', e => {
+        initResize(e, launcher, handle.className.replace('resize-handle ', ''));
+      });
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (isDraggingLauncher) {
+        launcher.style.left = (e.clientX - launcherOffsetX) + 'px';
+        launcher.style.top = (e.clientY - launcherOffsetY) + 'px';
+      }
+
+      if (currentResizingElement) {
+        let dw = e.clientX - startX;
+        let dh = e.clientY - startY;
+
+        if (resizeDir.includes('e')) {
+          currentResizingElement.style.width = Math.max(300, startW + dw) + 'px';
+        }
+        if (resizeDir.includes('s')) {
+          currentResizingElement.style.height = Math.max(300, startH + dh) + 'px';
+        }
+        if (resizeDir.includes('w')) {
+          let newW = Math.max(300, startW - dw);
+          if(newW > 300) {
+            currentResizingElement.style.width = newW + 'px';
+            currentResizingElement.style.left = (startLeft + dw) + 'px';
+          }
+        }
+        if (resizeDir.includes('n')) {
+          let newH = Math.max(300, startH - dh);
+          if(newH > 300) {
+            currentResizingElement.style.height = newH + 'px';
+            currentResizingElement.style.top = (startTop + dh) + 'px';
+          }
+        }
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDraggingLauncher = false;
+      if(launcher) launcher.classList.remove('dragging');
+      if (currentResizingElement) {
+        currentResizingElement.classList.remove('resizing');
+        document.body.classList.remove('is-interacting');
+        currentResizingElement = null;
+      }
+    });
+
+    function updateInstalledApps() {
+      installedApps = Array.from(document.querySelectorAll('#mainAppGrid .app-icon')).map(app => {
+        return {
+          name: app.querySelector('span').textContent,
+          icon: app.querySelector('img').src,
+          url: app.getAttribute('onclick').match(/'([^']*)'/g)[2].replace(/'/g, '')
+        };
+      });
+    }
 
     const searchInput = document.getElementById('searchInput');
     const defaultView = document.getElementById('defaultView');
     const searchView = document.getElementById('searchView');
 
     searchInput.addEventListener('input', (e) => {
-      const query = e.target.value.toLowerCase().trim();
-      if (query.length > 0) {
-        defaultView.classList.add('hidden');
-        searchView.classList.add('active');
-
-        const allApps = [
-          { name: 'youtube music', image: 'https://s3-new.macosicons.com/macosicons/parse/YouTube_Music_uMLkLyLosI_lowResPng-666ed2b471.png', url: 'native:music' },
-          { name: 'Notes', image: 'https://s3-new.macosicons.com/macosicons/parse/Notes___Notion_3d9hiH596D_lowResPng-ac1e518731.png', url: 'APP/Notes.html' },
-          { name: 'Calculator', image: 'https://s3-new.macosicons.com/macosicons/parse/Calculator_X2nf0xqSyB_lowResPng-2d1849769a.png', url: 'native:calculator' },
-          { name: 'banana AI', image: 'https://s3-new.macosicons.com/macosicons/parse/Nano_Banana_Pro__Google_Gemini_3.0__AI__Liquid_Glass__BGy9DUCRso_lowResPng-bd48b4ee2f.png', url: 'APP/ai.html' },
-          { name: 'Anime Cloud', image: 'https://s3-new.macosicons.com/macosicons/parse/Adobe_Creative_Cloud_8LShPVGzjf_lowResPng-a6f930c87d.png', url: 'https://school-rgb.github.io/anime-movies-in-html/' },
-          { name: 'YouTube', image: 'https://s3-new.macosicons.com/macosicons/parse/YouTube__uniform_gray__9ybfHR4PPH_lowResPng-69278f7332.png', url: 'https://www.youtube.com' },
-          { name: 'frutiger game', image: 'https://s3-new.macosicons.com/macosicons/parse/Logitech_G_Hub_INojBjnA6O_lowResPng-2edb1ed2a1.png', url: 'APP/gamehub.html' },
-          { name: 'movies', image: 'https://s3-new.macosicons.com/macosicons/parse/Netflix__Liquid_Glass__XEYDfr6c2L_lowResPng-4534d600ca.png', url: 'APP/movies.html' },
-          { name: 'geometry dash', image: 'https://th.bing.com/th/id/R.67dcf797f79315589cc8b18f502f93f5?rik=A7ss82CSOJPrkg&riu=http%3a%2f%2fvignette2.wikia.nocookie.net%2fgeometry-dash%2fimages%2f9%2f90%2fGeometryDash.png%2frevision%2flatest%3fcb%3d20160224042843&ehk=Hvk2rFdCmF08iQinZYieMsLbvo4NDNdKYic8xB6GqZE%3d&risl=&pid=ImgRaw&r=0', url: 'APP/Geometry Dash (1).html' },
-          { name: 'Plants vs. Zombies 2 Gardenless', image: 'https://th.bing.com/th/id/OIP.dqZAfbbyk9LZmU43iotB3wHaHa?w=173&h=183&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3', url: 'APP/Plants vs. Zombies 2 Gardenless.html' },
-          { name: 'Subway Surfers', image: 'https://macmagazine.com.br/wp-content/uploads/2012/09/17-icone-subway-surfers.png', url: 'APP/Subway Surfers.html' },
-          { name: 'crossy road', image: 'https://tse3.mm.bing.net/th/id/OIP.h2WLBdFHanMVXtPH277EwAHaHa?r=0&rs=1&pid=ImgDetMain&o=7&rm=3', url: 'APP/clcrossyroad.html' },
-          { name: 'Angry birds epic', image: 'https://assets-prd.ignimgs.com/2023/04/02/angrybirdsepic-1680456723551.jpg', url: 'APP/Angry birds epic.html' }
-        ];
-
-        searchView.innerHTML = '';
-        const filtered = allApps.filter(a => a.name.toLowerCase().includes(query));
-        if (filtered.length > 0) {
-          filtered.forEach(app => {
-            const item = document.createElement('div');
-            item.className = 'search-result-item';
-            item.onclick = () => openApp(app.name, app.image, app.url);
-            item.innerHTML = `<img src="${app.image}"><span>${app.name}</span>`;
-            searchView.appendChild(item);
-          });
-        } else {
-          searchView.innerHTML = '<div style="color:#888; font-size:13px; padding:10px;">No apps found</div>';
-        }
-      } else {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
         defaultView.classList.remove('hidden');
         searchView.classList.remove('active');
+        return;
+      }
+      
+      defaultView.classList.add('hidden');
+      searchView.classList.add('active');
+      searchView.innerHTML = '';
+
+      const localResults = installedApps.filter(app => app.name.toLowerCase().includes(q));
+      
+      if (localResults.length > 0) {
+        searchView.innerHTML += `<div class="search-category-title">Installed Apps</div>`;
+        localResults.forEach(app => {
+          searchView.innerHTML += `
+            <div class="search-result-item" onclick="openApp('${app.name}', '${app.icon}', '${app.url}'); document.getElementById('launcherMenu').classList.remove('active');">
+              <img src="${app.icon}">
+              <span>${app.name}</span>
+            </div>
+          `;
+        });
+      }
+
+      searchView.innerHTML += `<div class="search-category-title">Web Search</div>`;
+      searchView.innerHTML += `
+        <div class="search-result-item" onclick="openApp('Google Search', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png', 'https://www.google.com/search?igu=1&q=${encodeURIComponent(q)}'); document.getElementById('launcherMenu').classList.remove('active');">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png">
+          <span>Search web for "${q}"</span>
+        </div>
+      `;
+    });
+
+    // App Window Lifecycle
+    function openApp(name, iconSrc, url) {
+      if (openApps[name]) {
+        showAppWindow(name);
+        return;
+      }
+
+      launcher.classList.remove('active');
+
+      const win = document.createElement('div');
+      win.className = 'app-window windowed';
+      win.id = `win-${name.replace(/\s+/g, '-')}`;
+      win.style.zIndex = ++highestZIndex;
+      win.style.left = (window.innerWidth / 2 - 475) + 'px';
+      win.style.top = (window.innerHeight / 2 - 300) + 'px';
+
+      const handles = ['n', 's', 'w', 'e', 'nw', 'ne', 'sw', 'se'];
+      handles.forEach(h => {
+        const hDiv = document.createElement('div');
+        hDiv.className = `resize-handle ${h}`;
+        hDiv.addEventListener('mousedown', e => initResize(e, win, h));
+        win.appendChild(hDiv);
+      });
+
+      const header = document.createElement('div');
+      header.className = 'window-header';
+      
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'window-title';
+      titleDiv.innerHTML = `<img src="${iconSrc}"> ${name}`;
+
+      const controlsDiv = document.createElement('div');
+      controlsDiv.className = 'window-controls';
+      
+      const minBtn = document.createElement('button'); minBtn.className = 'win-btn'; minBtn.innerHTML = '−';
+      const maxBtn = document.createElement('button'); maxBtn.className = 'win-btn'; maxBtn.innerHTML = '□';
+      const closeBtn = document.createElement('button'); closeBtn.className = 'win-btn close'; closeBtn.innerHTML = '✕';
+
+      minBtn.onclick = (e) => { e.stopPropagation(); hideAppWindow(name); };
+      maxBtn.onclick = (e) => { e.stopPropagation(); toggleMaximize(name); };
+      closeBtn.onclick = (e) => { e.stopPropagation(); closeApp(name); };
+
+      controlsDiv.append(minBtn, maxBtn, closeBtn);
+      header.append(titleDiv, controlsDiv);
+
+      const body = document.createElement('div');
+      body.className = 'window-body';
+      
+      if (url === 'native:calculator') {
+        body.innerHTML = getCalculatorHTML();
+      } else {
+        body.innerHTML = `<iframe src="${url}"></iframe>`;
+      }
+
+      win.append(header, body);
+      desktop.appendChild(win);
+
+      let isDragging = false, startX, startY, startLeft, startTop;
+      header.addEventListener('mousedown', (e) => {
+        if(e.target.closest('.win-btn') || openApps[name].isMaximized) return;
+        isDragging = true;
+        win.classList.add('dragging');
+        document.body.classList.add('is-interacting');
+        highestZIndex++;
+        win.style.zIndex = highestZIndex;
+        startX = e.clientX; startY = e.clientY;
+        startLeft = parseInt(win.style.left || 0);
+        startTop = parseInt(win.style.top || 0);
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          win.style.left = (startLeft + (e.clientX - startX)) + 'px';
+          win.style.top = (startTop + (e.clientY - startY)) + 'px';
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        win.classList.remove('dragging');
+        document.body.classList.remove('is-interacting');
+      });
+
+      win.addEventListener('mousedown', () => {
+        highestZIndex++;
+        win.style.zIndex = highestZIndex;
+      });
+
+      const shelfIcon = document.createElement('div');
+      shelfIcon.className = 'shelf-app-icon active';
+      shelfIcon.id = `dock-${name.replace(/\s+/g, '-')}`;
+      shelfIcon.innerHTML = `<img src="${iconSrc}">`;
+      shelfIcon.onclick = () => {
+        if (openApps[name].window.classList.contains('hidden')) {
+          showAppWindow(name);
+        } else if (win.style.zIndex == highestZIndex) {
+          hideAppWindow(name);
+        } else {
+          highestZIndex++;
+          win.style.zIndex = highestZIndex;
+        }
+      };
+      shelfCenter.appendChild(shelfIcon);
+
+      openApps[name] = { window: win, dock: shelfIcon, isMaximized: false };
+      checkFullscreenApps();
+      updateAltTabKeys();
+      
+      if(url === 'native:calculator') initCalculator(body);
+    }
+
+    function toggleMaximize(name) {
+      const app = openApps[name];
+      if (app.isMaximized) {
+        app.window.classList.add('windowed');
+        app.window.style.width = '950px';
+        app.window.style.height = '600px';
+        app.window.style.left = (window.innerWidth / 2 - 475) + 'px';
+        app.window.style.top = (window.innerHeight / 2 - 300) + 'px';
+        app.isMaximized = false;
+      } else {
+        app.window.classList.remove('windowed');
+        app.window.style.width = '100vw';
+        app.window.style.height = '100vh';
+        app.window.style.left = '0px';
+        app.window.style.top = '0px';
+        app.isMaximized = true;
+      }
+      highestZIndex++;
+      app.window.style.zIndex = highestZIndex;
+      checkFullscreenApps();
+    }
+
+    function hideAppWindow(name) {
+      openApps[name].window.classList.add('hidden');
+      openApps[name].dock.classList.remove('active');
+      checkFullscreenApps();
+    }
+
+    function showAppWindow(name) {
+      const app = openApps[name];
+      app.window.classList.remove('hidden');
+      app.dock.classList.add('active');
+      highestZIndex++;
+      app.window.style.zIndex = highestZIndex;
+      checkFullscreenApps();
+    }
+
+    function closeApp(name) {
+      openApps[name].window.remove();
+      openApps[name].dock.remove();
+      delete openApps[name];
+      checkFullscreenApps();
+      updateAltTabKeys();
+    }
+
+    // --- Alt-Tab Logic ---
+    function updateAltTabKeys() {
+      altTabAppKeys = Object.keys(openApps);
+    }
+
+    let isAltTabMode = false;
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+        if (altTabAppKeys.length === 0) return;
+        
+        if (!isAltTabMode) {
+          isAltTabMode = true;
+          altTabOverlay.classList.add('active');
+          renderAltTabGrid();
+        }
+        
+        altTabIndex = (altTabIndex + (e.shiftKey ? -1 : 1) + altTabAppKeys.length) % altTabAppKeys.length;
+        updateAltTabSelection();
       }
     });
 
-    loadSystemState();
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Alt' && isAltTabMode) {
+        isAltTabMode = false;
+        altTabOverlay.classList.remove('active');
+        if(altTabAppKeys.length > 0) {
+          const targetApp = altTabAppKeys[altTabIndex];
+          showAppWindow(targetApp);
+        }
+      }
+    });
+
+    function renderAltTabGrid() {
+      altTabOverlay.innerHTML = '';
+      altTabAppKeys.forEach((key, index) => {
+        const appInfo = installedApps.find(a => a.name === key) || { icon: openApps[key].dock.querySelector('img').src };
+        const card = document.createElement('div');
+        card.className = 'alttab-card' + (index === altTabIndex ? ' selected' : '');
+        card.innerHTML = `<img src="${appInfo.icon}"><span>${key}</span>`;
+        altTabOverlay.appendChild(card);
+      });
+    }
+
+    function updateAltTabSelection() {
+      const cards = altTabOverlay.querySelectorAll('.alttab-card');
+      cards.forEach((c, i) => {
+        if(i === altTabIndex) c.classList.add('selected');
+        else c.classList.remove('selected');
+      });
+    }
+
+    // --- Native Calculator Engine ---
+    function getCalculatorHTML() {
+      return `
+        <div class="calc-app">
+          <div class="calc-display" id="calcDisplay">0</div>
+          <div class="calc-grid">
+            <button class="calc-btn op" data-val="C">C</button>
+            <button class="calc-btn op" data-val="DEL">DEL</button>
+            <button class="calc-btn op" data-val="%">%</button>
+            <button class="calc-btn op" data-val="/">÷</button>
+            <button class="calc-btn" data-val="7">7</button>
+            <button class="calc-btn" data-val="8">8</button>
+            <button class="calc-btn" data-val="9">9</button>
+            <button class="calc-btn op" data-val="*">×</button>
+            <button class="calc-btn" data-val="4">4</button>
+            <button class="calc-btn" data-val="5">5</button>
+            <button class="calc-btn" data-val="6">6</button>
+            <button class="calc-btn op" data-val="-">−</button>
+            <button class="calc-btn" data-val="1">1</button>
+            <button class="calc-btn" data-val="2">2</button>
+            <button class="calc-btn" data-val="3">3</button>
+            <button class="calc-btn op" data-val="+">+</button>
+            <button class="calc-btn" data-val="0" style="grid-column: span 2;">0</button>
+            <button class="calc-btn" data-val=".">.</button>
+            <button class="calc-btn op" data-val="=" style="background:#ffffff; color:#000;">=</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function initCalculator(container) {
+      const display = container.querySelector('#calcDisplay');
+      const btns = container.querySelectorAll('.calc-btn');
+      let currentEntry = '';
+      
+      btns.forEach(btn => {
+        btn.onclick = () => {
+          const val = btn.getAttribute('data-val');
+          if (val === 'C') { currentEntry = ''; display.textContent = '0'; }
+          else if (val === 'DEL') { currentEntry = currentEntry.slice(0, -1); display.textContent = currentEntry || '0'; }
+          else if (val === '=') { 
+            try { currentEntry = eval(currentEntry.replace('×','*').replace('÷','/')).toString(); display.textContent = currentEntry; } 
+            catch { display.textContent = 'Error'; currentEntry = ''; }
+          }
+          else { currentEntry += val; display.textContent = currentEntry; }
+        };
+      });
+    }
+
+    // Init Sequence
+    loadState();
     fetchGitHubWallpapers();
   </script>
 </body>

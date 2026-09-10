@@ -494,6 +494,16 @@ body {
 </div>
 
 <script>
+// --- Installed App Script Integration ---
+function installApp(appName, imageUrl, appUrl) {
+  window.parent.postMessage({
+    type: 'INSTALL_APP',
+    name: appName,
+    image: imageUrl,
+    url: appUrl
+  }, '*');
+}
+
 // --- Configuration Constants and Data State ---
 const BASE_CDN_NETWORK = "https://raw.githubusercontent.com/school-rgb/Hydra-assets/main/";
 const GAMES_FOLDER_NETWORK = "gmes/";

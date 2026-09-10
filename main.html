@@ -735,6 +735,45 @@
   </div>
 
   <script>
+    // --- LISTEN FOR MESSAGES FROM APP STORE IFRAME ---
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'INSTALL_APP') {
+        const { name, icon, url, code } = event.data.app;
+        installAppToOS(name, icon, url, code);
+      }
+    });
+
+    function installAppToOS(name, icon, url, code) {
+      const mainAppGrid = document.getElementById('mainAppGrid');
+      if (!mainAppGrid) return;
+
+      // Prevent duplicate installs
+      const existing = Array.from(mainAppGrid.querySelectorAll('.app-icon span')).some(span => span.textContent === name);
+      if (existing) {
+        alert('App is already installed!');
+        return;
+      }
+
+      let finalTarget = url;
+
+      // If raw HTML code was provided, convert it into a Data URL
+      if (!finalTarget && code) {
+        finalTarget = 'data:text/html;charset=utf-8,' + encodeURIComponent(code);
+      }
+
+      // Create grid icon
+      const el = document.createElement('div');
+      el.className = 'app-icon';
+      el.setAttribute('onclick', `openApp('${name}', '${icon}', '${finalTarget}')`);
+      el.innerHTML = `<div class="icon-img"><img src="${icon}" alt="${name}"></div><span>${name}</span>`;
+      
+      mainAppGrid.appendChild(el);
+
+      // Save changes permanently and update UI
+      saveState();
+      updateInstalledApps();
+    }
+
     const desktop = document.getElementById('desktop');
     const contextMenu = document.getElementById('contextMenu');
     const appContextMenu = document.getElementById('appContextMenu');

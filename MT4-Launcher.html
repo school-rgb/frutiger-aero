@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT4 Launcher</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0b0d;
+  --bg-elevated: #121214;
+  --bg-card: #161618;
+  --bg-hover: #1c1c1f;
+  --border: #222226;
+  --border-light: #2a2a2e;
+  --text: #f0f0f2;
+  --text-muted: #8b8b93;
+  --text-dim: #5a5a62;
+  --accent: #6b7280;
+  --accent-bright: #9ca3af;
+  --success: #22c55e;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-pill: 999px;
+  --font: 'Inter', system-ui, sans-serif;
+  --shadow: 0 8px 32px rgba(0,0,0,0.45);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dot grid background */
+.dot-bg {
+  position: fixed; inset:0; z-index:0; pointer-events:none;
+  background-image: radial-gradient(circle, #1f1f23 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 0.45;
+}
+
+/* ========== LANDING ========== */
+#landing {
+  position: fixed; inset:0; z-index:100;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background: var(--bg);
+  transition: opacity 0.4s, visibility 0.4s;
+}
+#landing.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.landing-logo {
+  position: relative;
+  margin-bottom: 28px;
+  filter: drop-shadow(0 12px 40px rgba(0,0,0,0.5));
+}
+.logo-bubble {
+  background: #fff;
+  color: #111;
+  padding: 28px 48px 32px;
+  border-radius: 32px;
+  position: relative;
+  box-shadow: 0 0 0 6px #111, 0 0 0 12px #333, 0 20px 60px rgba(0,0,0,0.6);
+  transform: rotate(-2deg);
+}
+.logo-bubble h1 {
+  font-size: 52px; font-weight: 900; letter-spacing: -2px; line-height: 1;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.logo-bubble .v {
+  font-size: 28px; font-weight: 800; background: #111; color: #fff;
+  padding: 4px 12px; border-radius: 12px; margin-left: 6px;
+}
+.logo-bubble .sub {
+  font-size: 13px; font-weight: 600; color: #666; margin-top: 6px; letter-spacing: 0.5px;
+}
+.landing-tag {
+  color: var(--text-muted); font-size: 15px; margin-bottom: 36px; font-weight: 500;
+}
+.btn-start {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
+  color: var(--text);
+  padding: 14px 32px;
+  border-radius: var(--radius-pill);
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+  transition: all 0.2s;
+}
+.btn-start:hover {
+  background: var(--bg-hover);
+  border-color: #444;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* ========== APP SHELL ========== */
+#app {
+  display: none; height: 100%; width: 100%;
+  position: relative; z-index: 1;
+}
+#app.show { display: flex; }
+
+/* Icon sidebar */
+.sidebar {
+  width: 72px;
+  background: var(--bg-elevated);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 18px 0; gap: 8px; flex-shrink: 0;
+}
+.side-btn {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-dim); font-size: 18px; cursor: pointer;
+  border: none; background: transparent; transition: all 0.15s;
+  position: relative;
+}
+.side-btn:hover { color: var(--text); background: var(--bg-hover); }
+.side-btn.active {
+  color: var(--text); background: var(--bg-card);
+  box-shadow: inset 0 0 0 1px var(--border-light);
+}
+.side-btn .tooltip {
+  position: absolute; left: 56px; background: #222; color: #fff;
+  padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s;
+  z-index: 50;
+}
+.side-btn:hover .tooltip { opacity: 1; }
+.side-spacer { flex: 1; }
+.online-pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px;
+}
+.online-pill .dot {
+  width: 7px; height: 7px; background: var(--success); border-radius: 50%;
+  box-shadow: 0 0 8px var(--success);
+}
+
+/* Main area */
+.main {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--bg);
+}
+
+.topbar {
+  height: 64px; display: flex; align-items: center; gap: 16px;
+  padding: 0 24px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.search-box {
+  flex: 1; max-width: 480px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color 0.2s;
+}
+.search-box:focus-within { border-color: #444; }
+.search-box input {
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-size: 14px; font-family: inherit; width: 100%;
+}
+.search-box input::placeholder { color: var(--text-dim); }
+.top-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.15s; font-size: 15px;
+}
+.icon-btn:hover { color: var(--text); border-color: #444; }
+
+/* Views */
+.view { display: none; flex: 1; overflow-y: auto; padding: 28px 28px 80px; }
+.view.active { display: block; animation: fadeUp 0.3s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.view-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.view-header h2 {
+  font-size: 24px; font-weight: 700; letter-spacing: -0.5px;
+  display: flex; align-items: center; gap: 10px;
+}
+.view-actions { display: flex; gap: 10px; }
+.pill-btn {
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  color: var(--text-muted); padding: 8px 16px; border-radius: var(--radius-pill);
+  font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s;
+}
+.pill-btn:hover { color: var(--text); border-color: #444; }
+.pill-btn.primary {
+  background: #fff; color: #111; border-color: #fff;
+}
+.pill-btn.primary:hover { background: #e5e5e5; }
+
+/* Games grid */
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+.game-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden; cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+}
+.game-card:hover {
+  transform: translateY(-4px);
+  border-color: #3a3a40;
+  box-shadow: var(--shadow);
+}
+.game-thumb {
+  width: 100%; height: 130px; object-fit: cover; background: #1a1a1c;
+  display: block;
+}
+.game-meta {
+  padding: 12px 14px 14px;
+}
+.game-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.game-cat {
+  font-size: 11px; color: var(--text-dim); margin-top: 3px;
+  text-transform: uppercase; letter-spacing: 0.4px; font-weight: 600;
+}
+.fav-star {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px; border-radius: 8px;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  color: #666; font-size: 13px; cursor: pointer; transition: all 0.15s;
+  z-index: 2;
+}
+.fav-star:hover { color: #fbbf24; }
+.fav-star.active { color: #fbbf24; }
+
+/* Hub cards (home) */
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  max-width: 900px;
+}
+.hub-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
+}
+.hub-card:hover {
+  border-color: #3a3a40; background: var(--bg-hover);
+  transform: translateY(-3px); box-shadow: var(--shadow);
+}
+.hub-card i { font-size: 26px; color: var(--accent-bright); }
+.hub-card span { font-size: 16px; font-weight: 600; }
+
+/* Settings */
+.settings-wrap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px; max-width: 1000px;
+}
+.settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.settings-card h3 {
+  font-size: 14px; font-weight: 700; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 8px;
+}
+.settings-card h3 i { color: var(--accent-bright); font-size: 14px; }
+.settings-card .desc { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.5; }
+.s-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 11px 0; border-bottom: 1px solid #1a1a1c;
+}
+.s-row:last-child { border-bottom: none; padding-bottom: 0; }
+.s-label { font-size: 13px; font-weight: 500; }
+.s-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+/* Toggle */
+.switch { position: relative; width: 42px; height: 24px; flex-shrink: 0; }
+.switch input { opacity:0; width:0; height:0; }
+.slider {
+  position: absolute; inset:0; background: #2a2a2e; border-radius: 24px;
+  cursor: pointer; transition: .25s;
+}
+.slider:before {
+  content:""; position: absolute; height:18px; width:18px;
+  left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.25s;
+}
+input:checked + .slider { background: var(--accent); }
+input:checked + .slider:before { transform: translateX(18px); }
+
+.cta {
+  background: var(--bg-elevated); border: 1px solid var(--border-light);
+  color: var(--text); padding: 7px 14px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; font-family: inherit; cursor: pointer;
+  transition: all 0.15s;
+}
+.cta:hover { background: var(--accent); border-color: var(--accent); }
+
+/* Input overlay */
+#overlay {
+  position: fixed; bottom: 24px; right: 24px; z-index: 3000;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: none; opacity: 0; transition: opacity 0.25s;
+}
+#overlay.show { opacity: 1; }
+.keycap {
+  background: linear-gradient(180deg,#2e2e32,#1a1a1c);
+  border: 1px solid #3a3a40; border-bottom: 4px solid #0d0d0f;
+  border-radius: 10px; padding: 12px 20px; min-width: 64px;
+  text-align: center; font-size: 17px; font-weight: 700;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5); text-transform: uppercase;
+  letter-spacing: 1px; transition: all 0.07s;
+}
+.keycap.down {
+  transform: translateY(3px); border-bottom-width: 1px;
+  background: linear-gradient(180deg,#3a3a40,#252528);
+}
+.cps-box {
+  background: rgba(18,18,20,0.92); backdrop-filter: blur(10px);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 9px 14px; display: flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+}
+.cps-box .val { font-size: 18px; font-weight: 800; color: #fff; min-width: 28px; text-align: right; }
+
+/* Game frame */
+#frame-wrap {
+  position: fixed; inset:0; background:#000; z-index:5000;
+  display:none; flex-direction:column;
+}
+#frame-wrap.open { display:flex; }
+.frame-bar {
+  height: 46px; background: #111113; border-bottom: 1px solid #222;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; flex-shrink: 0;
+}
+.frame-bar .left { display:flex; align-items:center; gap:10px; font-weight:700; font-size:14px; }
+.frame-bar .right { display:flex; gap:8px; }
+.frame-btn {
+  background: transparent; border: 1px solid #333; color: #aaa;
+  padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 600;
+  cursor: pointer; font-family: inherit; display:flex; align-items:center; gap:5px;
+  transition: all 0.15s;
+}
+.frame-btn:hover { color:#fff; border-color:#555; }
+.frame-btn.danger { color:#ef4444; border-color:#3a1a1a; }
+.frame-btn.danger:hover { background:#2a1010; }
+#game-iframe { flex:1; width:100%; border:none; background:#000; }
+
+/* Empty */
+.empty { text-align:center; padding: 60px 20px; color: var(--text-dim); }
+.empty i { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+
+/* Credits */
+.credits-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px; max-width: 480px;
+}
+.credits-box h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-bright); margin-bottom: 6px; }
+.credits-box p { color: var(--text-muted); line-height: 1.6; margin-bottom: 18px; }
+</style>
+</head>
+<body>
+<div class="dot-bg"></div>
+
+<!-- LANDING -->
+<div id="landing">
+  <div class="landing-logo">
+    <div class="logo-bubble">
+      <h1>MT4 <span class="v">v3</span></h1>
+      <div class="sub">LAUNCHER</div>
+    </div>
+  </div>
+  <p class="landing-tag">Play. Save. Relax. Built different.</p>
+  <button class="btn-start" onclick="enterApp()">
+    <i class="fa-solid fa-rocket"></i> Get Started
+  </button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <button class="side-btn active" data-view="home" onclick="go('home', this)" title="Home">
+      <i class="fa-solid fa-house"></i><span class="tooltip">Home</span>
+    </button>
+    <button class="side-btn" data-view="games" onclick="go('games', this)">
+      <i class="fa-solid fa-gamepad"></i><span class="tooltip">Games</span>
+    </button>
+    <button class="side-btn" data-view="favorites" onclick="go('favorites', this)">
+      <i class="fa-solid fa-heart"></i><span class="tooltip">Favorites</span>
+    </button>
+    <button class="side-btn" data-view="trending" onclick="go('trending', this)">
+      <i class="fa-solid fa-fire"></i><span class="tooltip">Trending</span>
+    </button>
+    <button class="side-btn" data-view="movies" onclick="go('movies', this)">
+      <i class="fa-solid fa-film"></i><span class="tooltip">Movies</span>
+    </button>
+    <div class="side-spacer"></div>
+    <button class="side-btn" data-view="settings" onclick="go('settings', this)">
+      <i class="fa-solid fa-gear"></i><span class="tooltip">Settings</span>
+    </button>
+    <button class="side-btn" data-view="credits" onclick="go('credits', this)">
+      <i class="fa-solid fa-circle-info"></i><span class="tooltip">Credits</span>
+    </button>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="online-pill">
+        <div class="dot"></div>
+        <span id="online-count">42</span> online
+      </div>
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--text-dim);font-size:13px;"></i>
+        <input type="text" id="search" placeholder="Search through games..." oninput="doSearch()">
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" onclick="randomGame()" title="Random Game"><i class="fa-solid fa-shuffle"></i></button>
+        <button class="icon-btn" onclick="go('settings')" title="Settings"><i class="fa-solid fa-sliders"></i></button>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <div id="view-home" class="view active">
+      <div class="view-header">
+        <h2>Welcome to MT4</h2>
+      </div>
+      <div class="hub-grid">
+        <div class="hub-card" onclick="go('games')">
+          <i class="fa-solid fa-gamepad"></i><span>Games</span>
+        </div>
+        <div class="hub-card" onclick="go('favorites')">
+          <i class="fa-solid fa-heart"></i><span>Favorites</span>
+        </div>
+        <div class="hub-card" onclick="go('trending')">
+          <i class="fa-solid fa-fire"></i><span>Trending</span>
+        </div>
+        <div class="hub-card" onclick="go('movies')">
+          <i class="fa-solid fa-film"></i><span>Movies</span>
+        </div>
+        <div class="hub-card" onclick="randomGame()">
+          <i class="fa-solid fa-shuffle"></i><span>Random</span>
+        </div>
+        <div class="hub-card" onclick="go('settings')">
+          <i class="fa-solid fa-gear"></i><span>Settings</span>
+        </div>
+      </div>
+      <div style="margin-top:40px;">
+        <div class="view-header"><h2 style="font-size:18px;">Recently Played</h2></div>
+        <div class="games-grid" id="recent-grid"></div>
+        <div id="no-recent" class="empty" style="display:none;"><i class="fa-regular fa-clock"></i><p>No recent games yet</p></div>
+      </div>
+    </div>
+
+    <!-- GAMES -->
+    <div id="view-games" class="view">
+      <div class="view-header">
+        <h2 id="games-title">All Games</h2>
+        <div class="view-actions">
+          <button class="pill-btn" onclick="filterCat('Action')">Action</button>
+          <button class="pill-btn" onclick="filterCat('Arcade')">Arcade</button>
+          <button class="pill-btn" onclick="filterCat('Clicker')">Clicker</button>
+          <button class="pill-btn" onclick="filterCat('Funny')">Funny</button>
+          <button class="pill-btn primary" onclick="showAll()">All</button>
+        </div>
+      </div>
+      <div class="games-grid" id="games-grid"></div>
+    </div>
+
+    <!-- FAVORITES -->
+    <div id="view-favorites" class="view">
+      <div class="view-header"><h2>Favorites</h2></div>
+      <div class="games-grid" id="fav-grid"></div>
+      <div id="no-favs" class="empty" style="display:none;"><i class="fa-regular fa-heart"></i><p>No favorites yet</p></div>
+    </div>
+
+    <!-- TRENDING -->
+    <div id="view-trending" class="view">
+      <div class="view-header"><h2><i class="fa-solid fa-fire" style="color:#f97316;"></i> Trending</h2></div>
+      <div class="games-grid" id="trend-grid"></div>
+    </div>
+
+    <!-- MOVIES -->
+    <div id="view-movies" class="view">
+      <div class="view-header"><h2>Movies</h2></div>
+      <div class="games-grid" id="movies-grid"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="view-settings" class="view">
+      <div class="view-header"><h2><i class="fa-solid fa-sliders"></i> Settings</h2></div>
+      <div class="settings-wrap">
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-keyboard"></i> Input Overlay</h3>
+          <p class="desc">Live key display and clicks-per-second counter.</p>
+          <div class="s-row">
+            <div><div class="s-label">Keycap</div><div class="s-sub">Shows last pressed key</div></div>
+            <label class="switch"><input type="checkbox" id="s-keycap" checked onchange="updOverlay()"><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">CPS Counter</div><div class="s-sub">Clicks per second</div></div>
+            <label class="switch"><input type="checkbox" id="s-cps" checked onchange="updOverlay()"><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Hotkey Toggle (K)</div><div class="s-sub">Press K to show/hide overlay</div></div>
+            <label class="switch"><input type="checkbox" id="s-hotkey" checked><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-shield-halved"></i> Privacy & Escape</h3>
+          <p class="desc">Quick exit and disguise tools.</p>
+          <div class="s-row">
+            <div><div class="s-label">Panic Key (`)</div><div class="s-sub">Redirects to Google</div></div>
+            <label class="switch"><input type="checkbox" id="s-panic" checked><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Tab Cloak</div><div class="s-sub">Looks like Google Drive</div></div>
+            <button class="cta" onclick="cloak()">Activate</button>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">About:Blank Cloak</div><div class="s-sub">Open in about:blank</div></div>
+            <button class="cta" onclick="aboutBlank()">Open</button>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-gamepad"></i> Game Experience</h3>
+          <p class="desc">Quality-of-life while playing.</p>
+          <div class="s-row">
+            <div><div class="s-label">Auto Focus</div><div class="s-sub">Focus iframe on launch</div></div>
+            <label class="switch"><input type="checkbox" id="s-focus" checked><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Esc to Close</div><div class="s-sub">Close game with Escape</div></div>
+            <label class="switch"><input type="checkbox" id="s-esc" checked><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Remember Recent</div><div class="s-sub">Track last played games</div></div>
+            <label class="switch"><input type="checkbox" id="s-recent" checked><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Persist Favorites</div><div class="s-sub">Save stars across sessions</div></div>
+            <label class="switch"><input type="checkbox" id="s-persist" checked><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-display"></i> Display</h3>
+          <p class="desc">Visual preferences.</p>
+          <div class="s-row">
+            <div><div class="s-label">Dot Background</div><div class="s-sub">Subtle grid pattern</div></div>
+            <label class="switch"><input type="checkbox" id="s-dots" checked onchange="toggleDots()"><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Compact Grid</div><div class="s-sub">Tighter card spacing</div></div>
+            <label class="switch"><input type="checkbox" id="s-compact" onchange="toggleCompact()"><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Reduce Motion</div><div class="s-sub">Less animations</div></div>
+            <label class="switch"><input type="checkbox" id="s-motion" onchange="toggleMotion()"><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-bolt"></i> Performance</h3>
+          <p class="desc">Speed & resource tweaks.</p>
+          <div class="s-row">
+            <div><div class="s-label">Lazy Load Images</div><div class="s-sub">Load thumbs as you scroll</div></div>
+            <label class="switch"><input type="checkbox" id="s-lazy" checked><span class="slider"></span></label>
+          </div>
+          <div class="s-row">
+            <div><div class="s-label">Preload First 12</div><div class="s-sub">Eager load top games</div></div>
+            <label class="switch"><input type="checkbox" id="s-preload" checked><span class="slider"></span></label>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-palette"></i> Theme</h3>
+          <p class="desc">Accent and feel.</p>
+          <div class="s-row">
+            <div><div class="s-label">Accent Color</div><div class="s-sub">Current: Dark Grey</div></div>
+            <select id="s-accent" onchange="setAccent(this.value)" style="background:#1c1c1f;border:1px solid #333;color:#fff;padding:5px 8px;border-radius:6px;font-size:12px;">
+              <option value="#6b7280">Grey</option>
+              <option value="#3b82f6">Blue</option>
+              <option value="#22c55e">Green</option>
+              <option value="#a855f7">Purple</option>
+              <option value="#ef4444">Red</option>
+              <option value="#f59e0b">Amber</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3><i class="fa-solid fa-keyboard"></i> Shortcuts</h3>
+          <p class="desc">Keyboard controls.</p>
+          <div class="s-row"><div class="s-label">` (backtick)</div><div class="s-sub">Panic → Google</div></div>
+          <div class="s-row"><div class="s-label">Esc</div><div class="s-sub">Close current game</div></div>
+          <div class="s-row"><div class="s-label">K</div><div class="s-sub">Toggle key/CPS overlay</div></div>
+          <div class="s-row"><div class="s-label">/</div><div class="s-sub">Focus search</div></div>
+          <div class="s-row"><div class="s-label">R</div><div class="s-sub">Random game</div></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CREDITS -->
+    <div id="view-credits" class="view">
+      <div class="view-header"><h2>Credits</h2></div>
+      <div class="credits-box">
+        <h3>Developer</h3>
+        <p>MT4</p>
+        <h3>Special Thanks</h3>
+        <p>Everyone who suggested features and kept the library alive.</p>
+        <h3>Version</h3>
+        <p>MT4 Launcher v3</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div id="overlay">
+  <div class="keycap" id="keycap">—</div>
+  <div class="cps-box"><span class="val" id="cps">0</span> CPS</div>
+</div>
+
+<!-- Game Frame -->
+<div id="frame-wrap">
+  <div class="frame-bar">
+    <div class="left"><i class="fa-solid fa-gamepad" style="color:var(--accent-bright);"></i> MT4</div>
+    <div class="right">
+      <button class="frame-btn" onclick="toggleFS()"><i class="fa-solid fa-expand"></i> Fullscreen</button>
+      <button class="frame-btn" onclick="openNewTab()"><i class="fa-solid fa-arrow-up-right-from-square"></i> New Tab</button>
+      <button class="frame-btn danger" onclick="closeGame()"><i class="fa-solid fa-xmark"></i> Close</button>
+    </div>
+  </div>
+  <iframe id="game-iframe" allowfullscreen></iframe>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const games = [
+  {t:"Subway Surfers",c:"Arcade",i:"https://amplify8.neocities.org/images/ab6761610000e5eb6a99f89f210e3efe234eee61.jpeg",u:"https://mysticgames.netlify.app/games/subway/"},
+  {t:"Strong Man Sim",c:"Funny",i:"https://amplify8.neocities.org/images/Strongman_Simulator.webp",u:"https://script.google.com/macros/s/AKfycbxLkugSSEdQm0qJQ4PZWRce6p8pKpuPdLIFeivG0cMt-QmjEjedBCarzz_kd2tlvxzs/exec"},
+  {t:"Steal a Brainrot",c:"Funny",i:"https://amplify8.neocities.org/images/mqdefault.jpg",u:"https://script.google.com/macros/s/AKfycbytsGAlf3lPg4Po7HvAheHvyJKxYRA4ZYPUGjjjMpZafajZs3F5pu7E5BekDXlNhRHUFw/exec"},
+  {t:"Grow a Garden",c:"Funny",i:"https://amplify8.neocities.org/images/sadas.jpeg",u:"https://script.google.com/macros/s/AKfycbwK_YDMKEccZyVOz_fpe66G4Je4VyFPdT10OdaKpM699Utzbq41n2m6OXqAzpX0oqrLTA/exec"},
+  {t:"Snow Rider 3D",c:"Arcade",i:"https://amplify8.neocities.org/images/2121454.jpeg",u:"https://script.google.com/macros/s/AKfycbw5Z-Ryg_JfIIDYH7pzzPKXlr2tN0HCw-tT_ZvxBGDPsDDY41ewPVneVeLzelfpnBab/exec"},
+  {t:"Crash Carts",c:"Action",i:"https://amplify8.neocities.org/images/smash-karts_1x1-cover.png",u:"https://script.google.com/macros/s/AKfycbx63iRe5mtf5PQGIn_eGwKePxCA1iU6w-YApn57Mh4phi2ZB-G-GCJA1YTV9jKrwoqb/exec"},
+  {t:"Nugget Clicker",c:"Clicker",i:"https://amplify8.neocities.org/images/Nugget-Clicker-game.webp",u:"https://script.google.com/macros/s/AKfycbzjgnGGeTNL2DTjJzVx3WGvsLjEyA47O6xYss-ijTLWWwrQv9siK9Gn_QqNDlDkrc27/exec"},
+  {t:"Cookie Clicker",c:"Clicker",i:"https://amplify8.neocities.org/images/deswfsd.jpeg",u:"https://script.google.com/macros/s/AKfycbxGM35J29NkO-2LYjxWj_cA9IUaaXypkUy-LqXyLRbGTz0R6lXmAEapz1STN1jlTIRavw/exec"},
+  {t:"Pixel Shooter",c:"Action",i:"https://amplify8.neocities.org/images/fdsedf.jpeg",u:"https://script.google.com/macros/s/AKfycbzBG3iwMy-Kdz3gY7oQSBugoIGwmA-IWITNrA8j1vX5ytZQHcKTS-61QLSpA5ixBJ2U/exec"},
+  {t:"1v1 LOL",c:"Action",i:"https://amplify8.neocities.org/images/lol.jpeg",u:"https://1v1.lol"},
+  {t:"Bitlife",c:"Arcade",i:"https://amplify8.neocities.org/images/bitlife.jpeg",u:"https://script.google.com/macros/s/AKfycbz7YQScNBizgtxyn4DO7v12IQTI4nqwQc8srdlN30uZWw5BxWdIr2TPoMRC_8yQQKC7/exec"},
+  {t:"Pixel Gun 3D",c:"Action",i:"https://amplify8.neocities.org/images/pixal.jpeg",u:"https://storage.googleapis.com/test-41376.appspot.com/pga2.html"},
+  {t:"Space Bar Clicker",c:"Clicker",i:"https://amplify8.neocities.org/images/space.jpeg",u:"https://script.google.com/macros/s/AKfycbzZN3jRO2eOgcp622_W0GYAeArMio71AmlfRhF8yFucC5hEbRnDFZ3NLiN8peebEdlhWw/exec"},
+  {t:"Poop Clicker",c:"Clicker",i:"https://amplify8.neocities.org/images/poop.jpeg",u:"https://script.google.com/macros/s/AKfycbzDdetO4NX5twY1pU389ZUG2M9DERmoV0DeJNJS7SvzVIdA1WUaBeIeHo_CfQVNw2gq6g/exec"},
+  {t:"Spider Man",c:"Action",i:"https://amplify8.neocities.org/images/popo.jpeg",u:"https://script.google.com/macros/s/AKfycbwAoMJxFkkCGbz6H0x2lq5uVhb1vvQRKraex1znydX5Gm0jWse3HWUTvdU34ghoPqQauQ/exec"},
+  {t:"Slope 2",c:"Arcade",i:"https://amplify8.neocities.org/images/slope2fr.jpeg",u:"https://sites.google.com/view/slpe-2-player/"},
+  {t:"Slither IO",c:"Arcade",i:"https://amplify8.neocities.org/images/slther.jpeg",u:"https://script.google.com/macros/s/AKfycbwXhPAppqZUy69d6b26B3Z6daQdZmzPsiaSsywQseSBMh94FLNnVTmupJqtonwt9oaQLw/exec"},
+  {t:"Paper IO",c:"Arcade",i:"https://amplify8.neocities.org/images/PAPER.jpeg",u:"https://script.google.com/macros/s/AKfycbwNxCzUuQVmLRWTwYK2D4yTqpWg2O-qge8BwCkxhLmqWd1DtXynwJXPEDClPt7ERZr-/exec"},
+  {t:"Eaglercraft",c:"Action",i:"https://amplify8.neocities.org/images/craft.jpg",u:"https://mysticgames.netlify.app/games/eaglercraft/dragonx_v4%20(1)"},
+  {t:"Noob Miner",c:"Clicker",i:"https://amplify8.neocities.org/images/miner.jpeg",u:"https://script.google.com/macros/s/AKfycbxkvPO4mEcWEk5a9TgEuR7qyiYZs7hL80XF5pwK8QMKHqmA7qUqxvIePB3PF9c3Bqc93w/exec"},
+  {t:"Drift Boss",c:"Arcade",i:"https://amplify8.neocities.org/images/drift.jpeg",u:"https://script.google.com/macros/s/AKfycbwAOi2tPbjzeWDkigfZMIPEGubYxz2la_qjxJyydNZyjwgbqsv9mv05g7tdmLHdvdaw/exec"},
+  {t:"Hole IO",c:"Arcade",i:"https://amplify8.neocities.org/images/hole.jpeg",u:"https://script.google.com/macros/s/AKfycbwSQ0aXrXdz23Z0adlljZLtt6EGzD7max6U15OnUFBxhQmht6KK7l7RzsVo2wOdkoXR/exec"},
+  {t:"Death Run 3D",c:"Arcade",i:"https://amplify8.neocities.org/images/run3d.jpeg",u:"https://script.google.com/macros/s/AKfycbwqW4kBl41CHKxAW1aOCzUllnCGaK6LDmkZfAZH_dJzu646nns5bRfn0oqa5Zpq9zEI/exec"},
+  {t:"FNAF",c:"Arcade",i:"https://amplify8.neocities.org/images/FNaF1.webp",u:"https://script.google.com/macros/s/AKfycbxJNtrKTWPCSIo9tOqq53G2xqoQCIPDTYUsVOT79Eqk8I7C5cQkGdDnj0jzlNHa7bvs3g/exec"},
+  {t:"Funny Shooter 2",c:"Action",i:"https://amplify8.neocities.org/images/thyghcghcfxg.jpeg",u:"https://storage.googleapis.com/test-41376.appspot.com/fs2.html"},
+  {t:"Minecraft Raft",c:"Arcade",i:"https://amplify8.neocities.org/images/RAFT_Thumbnail_0.jpg",u:"https://script.google.com/macros/s/AKfycbwpQHXN2419GU1OjX9m-MoQwpIeM-ZS7r2UE3NiqJ_GqPinDaFWAd_FJ_i0HZ_pxU/exec"},
+  {t:"TABS",c:"Clicker",i:"https://amplify8.neocities.org/images/TABS_MainCapsule1.webp",u:"https://script.google.com/macros/s/AKfycbx-20sK1Vv2W5l1l4NnyzA67dCLHiWUNOnwlGioOx9yKXkauoZt5H7l6il14wlLS9hI4A/exec"},
+  {t:"Basketball Stars",c:"Arcade",i:"https://amplify8.neocities.org/images/fdfderswfdfgfdvdfgvdfs.png",u:"https://script.google.com/macros/s/AKfycbwzYMDDcdDUAvEP7iO6OdRk-5_oUp6vYvDdyEEz8tTOzWi5y4-Qf3vQ6TBoZuc9UYVcLg/exec"},
+  {t:"Retro Bowl",c:"Arcade",i:"https://amplify8.neocities.org/images/wadwad.jpg",u:"https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/33.html"},
+  {t:"Geometry Dash",c:"Arcade",i:"https://amplify8.neocities.org/images/geometrydash-1639510868467.jpg",u:"https://mysticgames.netlify.app/games/geometrydash/"},
+  {t:"Time Shooter 2",c:"Arcade",i:"https://amplify8.neocities.org/images/time-shooter-2.jpg",u:"https://storage.googleapis.com/test-41376.appspot.com/ts2.html"},
+  {t:"Blade Ball",c:"Arcade",i:"https://amplify8.neocities.org/images/landscape_comp-3451.jpeg",u:"https://storage.googleapis.com/test-41376.appspot.com/blb.html"},
+  {t:"CS Strike",c:"Arcade",i:"https://amplify8.neocities.org/images/Counter-Strike_Source_(box_art).jpg",u:"https://storage.googleapis.com/freezenova/all/2024/unity2/fps-strike/pre-gg.html"},
+  {t:"Eggy Car",c:"Arcade",i:"https://amplify8.neocities.org/images%202/eggy-car-game.jpg",u:"https://script.google.com/macros/s/AKfycbxGFiHgVNVoous7yjguN7bcuwa6lejCHgh6V1weh1vNalyCzpMmaMH9NhTisNSqkUo3/exec"},
+  {t:"OvO",c:"Arcade",i:"https://amplify8.neocities.org/images%202/OVONI.jpeg",u:"https://script.google.com/macros/s/AKfycbyDZOJq86UIFlMkKfvZtA_Sv86sKooVRpwVFS2rb38TOT8ExCt3PfR1Y5UAveVuVGlQLw/exec"},
+  {t:"Poly Track",c:"Arcade",i:"https://amplify8.neocities.org/images%202/fe917ef48f1fb76ebbf7a135d2b55322.jpg",u:"https://script.google.com/macros/s/AKfycbzOmulSCFb0CwkaIrhIBdqglMVAfxQppFmVZmp2cp8-eHLj0j_LjbQtEhNyTClffFte/exec"},
+  {t:"Riddle School",c:"Arcade",i:"https://amplify8.neocities.org/images%202/riddleschool.png",u:"https://script.google.com/macros/s/AKfycbyBMzbST-uTVoOBVyLwbqs7LeloEnSkKiP4Cik0DmPAcVR7Oqq-BzXdvrOzNR6Uwl4MJQ/exec"},
+  {t:"Super Mario 64",c:"Arcade",i:"https://amplify8.neocities.org/images%202/mario-64---button-1559263987447.webp",u:"https://script.google.com/macros/s/AKfycbyB8Cg09IyL5iA01VRMcp6GXWBsHJDyytzuovDyiHdgIUmtHuNM7x27VlBnJjYt26F-/exec"},
+  {t:"Doom",c:"Action",i:"https://amplify8.neocities.org/images%202/82a7cd303997644e10450fad1be3a3666f5cb0cfbc1fa44b38b429e607e64426_product_card_v2_mobile_slider_639.jpg",u:"https://script.google.com/macros/s/AKfycbyxLM58t1oGIyqp09GNTAGBqUBaFg7A9nY5lLwS45Zg2z63ax0EmnhHCXW_aHhEpdFcqg/exec"},
+  {t:"Vex",c:"Arcade",i:"https://amplify8.neocities.org/images%202/vex.jpeg",u:"https://script.google.com/macros/s/AKfycbxwyDsC49pauwYS59k4k10ptEAWo-6qgJf2nyvPt3i52bikDw98aFuDgvSPRWaIsnr8/exec"},
+  {t:"Brawl Stars",c:"Action",i:"https://amplify8.neocities.org/images%202/cropped.webp",u:"https://script.google.com/macros/s/AKfycby2-8wV6Z0j1rs8FEOpgLh45K2Psh7qsbQX9PFQqvuVhkiIxgbYZCQbnYTQvb6KyiGG/exec"},
+  {t:"GTA 4",c:"Action",i:"https://amplify8.neocities.org/images%203/simmgtaaa.jpg",u:"https://storage.googleapis.com/freezenova/all/2023/unity2/gta-simulator/pre-gg.html"},
+  {t:"Snow Rider 2",c:"Arcade",i:"https://amplify8.neocities.org/images%203/snowrtiderrr.jpeg",u:"https://unblocked-games.s3.amazonaws.com/games/2025/unity2/snow-rider-3d/pre.html"},
+  {t:"Drive Mad",c:"Arcade",i:"https://amplify8.neocities.org/images%203/drive-mad1-f375x375.webp",u:"https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/35.html"},
+  {t:"Fall Guys",c:"Arcade",i:"https://amplify8.neocities.org/images%205/fallguys.jpeg",u:"https://script.google.com/macros/s/AKfycbxzGXZ-dYcADWPNv7OSO6OdaFl8sJtBNY8J1KO5EQ33_I37NN0nQkaej4HqNCAkvxHHqA/exec"},
+  {t:"Bloons TD 5",c:"Arcade",i:"https://amplify8.neocities.org/images%205/ballons.jpeg",u:"https://script.google.com/macros/s/AKfycbzSjvvBl4oIbQbsdQ6wORkEPqBumZKhlNUW3FirGHuAIe6EPZ_QGuF4N0TqjL0ECFoo/exec"},
+  {t:"Friday Night Funkin",c:"Arcade",i:"https://amplify8.neocities.org/images%206/fnfk.jpeg",u:"https://script.google.com/macros/s/AKfycby1HaNDGKwziSvZ_m-drF_v3AFw4E0gOvqn8Dx_9SSxXQrM3s0kFdZYrlPLcryYkPIb/exec"},
+  {t:"Happy Wheels",c:"Arcade",i:"https://amplify8.neocities.org/images%206/chk_captcha.jpg",u:"https://script.google.com/macros/s/AKfycbyfMPVIGx6dJPrYKeE9e4Erj949-dH28pWVRjdV1vgnoylpBV8af03JNLoz2MwAIBLECg/exec"},
+  {t:"Among Us",c:"Arcade",i:"https://amplify8.neocities.org/images%207/amung%20us.avif",u:"https://script.google.com/macros/s/AKfycbyix6sPjvsn_izDvhJLVuif1buj9ZtARvj9D_FEQ0rscRXgl-RgArs0t4oJw_OHm5Dr5A/exec"},
+  {t:"Stickman Hook",c:"Arcade",i:"https://amplify8.neocities.org/images%209/245361_7_sq.webp",u:"https://bav1.wadmc.site.cdn.cloudflare.net/storage/ag/g/stickman-hook/"},
+  {t:"Run 3",c:"Arcade",i:"https://amplify8.neocities.org/images%207/run%203.jpg",u:"https://bav1.wadmc.site.cdn.cloudflare.net/pages/other/interpreter/index.html?url=https://cdn.jsdelivr.net/gh/gn-math/html@main/177.html"},
+  {t:"2048",c:"Arcade",i:"https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/2048_logo.svg/200px-2048_logo.svg.png",u:"https://play2048.co/"},
+  {t:"Slope",c:"Arcade",i:"https://amplify8.neocities.org/images/slope2fr.jpeg",u:"https://script.google.com/macros/s/AKfycbw5Z-Ryg_JfIIDYH7pzzPKXlr2tN0HCw-tT_ZvxBGDPsDDY41ewPVneVeLzelfpnBab/exec"}
+];
+
+const movies = [
+  {t:"Cloudy with a Chance of Meatballs",i:"https://upload.wikimedia.org/wikipedia/en/d/d1/Cloudy_with_a_chance_of_meatballs_poster.jpg",id:"x8m56a4"},
+  {t:"The Good Dinosaur",i:"https://upload.wikimedia.org/wikipedia/en/8/80/The_Good_Dinosaur_poster.jpg",id:"x9nxtva"},
+  {t:"Coco",i:"https://upload.wikimedia.org/wikipedia/en/9/98/Coco_%282017_film%29_poster.jpg",id:"x9lj6f2"},
+  {t:"The Incredibles",i:"https://upload.wikimedia.org/wikipedia/en/e/ec/The_Incredibles.jpg",id:"x9ie844"},
+  {t:"Jumanji",i:"https://upload.wikimedia.org/wikipedia/en/b/b6/Jumanji_poster.jpg",id:"x9h60de"},
+  {t:"Trolls World Tour",i:"https://upload.wikimedia.org/wikipedia/en/e/ed/Trolls_World_Tour_poster.jpg",id:"x9tor96"},
+  {t:"Free Birds",i:"https://upload.wikimedia.org/wikipedia/en/2/2c/Free_Birds_poster.jpg",id:"x9611g2"},
+  {t:"Sleeping Beauty",i:"https://upload.wikimedia.org/wikipedia/en/0/00/Sleeping_Beauty_1959_poster.jpg",id:"x9t8j82"}
+];
+
+let favs = JSON.parse(localStorage.getItem('mt4_favs')||'[]');
+let recent = JSON.parse(localStorage.getItem('mt4_recent')||'[]');
+let clicks = [];
+let keyTimer = null;
+let currentUrl = '';
+
+/* ===== INIT ===== */
+function enterApp() {
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('app').classList.add('show');
+  renderGames(games, 'games-grid');
+  renderGames(games.slice(0,8), 'trend-grid');
+  renderRecent();
+  renderMovies();
+  updOverlay();
+  startOnline();
+}
+
+function go(view, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('.side-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  else {
+    const b = document.querySelector(`.side-btn[data-view="${view}"]`);
+    if (b) b.classList.add('active');
+  }
+  if (view === 'favorites') renderFavs();
+  if (view === 'home') renderRecent();
+}
+
+/* ===== RENDER ===== */
+function cardHTML(g) {
+  const isFav = favs.includes(g.t);
+  return `<div class="game-card">
+    <div class="fav-star ${isFav?'active':''}" onclick="event.stopPropagation();toggleFav('${g.t.replace(/'/g,"\\'")}',this)"><i class="fa-${isFav?'solid':'regular'} fa-star"></i></div>
+    <img class="game-thumb" src="${g.i}" loading="lazy" onclick="launch('${g.u}','${g.t.replace(/'/g,"\\'")}')" onerror="this.style.background='#1a1a1c'">
+    <div class="game-meta" onclick="launch('${g.u}','${g.t.replace(/'/g,"\\'")}')">
+      <div class="game-title">${g.t}</div>
+      <div class="game-cat">${g.c||''}</div>
+    </div>
+  </div>`;
+}
+
+function renderGames(list, id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = list.map(cardHTML).join('');
+}
+
+function renderFavs() {
+  const list = games.filter(g => favs.includes(g.t));
+  const grid = document.getElementById('fav-grid');
+  const empty = document.getElementById('no-favs');
+  if (!list.length) { grid.innerHTML=''; empty.style.display='block'; }
+  else { empty.style.display='none'; renderGames(list, 'fav-grid'); }
+}
+
+function renderRecent() {
+  const list = recent.map(t => games.find(g => g.t === t)).filter(Boolean);
+  const grid = document.getElementById('recent-grid');
+  const empty = document.getElementById('no-recent');
+  if (!list.length) { grid.innerHTML=''; empty.style.display='block'; }
+  else { empty.style.display='none'; renderGames(list, 'recent-grid'); }
+}
+
+function renderMovies() {
+  const el = document.getElementById('movies-grid');
+  el.innerHTML = movies.map(m => `
+    <div class="game-card" onclick="playMovie('${m.id}','${m.t}')">
+      <img class="game-thumb" src="${m.i}" style="height:200px;object-fit:cover;" loading="lazy">
+      <div class="game-meta"><div class="game-title">${m.t}</div></div>
+    </div>`).join('');
+}
+
+/* ===== ACTIONS ===== */
+function toggleFav(title, el) {
+  if (favs.includes(title)) {
+    favs = favs.filter(t => t !== title);
+    el.classList.remove('active');
+    el.innerHTML = '<i class="fa-regular fa-star"></i>';
+  } else {
+    favs.push(title);
+    el.classList.add('active');
+    el.innerHTML = '<i class="fa-solid fa-star"></i>';
+  }
+  if (document.getElementById('s-persist')?.checked !== false)
+    localStorage.setItem('mt4_favs', JSON.stringify(favs));
+  if (document.getElementById('view-favorites').classList.contains('active')) renderFavs();
+}
+
+function launch(url, title) {
+  currentUrl = url;
+  const wrap = document.getElementById('frame-wrap');
+  const iframe = document.getElementById('game-iframe');
+  iframe.src = url;
+  wrap.classList.add('open');
+  if (document.getElementById('s-focus')?.checked)
+    setTimeout(() => { try{iframe.contentWindow.focus()}catch(e){} }, 400);
+  // recent
+  if (document.getElementById('s-recent')?.checked !== false && title) {
+    recent = [title, ...recent.filter(t => t !== title)].slice(0, 12);
+    localStorage.setItem('mt4_recent', JSON.stringify(recent));
+  }
+}
+
+function closeGame() {
+  document.getElementById('frame-wrap').classList.remove('open');
+  document.getElementById('game-iframe').src = '';
+  currentUrl = '';
+}
+
+function toggleFS() {
+  const wrap = document.getElementById('frame-wrap');
+  if (!document.fullscreenElement) wrap.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+
+function openNewTab() {
+  if (currentUrl) window.open(currentUrl, '_blank');
+}
+
+function randomGame() {
+  const g = games[Math.floor(Math.random()*games.length)];
+  launch(g.u, g.t);
+}
+
+function filterCat(cat) {
+  go('games');
+  const list = games.filter(g => g.c === cat);
+  renderGames(list, 'games-grid');
+  document.getElementById('games-title').textContent = cat + ' Games';
+}
+
+function showAll() {
+  renderGames(games, 'games-grid');
+  document.getElementById('games-title').textContent = 'All Games';
+}
+
+function doSearch() {
+  const q = document.getElementById('search').value.toLowerCase();
+  go('games');
+  const list = games.filter(g => g.t.toLowerCase().includes(q));
+  renderGames(list, 'games-grid');
+  document.getElementById('games-title').textContent = q ? 'Search Results' : 'All Games';
+}
+
+function playMovie(id, title) {
+  const html = `<!DOCTYPE html><html><head><title>${title}</title><style>body{margin:0;background:#000;height:100vh}iframe{width:100%;height:100%;border:none}</style></head><body><iframe src="https://www.dailymotion.com/embed/video/${id}?autoplay=1" allow="autoplay;fullscreen" allowfullscreen></iframe></body></html>`;
+  const w = window.open('about:blank');
+  if (w) { w.document.write(html); w.document.close(); }
+}
+
+/* ===== SETTINGS HELPERS ===== */
+function updOverlay() {
+  const showK = document.getElementById('s-keycap')?.checked ?? true;
+  const showC = document.getElementById('s-cps')?.checked ?? true;
+  const o = document.getElementById('overlay');
+  if (showK || showC) o.classList.add('show'); else o.classList.remove('show');
+  document.getElementById('keycap').style.display = showK ? 'block' : 'none';
+  document.querySelector('.cps-box').style.display = showC ? 'flex' : 'none';
+}
+
+function toggleDots() {
+  document.querySelector('.dot-bg').style.opacity = document.getElementById('s-dots').checked ? '0.45' : '0';
+}
+
+function toggleCompact() {
+  document.querySelectorAll('.games-grid').forEach(g => {
+    g.style.gap = document.getElementById('s-compact').checked ? '12px' : '18px';
+  });
+}
+
+function toggleMotion() {
+  document.documentElement.style.setProperty('--anim', document.getElementById('s-motion').checked ? '0s' : '0.3s');
+}
+
+function setAccent(c) {
+  document.documentElement.style.setProperty('--accent', c);
+  document.documentElement.style.setProperty('--accent-bright', c);
+}
+
+function cloak() {
+  document.title = 'My Drive - Google Drive';
+  let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+  link.type = 'image/x-icon'; link.rel = 'shortcut icon';
+  link.href = 'https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png';
+  document.head.appendChild(link);
+}
+
+function aboutBlank() {
+  const w = window.open('about:blank');
+  if (w) {
+    w.document.write(`<script>location.replace('${location.href}')<\/script>`);
+    w.document.close();
+  }
+}
+
+function startOnline() {
+  let n = 42;
+  setInterval(() => {
+    n += Math.floor(Math.random()*5)-2;
+    if (n<18) n=18; if (n>90) n=90;
+    document.getElementById('online-count').textContent = n;
+  }, 3500);
+}
+
+/* ===== INPUT LISTENERS ===== */
+document.addEventListener('keydown', e => {
+  // Panic
+  if (e.key === '`' && document.getElementById('s-panic')?.checked) {
+    location.replace('https://google.com'); return;
+  }
+  // Esc close
+  if (e.key === 'Escape' && document.getElementById('s-esc')?.checked) {
+    if (document.getElementById('frame-wrap').classList.contains('open')) closeGame();
+  }
+  // Overlay toggle
+  if ((e.key === 'k' || e.key === 'K') && document.getElementById('s-hotkey')?.checked) {
+    const o = document.getElementById('overlay');
+    o.classList.toggle('show');
+  }
+  // Search focus
+  if (e.key === '/') {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+  // Random
+  if (e.key === 'r' || e.key === 'R') {
+    if (document.activeElement.tagName !== 'INPUT') randomGame();
+  }
+  // Keycap
+  if (!document.getElementById('s-keycap')?.checked) return;
+  const kc = document.getElementById('keycap');
+  let d = e.key;
+  if (d===' ') d='SPACE';
+  else if (d.length===1) d=d.toUpperCase();
+  else if (d==='ArrowUp') d='↑';
+  else if (d==='ArrowDown') d='↓';
+  else if (d==='ArrowLeft') d='←';
+  else if (d==='ArrowRight') d='→';
+  else if (d==='Escape') d='ESC';
+  else if (d==='Control') d='CTRL';
+  else if (d==='Shift') d='SHIFT';
+  else if (d==='Enter') d='ENTER';
+  else if (d==='Backspace') d='⌫';
+  else d = d.toUpperCase().slice(0,5);
+  kc.textContent = d;
+  kc.classList.add('down');
+  clearTimeout(keyTimer);
+  keyTimer = setTimeout(() => kc.classList.remove('down'), 100);
+});
+
+document.addEventListener('mousedown', () => {
+  if (!document.getElementById('s-cps')?.checked) return;
+  const now = performance.now();
+  clicks.push(now);
+  clicks = clicks.filter(t => now-t < 1000);
+  document.getElementById('cps').textContent = clicks.length;
+});
+setInterval(() => {
+  const now = performance.now();
+  clicks = clicks.filter(t => now-t < 1000);
+  if (document.getElementById('s-cps')?.checked)
+    document.getElementById('cps').textContent = clicks.length;
+}, 100);
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Live Activity Timer</title>
+    <title>Minimalist Pro Live Activity Timer</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,15 +14,14 @@
         }
 
         body {
-            background: radial-gradient(circle at 50% 0%, #1a1a24 0%, #08080a 75%);
+            background: #000000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             color: #ffffff;
-            min-height: 100vh;
+            height: 100vh;
+            width: 100vw;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
             overflow: hidden;
         }
 
@@ -32,174 +31,45 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 70vw;
-            height: 70vh;
-            background: radial-gradient(ellipse, rgba(255, 159, 10, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-            filter: blur(90px);
+            width: 60vw;
+            height: 60vh;
+            background: radial-gradient(ellipse, rgba(255, 159, 10, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            filter: blur(100px);
             pointer-events: none;
             z-index: 0;
         }
 
-        .app-container {
+        /* Fullscreen Minimalist Dynamic Widget Layout */
+        .timer-widget {
             position: relative;
             z-index: 1;
-            width: 100%;
-            max-width: 440px;
+            width: 100vw;
+            height: 100vh;
+            background: #0b0b0d;
             display: flex;
             flex-direction: column;
-            gap: 24px;
-        }
-
-        /* Control Panel Header */
-        .control-panel {
-            background: rgba(24, 24, 29, 0.75);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 20px;
-            border-radius: 28px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #8e8e93;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 6vh 20px;
         }
 
-        .config-form {
-            display: flex;
-            gap: 10px;
+        /* Top spacer to balance layout */
+        .top-spacer {
+            height: 40px;
         }
 
-        .config-form input {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 12px 14px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .config-form input:focus {
-            border-color: #ff9f0a;
-            background: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 15px rgba(255, 159, 10, 0.2);
-        }
-
-        .input-name { flex: 1.4; }
-        .input-time { width: 90px; }
-
-        .set-btn {
-            background: linear-gradient(135deg, #ff9f0a 0%, #ff8000 100%);
-            color: #000;
-            border: none;
-            border-radius: 16px;
-            padding: 0 18px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: transform 0.15s, opacity 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(255, 159, 10, 0.3);
-            white-space: nowrap;
-        }
-
-        .set-btn:hover {
-            opacity: 0.95;
-            box-shadow: 0 6px 20px rgba(255, 159, 10, 0.4);
-        }
-
-        .set-btn:active {
-            transform: scale(0.96);
-        }
-
-        /* Dynamic Island / Live Activity Main Widget */
-        .timer-widget {
-            background: rgba(18, 18, 22, 0.85);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 36px;
-            padding: 32px 28px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .timer-widget.running {
-            border-color: rgba(255, 159, 10, 0.4);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 159, 10, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.15);
-        }
-
-        .timer-top-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 24px;
-        }
-
-        .timer-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .timer-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: #fff;
-            letter-spacing: -0.3px;
-        }
-
-        .timer-subtitle {
-            font-size: 13px;
-            color: #8e8e93;
-            margin-top: 4px;
-        }
-
-        /* Status Badge */
-        .status-badge {
-            font-size: 11px;
-            font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.06);
-            color: #8e8e93;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-        }
-        .timer-widget.running .status-badge {
-            background: rgba(255, 159, 10, 0.15);
-            color: #ff9f0a;
-        }
-
-        /* Central Circular Indicator Ring */
+        /* Central Circular Indicator Ring (Larger for Fullscreen) */
         .ring-content-wrapper {
             position: relative;
-            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            margin: 10px 0 28px 0;
         }
 
         .progress-ring-container {
             position: relative;
-            width: 210px;
-            height: 210px;
+            width: 280px;
+            height: 280px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -218,36 +88,46 @@
         }
 
         .time-display {
-            font-size: 48px;
+            font-size: 64px;
             font-weight: 700;
-            letter-spacing: -1.5px;
+            letter-spacing: -2px;
             line-height: 1;
         }
 
         .sub-time {
-            font-size: 13px;
+            font-size: 14px;
             color: #8e8e93;
-            margin-top: 8px;
+            margin-top: 10px;
             font-weight: 500;
         }
 
-        /* Action Control Buttons Grid */
+        /* Bottom Section Containing Action Controls & Subtle Settings Trigger */
+        .bottom-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        /* Both buttons in the middle */
         .timer-controls {
             display: flex;
-            gap: 14px;
+            gap: 16px;
             width: 100%;
         }
 
         .btn {
             flex: 1;
-            height: 50px;
-            border-radius: 18px;
+            height: 60px;
+            border-radius: 20px;
             border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
             transition: transform 0.15s ease, background-color 0.2s ease, opacity 0.2s;
         }
@@ -257,10 +137,10 @@
         }
 
         .btn-reset {
-            background-color: rgba(255, 255, 255, 0.07);
+            background-color: #2c2c2e;
             color: #c7c7cc;
         }
-        .btn-reset:hover { background-color: rgba(255, 255, 255, 0.14); color: #fff; }
+        .btn-reset:hover { background-color: #3a3a3c; color: #fff; }
 
         .btn-action {
             background-color: #ff9f0a;
@@ -268,17 +148,119 @@
         }
         .btn-action:hover { background-color: #ffb129; }
 
-        /* Mobile adaptation */
-        @media (max-width: 480px) {
-            .app-container {
-                max-width: 100%;
-            }
-            .config-form {
-                flex-direction: column;
-            }
-            .input-name, .input-time, .set-btn {
-                width: 100% !important;
-            }
+        /* Subtle Gray Settings Trigger (barely see it, clickable) */
+        .subtle-settings-trigger {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.18);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .subtle-settings-trigger:hover {
+            color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Hidden Settings Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .settings-card {
+            background: #1c1c1e;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+        }
+
+        .settings-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: #8e8e93;
+            font-weight: 500;
+        }
+
+        .settings-card input {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 14px 16px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .settings-card input:focus {
+            border-color: #ff9f0a;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            height: 48px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn-cancel {
+            background: #2c2c2e;
+            color: #c7c7cc;
+        }
+
+        .modal-btn-save {
+            background: #ff9f0a;
+            color: #000;
         }
     </style>
 </head>
@@ -286,49 +268,51 @@
 
 <div class="ambient-glow"></div>
 
-<div class="app-container">
-    <!-- Configuration Panel to Change & Reset the Core Timer -->
-    <div class="control-panel">
-        <div class="panel-title">
-            <span>Timer Settings</span>
-            <span id="totalTimeLabel">5 Mins Total</span>
-        </div>
-        <div class="config-form">
-            <input type="text" class="input-name" id="timerNameInput" placeholder="Timer Label" value="Timer">
-            <input type="number" class="input-time" id="timerMinutesInput" placeholder="Minutes" value="5" min="1" max="1440">
-            <button class="set-btn" id="setTimerBtn">Set & Reset</button>
+<!-- Fullscreen Timer Interface -->
+<div class="timer-widget" id="timerWidget">
+    <div class="top-spacer"></div>
+
+    <div class="ring-content-wrapper">
+        <div class="progress-ring-container">
+            <svg width="280" height="280">
+                <circle cx="140" cy="140" r="124" stroke="#1c1c1e" stroke-width="12" fill="none"></circle>
+                <circle id="progressCircle" cx="140" cy="140" r="124" stroke="#ff9f0a" stroke-width="12" fill="none" 
+                        stroke-dasharray="779.11" 
+                        stroke-dashoffset="0" 
+                        stroke-linecap="round" style="transition: stroke-dashoffset 0.5s linear;"></circle>
+            </svg>
+            <div class="time-display-group">
+                <span class="time-display" id="timeDisplay">05:00</span>
+                <span class="sub-time" id="endTimeDisplay">10:45 AM</span>
+            </div>
         </div>
     </div>
 
-    <!-- Main Dynamic Island Timer Widget (Permanent, cannot be closed) -->
-    <div class="timer-widget running" id="timerWidget">
-        <div class="timer-top-row">
-            <div class="timer-info">
-                <span class="timer-title" id="displayTitle">Timer</span>
-                <span class="timer-subtitle" id="displaySubtitle">Active Live Activity</span>
-            </div>
-            <div class="status-badge" id="statusBadge">Active</div>
-        </div>
-
-        <div class="ring-content-wrapper">
-            <div class="progress-ring-container">
-                <svg width="210" height="210">
-                    <circle cx="105" cy="105" r="92" stroke="rgba(255,255,255,0.06)" stroke-width="11" fill="none"></circle>
-                    <circle id="progressCircle" cx="105" cy="105" r="92" stroke="#ff9f0a" stroke-width="11" fill="none" 
-                            stroke-dasharray="578.05" 
-                            stroke-dashoffset="0" 
-                            stroke-linecap="round" style="transition: stroke-dashoffset 0.5s linear;"></circle>
-                </svg>
-                <div class="time-display-group">
-                    <span class="time-display" id="timeDisplay">05:00</span>
-                    <span class="sub-time" id="endTimeDisplay">10:45 AM</span>
-                </div>
-            </div>
-        </div>
-
+    <div class="bottom-section">
         <div class="timer-controls">
             <button class="btn btn-reset" id="resetBtn">Reset</button>
             <button class="btn btn-action" id="actionBtn">Pause ⏸</button>
+        </div>
+        <!-- Subtle hidden-in-plain-sight settings button -->
+        <button class="subtle-settings-trigger" id="openSettingsBtn">⚙ Settings</button>
+    </div>
+</div>
+
+<!-- Settings Popup Modal -->
+<div class="modal-overlay" id="settingsModal">
+    <div class="settings-card">
+        <h3>Edit Timer</h3>
+        <div class="input-group">
+            <label>Timer Label</label>
+            <input type="text" id="modalNameInput" value="Timer">
+        </div>
+        <div class="input-group">
+            <label>Minutes</label>
+            <input type="number" id="modalMinutesInput" value="5" min="1" max="1440">
+        </div>
+        <div class="settings-actions">
+            <button class="modal-btn modal-btn-cancel" id="closeSettingsBtn">Cancel</button>
+            <button class="modal-btn modal-btn-save" id="saveSettingsBtn">Save & Reset</button>
         </div>
     </div>
 </div>
@@ -342,18 +326,10 @@
         isRunning: true
     };
 
-    const CIRCUMFERENCE = 2 * Math.PI * 92; // Radius = 92
+    const CIRCUMFERENCE = 2 * Math.PI * 124; // Radius = 124
 
     // DOM Elements
     const timerWidget = document.getElementById('timerWidget');
-    const timerNameInput = document.getElementById('timerNameInput');
-    const timerMinutesInput = document.getElementById('timerMinutesInput');
-    const setTimerBtn = document.getElementById('setTimerBtn');
-    const totalTimeLabel = document.getElementById('totalTimeLabel');
-
-    const displayTitle = document.getElementById('displayTitle');
-    const displaySubtitle = document.getElementById('displaySubtitle');
-    const statusBadge = document.getElementById('statusBadge');
     const timeDisplay = document.getElementById('timeDisplay');
     const endTimeDisplay = document.getElementById('endTimeDisplay');
     const progressCircle = document.getElementById('progressCircle');
@@ -361,38 +337,40 @@
     const resetBtn = document.getElementById('resetBtn');
     const actionBtn = document.getElementById('actionBtn');
 
+    // Modal elements
+    const settingsModal = document.getElementById('settingsModal');
+    const openSettingsBtn = document.getElementById('openSettingsBtn');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const modalNameInput = document.getElementById('modalNameInput');
+    const modalMinutesInput = document.getElementById('modalMinutesInput');
+
     function updateView() {
         const minutes = Math.floor(timerState.remainingSeconds / 60);
         const seconds = timerState.remainingSeconds % 60;
         const timeFormatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         
         timeDisplay.textContent = timeFormatted;
-        displayTitle.textContent = timerState.title;
-        totalTimeLabel.textContent = `${Math.round(timerState.totalSeconds / 60)} Mins Total`;
 
-        // Calculate alarm completion time clock string
+        // Calculate alarm completion clock timestamp
         const targetDate = new Date();
         targetDate.setSeconds(targetDate.getSeconds() + timerState.remainingSeconds);
         endTimeDisplay.textContent = targetDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        // Circular progress indicator update
+        // Circular progress update
         const progress = timerState.totalSeconds > 0 ? (timerState.remainingSeconds / timerState.totalSeconds) : 0;
         const strokeDashoffset = CIRCUMFERENCE - (progress * CIRCUMFERENCE);
         progressCircle.style.strokeDashoffset = strokeDashoffset;
 
-        // UI state indicators
+        // Button states
         if (timerState.isRunning) {
-            timerWidget.classList.add('running');
-            statusBadge.textContent = 'Active';
             actionBtn.textContent = 'Pause ⏸';
         } else {
-            timerWidget.classList.remove('running');
-            statusBadge.textContent = 'Paused';
             actionBtn.textContent = 'Start ▶';
         }
     }
 
-    // Engine Loop tracking the single active timer
+    // Engine loop tracking active timer countdown
     setInterval(() => {
         if (timerState.isRunning && timerState.remainingSeconds > 0) {
             timerState.remainingSeconds--;
@@ -403,10 +381,33 @@
         }
     }, 1000);
 
-    // Apply config changes from the top control panel (re-sets and changes the existing timer)
-    setTimerBtn.addEventListener('click', () => {
-        const newName = timerNameInput.value.trim() || 'Timer';
-        const newMins = parseInt(timerMinutesInput.value, 10);
+    // Pause / Resume Toggle
+    actionBtn.addEventListener('click', () => {
+        timerState.isRunning = !timerState.isRunning;
+        updateView();
+    });
+
+    // Reset current timer back to total duration
+    resetBtn.addEventListener('click', () => {
+        timerState.remainingSeconds = timerState.totalSeconds;
+        timerState.isRunning = false;
+        updateView();
+    });
+
+    // Modal Toggle Interactions
+    openSettingsBtn.addEventListener('click', () => {
+        modalNameInput.value = timerState.title;
+        modalMinutesInput.value = Math.round(timerState.totalSeconds / 60);
+        settingsModal.classList.add('active');
+    });
+
+    closeSettingsBtn.addEventListener('click', () => {
+        settingsModal.classList.remove('active');
+    });
+
+    saveSettingsBtn.addEventListener('click', () => {
+        const newName = modalNameInput.value.trim() || 'Timer';
+        const newMins = parseInt(modalMinutesInput.value, 10);
 
         if (isNaN(newMins) || newMins <= 0) return;
 
@@ -415,23 +416,11 @@
         timerState.remainingSeconds = timerState.totalSeconds;
         timerState.isRunning = true;
 
+        settingsModal.classList.remove('active');
         updateView();
     });
 
-    // Pause / Resume Toggle
-    actionBtn.addEventListener('click', () => {
-        timerState.isRunning = !timerState.isRunning;
-        updateView();
-    });
-
-    // Reset current timer back to full duration
-    resetBtn.addEventListener('click', () => {
-        timerState.remainingSeconds = timerState.totalSeconds;
-        timerState.isRunning = false;
-        updateView();
-    });
-
-    // Initial render call
+    // Initial load execution
     updateView();
 </script>
 

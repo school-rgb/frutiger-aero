@@ -283,6 +283,9 @@
 
 <div class="ambient-glow"></div>
 
+<!-- Added loop attribute to the audio tag -->
+<audio id="alarmSound" src="SOUND/iphone-radial.mp3" preload="auto" loop></audio>
+
 <!-- Fullscreen Scalable Timer Interface -->
 <div class="timer-widget" id="timerWidget">
     <div class="top-spacer"></div>
@@ -359,6 +362,7 @@
     const actionBtn = document.getElementById('actionBtn');
     const actionIcon = document.getElementById('actionIcon');
     const actionText = document.getElementById('actionText');
+    const alarmSound = document.getElementById('alarmSound');
 
     // Modal elements
     const settingsModal = document.getElementById('settingsModal');
@@ -401,21 +405,37 @@
             timerState.remainingSeconds--;
             if (timerState.remainingSeconds === 0) {
                 timerState.isRunning = false;
+                
+                // Play looping MP3 sound when timer reaches 0
+                alarmSound.currentTime = 0;
+                alarmSound.play().catch(error => {
+                    console.log("Audio playback blocked or failed:", error);
+                });
             }
             updateView();
         }
     }, 1000);
 
-    // Pause / Resume Toggle
+    // Pause / Resume Toggle (Also stops looping sound if active)
     actionBtn.addEventListener('click', () => {
         timerState.isRunning = !timerState.isRunning;
+        
+        // Stop sound when clicking play/pause button if it was ringing
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+
         updateView();
     });
 
-    // Reset current timer back to total duration
+    // Reset current timer back to total duration (Also stops looping sound)
     resetBtn.addEventListener('click', () => {
         timerState.remainingSeconds = timerState.totalSeconds;
         timerState.isRunning = false;
+        
+        // Stop sound when clicking reset
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+
         updateView();
     });
 
@@ -438,8 +458,12 @@
 
         timerState.title = newName;
         timerState.totalSeconds = newMins * 60;
-        timerState.remainingSeconds = timerState.totalSeconds;
+        timerState.remainingSeconds = newMins * 60;
         timerState.isRunning = true;
+        
+        // Stop sound when saving new timer
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
 
         settingsModal.classList.remove('active');
         updateView();

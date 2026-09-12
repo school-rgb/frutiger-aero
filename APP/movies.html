@@ -130,19 +130,20 @@
     }
 
     /* ==========================================================================
-       2. FULL SCREEN PROFILE EDIT MODAL OVERLAY
+       2. FULL SCREEN PROFILE EDIT / SETTINGS MODAL OVERLAY
        ========================================================================== */
     .fullscreen-modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(8, 8, 8, 0.95);
+      background: rgba(8, 8, 8, 0.96);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 200;
+      z-index: 500; /* High z-index to ensure menus work cleanly */
       padding: 2rem;
       backdrop-filter: blur(10px);
+      overflow-y: auto;
     }
 
     .edit-profile-fullscreen {
@@ -150,6 +151,11 @@
       max-width: 580px;
       display: flex;
       flex-direction: column;
+      background: #101010;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 2.5rem;
+      border-radius: var(--border-radius-modal);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
     }
 
     .fullscreen-modal-header {
@@ -339,7 +345,7 @@
     .user-profile-widget span { font-size: 0.9rem; font-weight: 600; color: #ddd; }
 
     /* ==========================================================================
-       4. HERO BANNER (HOME TAB ONLY)
+       4. HERO BANNER
        ========================================================================== */
     .hero-banner {
       height: 540px;
@@ -436,13 +442,13 @@
     .btn-load-more:hover { background: var(--primary); border-color: var(--primary); box-shadow: 0 8px 20px rgba(229, 9, 20, 0.4); }
 
     /* ==========================================================================
-       6. DETAIL POPUP MODAL (FIXED POSTER PROPORTIONS & VISIBILITY)
+       6. DETAIL POPUP MODAL
        ========================================================================== */
     #detail-modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.85);
-      z-index: 250;
+      z-index: 400;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -475,7 +481,6 @@
       to { transform: scale(1) translateY(0); opacity: 1; }
     }
 
-    /* FULL ASPECT-RATIO HERO POSTER DISPLAY BACKDROP */
     .detail-backdrop {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -516,7 +521,6 @@
     .detail-header-info { position: relative; z-index: 2; width: 100%; }
     .detail-header-info h2 { font-size: 2.2rem; font-weight: 800; color: #fff; line-height: 1.1; margin-bottom: 0; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 
-    /* TIGHTLY BOUND BODY SECTION */
     .detail-body { padding: 0.8rem 2rem 2rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
 
     .detail-meta-pills { display: flex; align-items: center; gap: 10px; margin-bottom: 0; }
@@ -548,13 +552,12 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: #000000;
-      z-index: 400;
+      z-index: 600;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* INVISIBLE BOX EXIT BUTTON (TEXT ONLY, HOVER ANIMATION) */
     .player-exit-btn {
       position: absolute;
       top: 30px;
@@ -569,7 +572,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      z-index: 500;
+      z-index: 700;
       transition: color 0.2s ease, transform 0.2s ease;
     }
 
@@ -603,11 +606,12 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(8, 8, 8, 0.98);
-      z-index: 300;
+      z-index: 350;
       padding: 3.5rem 5rem;
       display: flex;
       flex-direction: column;
       backdrop-filter: blur(20px);
+      overflow-y: auto;
     }
 
     .search-header-bar {
@@ -615,6 +619,7 @@
       align-items: center;
       gap: 1.8rem;
       margin-bottom: 3rem;
+      flex-shrink: 0;
     }
 
     .search-input-full {
@@ -650,7 +655,7 @@
     </div>
   </div>
 
-  <!-- 2. FULLSCREEN PROFILE CREATION / EDIT MODAL -->
+  <!-- 2. FULLSCREEN PROFILE CREATION / SETTINGS MODAL -->
   <div id="profile-modal" class="fullscreen-modal-overlay hidden">
     <div class="edit-profile-fullscreen">
       <div class="fullscreen-modal-header">
@@ -668,7 +673,7 @@
         <div>
           <span class="kids-badge">KIDS MODE</span>
           <div class="kids-text-title">Enable Kids Mode</div>
-          <div class="kids-text-desc">Shows strictly child-friendly (G/PG) titles. Blocks mature content completely.</div>
+          <div class="kids-text-desc">Shows strictly child-friendly Netflix titles. Blocks mature content completely.</div>
         </div>
         <label class="switch">
           <input type="checkbox" id="kids-toggle">
@@ -684,19 +689,17 @@
     </div>
   </div>
 
-  <!-- 3. SMOOTH ROUNDED DETAIL POPUP MODAL -->
+  <!-- 3. DETAIL POPUP MODAL -->
   <div id="detail-modal-overlay" class="hidden">
     <div class="detail-modal-box">
       <div class="detail-close-btn" onclick="closeDetailModal()"><i class="fa-solid fa-xmark"></i></div>
       
-      <!-- FULL HERO BANNER POSTER BACKDROP CONTAINER -->
       <div class="detail-backdrop" id="modal-backdrop">
         <div class="detail-header-info">
           <h2 id="modal-title">Title Here</h2>
         </div>
       </div>
       
-      <!-- COMPACT BODY SECTION -->
       <div class="detail-body">
         <div class="detail-meta-pills">
           <span class="badge-pill" id="modal-type">Movie</span>
@@ -716,7 +719,6 @@
 
   <!-- 4. STANDALONE CINEMA STREAM PLAYER UI -->
   <div id="watch-player-ui" class="hidden">
-    <!-- INVISIBLE BOX EXIT BUTTON (TEXT ONLY) -->
     <button class="player-exit-btn" onclick="closePlayerUI()">
       <i class="fa-solid fa-xmark"></i> Exit Player
     </button>
@@ -729,7 +731,7 @@
   <div id="search-overlay" class="hidden">
     <div class="search-header-bar">
       <i class="fa-solid fa-magnifying-glass" style="font-size: 2.2rem; color:#777;"></i>
-      <input type="text" id="full-search-input" class="search-input-full" placeholder="Search movies, TV shows..." autofocus>
+      <input type="text" id="full-search-input" class="search-input-full" placeholder="Search official Netflix movies, series..." autofocus>
       <i class="fa-solid fa-xmark close-search-btn" onclick="closeSearchUI()"></i>
     </div>
     <div class="movie-grid" id="search-results-grid"></div>
@@ -776,7 +778,7 @@
       <header class="top-header">
         <div class="search-trigger" onclick="openSearchUI()">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <span>Search movies, series...</span>
+          <span>Search official Netflix movies, series...</span>
         </div>
 
         <div class="user-profile-widget" onclick="switchProfile()">
@@ -788,11 +790,11 @@
       <!-- HERO BANNER ONLY FOR HOME -->
       <div class="hero-banner" id="hero-banner">
         <div class="hero-content">
-          <div class="spotlight-tag"><i class="fa-solid fa-bolt"></i> Spotlight Title</div>
+          <div class="spotlight-tag"><i class="fa-solid fa-bolt"></i> Official Netflix Spotlight</div>
           <h1 id="hero-title">Loading...</h1>
           
           <div class="hero-meta-row">
-            <span class="badge-pill">Featured</span>
+            <span class="badge-pill">Official Netflix Original</span>
             <span class="meta-text" id="hero-year">2026</span>
             <span class="meta-text" id="hero-rating"><i class="fa-solid fa-star" style="color:var(--primary);"></i> 8.0 / 10</span>
           </div>
@@ -809,7 +811,7 @@
       <!-- MAIN CONTINUOUS GRID SECTION -->
       <div class="content-body has-hero" id="content-body">
         <div class="category-section">
-          <h2 id="section-title">Explore</h2>
+          <h2 id="section-title">Explore Official Netflix</h2>
           <div class="movie-grid" id="main-movie-grid"></div>
         </div>
 
@@ -835,7 +837,7 @@
       "https://th.bing.com/th/id/OIP.yU25K5qKTEoGDMJBIRkcVgHaHa?w=166&h=180&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3"
     ];
 
-    let profiles = JSON.parse(localStorage.getItem('flixapp_profiles_v3')) || [];
+    let profiles = JSON.parse(localStorage.getItem('flixapp_profiles_v5')) || [];
     let currentProfile = null;
     let selectedAvatarIndex = 0;
     let editingProfileId = null;
@@ -844,12 +846,13 @@
     let currentPage = 1;
     let currentItems = [];
     let activeModalItem = null;
+    let globalItemRegistry = {}; // Store item references safely for search/grid clicks
 
     function saveProfilesToStorage() {
-      localStorage.setItem('flixapp_profiles_v3', JSON.stringify(profiles));
+      localStorage.setItem('flixapp_profiles_v5', JSON.stringify(profiles));
     }
 
-    /* --- PROFILE MANAGEMENT --- */
+    /* --- PROFILE / SETTINGS MANAGEMENT --- */
     function renderProfiles() {
       const addCard = $('profiles-list').lastElementChild;
       $('profiles-list').innerHTML = '';
@@ -858,7 +861,7 @@
         const card = document.createElement('div');
         card.className = 'profile-card';
         card.innerHTML = `
-          <div class="edit-badge" title="Edit Profile"><i class="fa-solid fa-pencil"></i></div>
+          <div class="edit-badge" title="Settings / Edit Profile"><i class="fa-solid fa-pencil"></i></div>
           <div class="profile-avatar"><img src="${avatarImages[profile.avatarIndex]}" alt="${profile.name}" /></div>
           <div class="profile-name">${profile.name} ${profile.isKids ? '<span style="color:var(--primary);font-size:0.75rem;">(Kids)</span>' : ''}</div>
         `;
@@ -894,7 +897,7 @@
     function openProfileModal(profile = null) {
       if (profile) {
         editingProfileId = profile.id;
-        $('modal-heading').innerText = "Edit Profile";
+        $('modal-heading').innerText = "Edit Profile & Settings";
         $('new-profile-name').value = profile.name;
         selectedAvatarIndex = profile.avatarIndex;
         $('kids-toggle').checked = profile.isKids;
@@ -1022,16 +1025,42 @@
       }
     }
 
-    /* --- FETCH CONTENT & KIDS MODE FILTER --- */
+    /* --- RIGOROUS OFFICIAL & NON-FAKE FILTERING --- */
+    function cleanAndFilterItems(results) {
+      return results.filter(item => {
+        if (item.adult) return false;
+        
+        // Must have a valid poster or title to be real/official
+        if (!item.poster_path || (!item.title && !item.name)) return false;
+
+        // Block low-vote/unvoted placeholder entries or test fakes (< 10 votes or zero popularity)
+        if (item.vote_count !== undefined && item.vote_count < 15) return false;
+        if (item.popularity !== undefined && item.popularity < 1.0) return false;
+
+        // Block Anime / Animation (genre ID 16) completely
+        if (item.genre_ids && item.genre_ids.includes(16)) return false;
+
+        // Block Japanese animation origin
+        if (item.original_language === 'ja') return false;
+
+        // Kids profile strict certification filters
+        if (currentProfile && currentProfile.isKids) {
+          const forbiddenGenres = [27, 80, 53, 10752, 28, 18, 10749]; // Horror, Crime, Thriller, War, Action, Drama, Romance
+          if (item.genre_ids && item.genre_ids.some(g => forbiddenGenres.includes(g))) return false;
+        }
+
+        return true;
+      });
+    }
+
     async function fetchFromTMDB(endpoint, page = 1) {
       try {
         let url = `${TMDB}${endpoint}${endpoint.includes('?') ? '&' : '?'}api_key=${KEY}&page=${page}`;
 
-        if (currentProfile && currentProfile.isKids) {
-          if (endpoint.includes('/tv') || currentTab === 'tv') {
-            url += `&with_genres=10762,16&without_genres=10759,80,9648,10768,18,10765&certification_country=US&certification=TV-Y`;
-          } else {
-            url += `&with_genres=10751,16&without_genres=27,80,53,10752,28,18,10749&certification_country=US&certification.lte=PG`;
+        // Focus purely on official high-grade Netflix hits using network ID 213
+        if (!endpoint.includes('search') && !endpoint.includes('trending')) {
+          if (!url.includes('with_networks')) {
+            url += `&with_networks=213`;
           }
         }
 
@@ -1039,15 +1068,7 @@
         const data = await res.json();
         let results = data.results || [];
 
-        if (currentProfile && currentProfile.isKids) {
-          results = results.filter(item => {
-            if (item.adult) return false;
-            const forbiddenGenres = [27, 80, 53, 10752, 28, 18, 10749];
-            return !(item.genre_ids && item.genre_ids.some(g => forbiddenGenres.includes(g)));
-          });
-        }
-
-        return results;
+        return cleanAndFilterItems(results);
       } catch (err) {
         console.error("Fetch Error:", err);
         return [];
@@ -1066,10 +1087,10 @@
         $('nav-home').classList.add('active');
         $('hero-banner').classList.remove('hidden');
         $('content-body').classList.add('has-hero');
-        $('section-title').innerText = currentProfile?.isKids ? "Kids Family Favorites" : "Trending Now";
+        $('section-title').innerText = currentProfile?.isKids ? "Kids Official Netflix Hits" : "Trending Official Netflix Series & Movies";
         $('load-more-box').classList.remove('hidden');
 
-        const items = await fetchFromTMDB('/trending/all/week', 1);
+        const items = await fetchFromTMDB('/discover/tv?sort_by=popularity.desc&with_networks=213', 1);
         currentItems = items;
         if (items.length > 0) setHeroBanner(items[0]);
         displayGrid(currentItems, 'main-movie-grid');
@@ -1078,10 +1099,10 @@
         $('nav-movies').classList.add('active');
         $('hero-banner').classList.add('hidden');
         $('content-body').classList.remove('has-hero');
-        $('section-title').innerText = currentProfile?.isKids ? "Kids Animation & Movies" : "All Movies";
+        $('section-title').innerText = currentProfile?.isKids ? "Kids Official Netflix Movies" : "Official Netflix Movies";
         $('load-more-box').classList.remove('hidden');
 
-        const items = await fetchFromTMDB('/discover/movie?sort_by=popularity.desc', 1);
+        const items = await fetchFromTMDB('/discover/movie?sort_by=popularity.desc&with_networks=213', 1);
         currentItems = items;
         displayGrid(currentItems, 'main-movie-grid');
 
@@ -1089,10 +1110,10 @@
         $('nav-tv').classList.add('active');
         $('hero-banner').classList.add('hidden');
         $('content-body').classList.remove('has-hero');
-        $('section-title').innerText = currentProfile?.isKids ? "Kids TV & Shows" : "All TV Shows";
+        $('section-title').innerText = currentProfile?.isKids ? "Kids Official Netflix Series" : "Official Netflix TV Shows";
         $('load-more-box').classList.remove('hidden');
 
-        const items = await fetchFromTMDB('/discover/tv?sort_by=popularity.desc', 1);
+        const items = await fetchFromTMDB('/discover/tv?sort_by=popularity.desc&with_networks=213', 1);
         currentItems = items;
         displayGrid(currentItems, 'main-movie-grid');
 
@@ -1109,9 +1130,9 @@
 
     async function loadMoreContent() {
       currentPage++;
-      let endpoint = '/trending/all/week';
-      if (currentTab === 'movies') endpoint = '/discover/movie?sort_by=popularity.desc';
-      if (currentTab === 'tv') endpoint = '/discover/tv?sort_by=popularity.desc';
+      let endpoint = '/discover/tv?sort_by=popularity.desc&with_networks=213';
+      if (currentTab === 'movies') endpoint = '/discover/movie?sort_by=popularity.desc&with_networks=213';
+      if (currentTab === 'tv') endpoint = '/discover/tv?sort_by=popularity.desc&with_networks=213';
 
       const nextItems = await fetchFromTMDB(endpoint, currentPage);
       currentItems = [...currentItems, ...nextItems];
@@ -1123,7 +1144,7 @@
       grid.innerHTML = '';
 
       if (!currentProfile.myList || currentProfile.myList.length === 0) {
-        grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-star" style="font-size:3.5rem; margin-bottom:1rem; color:#222;"></i><br>Your list is completely empty.<br>Click the star icon on any movie or TV show to save it here!</div>';
+        grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-star" style="font-size:3.5rem; margin-bottom:1rem; color:#222;"></i><br>Your list is completely empty.<br>Click the star icon on any official title to save it here!</div>';
         return;
       }
 
@@ -1131,6 +1152,7 @@
     }
 
     function setHeroBanner(item) {
+      globalItemRegistry[item.id] = item;
       const title = item.title || item.name;
       const backdrop = item.backdrop_path ? `${IMGB}original${item.backdrop_path}` : '';
       const year = (item.release_date || item.first_air_date || '2026').split('-')[0];
@@ -1158,7 +1180,15 @@
       const grid = $(targetGridId);
       grid.innerHTML = '';
 
+      if (!items || items.length === 0) {
+        if (targetGridId === 'search-results-grid') {
+          grid.innerHTML = '<div class="empty-state">No official Netflix titles found matching your search.</div>';
+        }
+        return;
+      }
+
       items.forEach(item => {
+        globalItemRegistry[item.id] = item;
         const title = item.title || item.name;
         const poster = item.poster_path ? `${IMGB}w500${item.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Poster';
         const rating = item.vote_average ? item.vote_average.toFixed(1) : '8.0';
@@ -1196,7 +1226,7 @@
       const rating = item.vote_average ? `${item.vote_average.toFixed(1)} / 10` : '8.0 / 10';
 
       $('modal-title').innerText = title;
-      $('modal-type').innerText = isMovie ? 'Movie' : 'TV Show';
+      $('modal-type').innerText = isMovie ? 'Official Netflix Movie' : 'Official Netflix Series';
       $('modal-year').innerText = year;
       $('modal-rating').innerHTML = `<i class="fa-solid fa-star" style="color:var(--primary);"></i> ${rating}`;
       $('modal-overview').innerText = item.overview || 'No description available for this title.';

@@ -3,18 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Tab</title>
+  <title>macOS Desktop</title>
   <style>
-    @font-face {
-      font-family: 'CustomFont';
-      src: url('Electroharmonix.otf') format('opentype');
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       user-select: none;
     }
 
@@ -24,23 +19,20 @@
       background: #000000;
     }
 
-    #desktopWallpaperContainer {
+    #desktopWallpaper {
       position: absolute;
       inset: 0;
       z-index: 0;
-      overflow: hidden;
-      pointer-events: none;
+      width: 100%;
+      height: 100%;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      object-fit: cover;
     }
 
-    #desktopWallpaperContainer video {
-      width: 100%;
-      height: 100%;
+    #desktopWallpaper.video {
       object-fit: cover;
-      position: absolute;
-      inset: 0;
     }
 
     #dayDisplay {
@@ -48,23 +40,12 @@
       left: 50%;
       top: 20px;
       transform: translateX(-50%);
-      color: #d3d3d3;
-      font-family: 'CustomFont', sans-serif;
-      font-size: 4rem;
-      z-index: 1;
-      cursor: grab;
-      text-shadow: 
-        2px 2px 4px rgba(0,0,0,0.8),
-        -1px -1px 2px rgba(255,255,255,0.1),
-        1px 1px 2px rgba(0,0,0,0.5);
-      background: transparent;
-      border: none;
+      color: #ffffff;
+      font-size: 3.5rem;
+      z-index: 5;
       font-weight: 600;
       letter-spacing: 2px;
-    }
-
-    #dayDisplay.dragging {
-      cursor: grabbing;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
 
     #topBar {
@@ -81,7 +62,6 @@
 
     #timeDisplay {
       color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
       font-weight: 500;
       letter-spacing: 0.5px;
@@ -94,7 +74,7 @@
       align-items: center;
       gap: 8px;
       padding: 6px 12px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
       backdrop-filter: blur(10px);
     }
@@ -105,30 +85,18 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
     #batteryPercentage {
       color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 12px;
       font-weight: 500;
-      min-width: 30px;
+      min-width: 35px;
       text-align: right;
     }
 
-    /* Battery SVG Styling */
     .battery-svg {
       filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-    }
-
-    #rainCanvas {
-      position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-      width: 100%;
-      height: 100%;
     }
 
     .desktop {
@@ -139,6 +107,152 @@
       z-index: 3;
     }
 
+    .context-menu {
+      position: absolute;
+      width: 220px;
+      background: rgba(18, 18, 18, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      z-index: 1500;
+      display: none;
+      flex-direction: column;
+    }
+
+    .context-menu.active { display: flex; }
+
+    .context-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #ffffff;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .context-item:hover { background: rgba(255, 255, 255, 0.15); }
+    .context-icon { width: 18px; height: 18px; }
+    .context-label { flex: 1; }
+
+    .shelf {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 900px;
+      height: 80px;
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(30px);
+      border: 1.5px solid rgba(255, 255, 255, 0.25);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 20px;
+      z-index: 50;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .shelf-start, .shelf-end {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .shelf-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    .app-launcher-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(80, 80, 80, 0.3));
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .app-launcher-btn:hover {
+      background: linear-gradient(135deg, rgba(120, 120, 120, 0.5), rgba(100, 100, 100, 0.4));
+      transform: scale(1.1);
+    }
+
+    .shelf-app-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .shelf-app-icon:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: scale(1.1) translateY(-8px);
+    }
+
+    .shelf-app-icon img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .shelf-app-icon.active::before {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+    }
+
+    .trash-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .trash-icon:hover {
+      background: rgba(255, 59, 48, 0.2);
+      border: 1px solid rgba(255, 59, 48, 0.4);
+      transform: scale(1.1) translateY(-8px);
+    }
+
     .app-window {
       position: absolute;
       top: 0;
@@ -147,13 +261,12 @@
       height: 100vh;
       background: #09090b;
       border-radius: 0;
-      box-shadow: none;
       display: flex;
       flex-direction: column;
       z-index: 800;
       overflow: hidden;
       border: none;
-      transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), height 0.2s cubic-bezier(0.2, 0, 0, 1);
+      transition: all 0.2s;
     }
 
     .app-window.windowed {
@@ -163,11 +276,6 @@
       box-shadow: 0 20px 50px rgba(0,0,0,0.8);
       border: 1px solid rgba(255, 255, 255, 0.1);
       z-index: 10;
-    }
-
-    .app-window.dragging, .app-window.resizing,
-    .launcher.dragging, .launcher.resizing {
-      transition: none !important;
     }
 
     .app-window.hidden {
@@ -222,27 +330,17 @@
       transition: background 0.15s;
     }
 
-    .win-btn img {
-      width: 14px;
-      height: 14px;
-      object-fit: contain;
-      filter: invert(1);
-    }
-
     .win-btn:hover {
       background: rgba(255, 255, 255, 0.12);
     }
 
     .win-btn.close:hover {
       background: #e81123;
-      color: white;
     }
 
     .window-body {
       flex: 1;
-      padding: 0;
       overflow: hidden;
-      position: relative;
       background: #000000;
     }
 
@@ -252,129 +350,46 @@
       border: none;
     }
 
-    body.is-interacting iframe {
-      pointer-events: none !important;
+    .resize-handle {
+      position: absolute;
+      z-index: 999;
+      display: none;
     }
 
-    .resize-handle { position: absolute; z-index: 999; display: none; }
-    .app-window.windowed .resize-handle, .launcher .resize-handle { display: block; }
+    .app-window.windowed .resize-handle { display: block; }
+
     .resize-handle.n  { top: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
     .resize-handle.s  { bottom: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
     .resize-handle.w  { top: 0; bottom: 0; left: -4px; width: 8px; cursor: ew-resize; }
     .resize-handle.e  { top: 0; bottom: 0; right: -4px; width: 8px; cursor: ew-resize; }
-    .resize-handle.nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nwse-resize; }
-    .resize-handle.ne { top: -4px; right: -4px; width: 12px; height: 12px; cursor: nesw-resize; }
-    .resize-handle.sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: nesw-resize; }
-    .resize-handle.se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: nwse-resize; }
-
-    .context-menu {
-      position: absolute;
-      width: 220px;
-      background: rgba(18, 18, 18, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 18px;
-      padding: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      z-index: 1500;
-      display: none;
-      flex-direction: column;
-    }
-
-    .context-menu.active { display: flex; }
-
-    .context-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #ffffff;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.10s ease;
-      position: relative;
-    }
-
-    .context-item:hover { background: rgba(255, 255, 255, 0.12); }
-    .context-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.8; }
-    .context-label { flex: 1; }
-    .context-arrow { font-size: 10px; color: #888888; }
-
-    .submenu {
-      position: absolute;
-      left: 100%;
-      top: 0;
-      width: 160px;
-      background: rgba(18, 18, 18, 0.9);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 6px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
-      display: none;
-      flex-direction: column;
-    }
-
-    .context-item:hover .submenu { display: flex; }
 
     .launcher {
       position: fixed;
-      bottom: 0;
+      bottom: 110px;
       left: 50%;
       transform: translateX(-50%);
-      width: 60%;
-      max-width: 800px;
-      background: rgba(18, 18, 18, 0.85);
+      width: 85%;
+      max-width: 1000px;
+      max-height: 70vh;
+      background: rgba(18, 18, 18, 0.9);
       backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-bottom: none;
-      border-radius: 24px 24px 0 0;
-      padding: 12px;
+      border-radius: 24px;
+      padding: 20px;
       display: none;
       flex-direction: column;
       z-index: 500;
-      max-height: 70vh;
       overflow-y: auto;
       box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.4);
     }
 
-    .launcher.active {
-      display: flex;
-    }
-
-    #launcherSearchBar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 10px 16px;
-      margin-bottom: 16px;
-    }
-
-    #searchInput {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: #ffffff;
-      outline: none;
-      font-size: 14px;
-    }
-
-    #searchInput::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
+    .launcher.active { display: flex; }
 
     .launcher-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
 
     .launcher-title {
@@ -404,258 +419,118 @@
       background: rgba(255, 255, 255, 0.15);
     }
 
-    .app-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 12px;
-      padding: 0 4px;
+    #launcherSearchBar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
     }
 
-    .app-icon {
+    #searchInput {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #searchInput::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 16px;
+      padding: 0;
+    }
+
+    .app-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 12px;
       padding: 12px;
       border-radius: 16px;
       cursor: pointer;
       transition: background 0.2s;
-      text-decoration: none;
+      position: relative;
     }
 
-    .app-icon:hover {
+    .app-item:hover {
       background: rgba(255, 255, 255, 0.08);
     }
 
-    .app-icon img {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+    .app-item img {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
       object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
-    .app-icon span {
+    .app-item span {
       font-size: 11px;
       color: #ffffff;
       text-align: center;
       line-height: 1.2;
     }
 
-    .shelf {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 900px;
-      height: 85px;
-      background: rgba(30, 30, 30, 0.9);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-bottom: none;
-      border-radius: 24px 24px 0 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      padding: 10px 20px 15px 20px;
-      z-index: 50;
-      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
-    }
-
-    .shelf-center {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .shelf-app-icon {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      position: relative;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .shelf-app-icon:hover {
-      background: rgba(255, 255, 255, 0.12);
-      transform: scale(1.15) translateY(-8px);
-    }
-
-    .shelf-app-icon.active::before {
-      content: '';
+    .pin-badge {
       position: absolute;
-      bottom: 4px;
-      width: 6px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.6);
+      top: -6px;
+      right: -6px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
-    }
-
-    .shelf-app-icon img {
-      width: 32px;
-      height: 32px;
-      object-fit: cover;
-      border-radius: 8px;
-      pointer-events: none;
-    }
-
-    .floating-app-container {
-      position: fixed;
-      top: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 1200px;
-      z-index: 40;
-      pointer-events: none;
-    }
-
-    .floating-app-icon {
-      position: absolute;
-      width: 70px;
-      height: 70px;
-      cursor: grab;
-      z-index: 40;
-      pointer-events: auto;
-      user-select: none;
-    }
-
-    .floating-app-icon:active {
-      cursor: grabbing;
-    }
-
-    .floating-app-icon.dragging {
-      filter: drop-shadow(0 15px 40px rgba(0,0,0,0.7));
-    }
-
-    .floating-app-icon img {
-      width: 100%;
-      height: 100%;
-      border-radius: 16px;
-      object-fit: cover;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-      transition: filter 0.1s ease;
-    }
-
-    .floating-app-icon:hover img {
-      filter: brightness(1.1);
-    }
-
-    .search-category-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.4);
-      text-transform: uppercase;
-      padding: 8px 12px;
-      margin-top: 12px;
-      letter-spacing: 0.5px;
-    }
-
-    #defaultView, #searchView {
-      display: flex;
-      flex-direction: column;
-    }
-
-    #defaultView.hidden {
-      display: none;
-    }
-
-    #searchView {
-      display: none;
-    }
-
-    #searchView.active {
-      display: flex;
-    }
-
-    .search-result-item {
+      background: rgba(0, 122, 255, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.9);
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-radius: 12px;
+      justify-content: center;
       cursor: pointer;
-      transition: background 0.15s;
-      margin: 0 4px;
-    }
-
-    .search-result-item:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .search-result-item img {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-
-    .search-result-item span {
-      font-size: 13px;
-      color: #ffffff;
-    }
-
-    .alttab-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(10px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      z-index: 2000;
-      padding: 20px;
-    }
-
-    .alttab-overlay.active {
-      display: flex;
-    }
-
-    .alttab-card {
-      width: 120px;
-      height: 140px;
-      border-radius: 16px;
-      background: rgba(30, 30, 30, 0.9);
-      border: 2px solid rgba(255, 255, 255, 0.12);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      font-size: 14px;
       transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 122, 255, 0.4);
+      z-index: 10;
     }
 
-    .alttab-card.selected {
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      background: rgba(255, 255, 255, 0.15);
+    .pin-badge:hover {
+      background: rgba(0, 122, 255, 1);
       transform: scale(1.1);
     }
 
-    .alttab-card img {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      object-fit: cover;
+    .pin-badge.pinned {
+      background: rgba(52, 199, 89, 0.9);
     }
 
-    .alttab-card span {
-      font-size: 12px;
-      color: #ffffff;
-      text-align: center;
+    .wallpaper-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .wallpaper-item {
+      width: 100%;
+      height: 100px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .wallpaper-item:hover {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
     }
 
     @media (max-width: 768px) {
@@ -664,14 +539,15 @@
       }
       .shelf {
         width: 95%;
-        max-width: none;
+      }
+      #dayDisplay {
+        font-size: 2.5rem;
       }
     }
   </style>
 </head>
 <body>
-  <div id="desktopWallpaperContainer"></div>
-  <canvas id="rainCanvas"></canvas>
+  <div id="desktopWallpaper"></div>
 
   <div id="topBar">
     <div id="timeDisplay">00:00</div>
@@ -685,523 +561,413 @@
 
   <div class="desktop">
     <div class="context-menu" id="contextMenu"></div>
-    <div class="floating-app-container" id="floatingAppContainer"></div>
-    
+
     <div class="launcher" id="launcherMenu">
       <div class="launcher-header">
-        <span class="launcher-title">Apps</span>
+        <span class="launcher-title">All Apps</span>
         <button class="launcher-close" onclick="document.getElementById('launcherMenu').classList.remove('active')">×</button>
       </div>
       <div id="launcherSearchBar">
         <span style="color: #888888; font-size: 14px;">🔍</span>
         <input type="text" id="searchInput" placeholder="Search apps...">
       </div>
-      <div id="defaultView">
-        <div class="app-grid" id="mainAppGrid">
-          <div class="app-icon" onclick="openApp('Safari', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Safari_browser_logo.svg/1024px-Safari_browser_logo.svg.png', 'https://www.google.com');" data-appstore="false">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Safari_browser_logo.svg/1024px-Safari_browser_logo.svg.png">
-            <span>Safari</span>
-          </div>
-          <div class="app-icon" onclick="openApp('Mail', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mail_app.svg/1024px-Mail_app.svg.png', 'https://mail.google.com');" data-appstore="false">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mail_app.svg/1024px-Mail_app.svg.png">
-            <span>Mail</span>
-          </div>
-          <div class="app-icon" onclick="openApp('Messages', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Messages_icon.svg/1024px-Messages_icon.svg.png', 'https://messages.google.com');" data-appstore="false">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Messages_icon.svg/1024px-Messages_icon.svg.png">
-            <span>Messages</span>
-          </div>
-          <div class="app-icon" onclick="openApp('Calendar', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Calendar_icon.svg/1024px-Calendar_icon.svg.png', 'https://calendar.google.com');" data-appstore="false">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Calendar_icon.svg/1024px-Calendar_icon.svg.png">
-            <span>Calendar</span>
-          </div>
-          <div class="app-icon" onclick="openApp('Notes', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Notes_icon.svg/1024px-Notes_icon.svg.png', 'https://docs.google.com/document/u/0/');" data-appstore="false">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Notes_icon.svg/1024px-Notes_icon.svg.png">
-            <span>Notes</span>
-          </div>
-          <div class="app-icon" onclick="openApp('Maps', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Maps_icon.svg/1024px-Maps_icon.svg.png', 'https://maps.google.com');" data-appstore="false">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Maps_icon.svg/1024px-Maps_icon.svg.png">
-            <span>Maps</span>
-          </div>
-        </div>
+      <div id="appsContainer" class="app-grid"></div>
+      
+      <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="launcher-title" style="margin-bottom: 12px;">Wallpapers</div>
+        <div id="wallpaperGrid" class="wallpaper-grid"></div>
       </div>
-      <div id="searchView"></div>
     </div>
 
     <div class="shelf" id="shelf">
+      <div class="shelf-start">
+        <div class="app-launcher-btn" onclick="document.getElementById('launcherMenu').classList.add('active');" title="All Apps">
+          🔍
+        </div>
+      </div>
       <div class="shelf-center" id="shelfCenter"></div>
+      <div class="shelf-end">
+        <div class="trash-icon" id="trashIcon" title="Trash">
+          🗑️
+        </div>
+      </div>
     </div>
-
-    <div class="alttab-overlay" id="altTabOverlay"></div>
   </div>
 
   <script>
-    let highestZIndex = 10;
-    let openApps = {};
-    let installedApps = [];
-    let altTabAppKeys = [];
-    let altTabIndex = 0;
-    let currentResizingElement = null;
+    // ============ STORAGE ============
+    const STORAGE_KEYS = {
+      PINNED_APPS: 'pinnedAppsShelf',
+      SELECTED_WALLPAPER: 'selectedWallpaper'
+    };
 
-    const desktop = document.querySelector('.desktop');
-    const launcher = document.getElementById('launcherMenu');
-    const shelfCenter = document.getElementById('shelfCenter');
-    const altTabOverlay = document.getElementById('altTabOverlay');
-    const contextMenu = document.getElementById('contextMenu');
-    const floatingAppContainer = document.getElementById('floatingAppContainer');
+    function saveState() {
+      const pinnedApps = Object.keys(allApps).filter(name => shelfAppsData[name]);
+      localStorage.setItem(STORAGE_KEYS.PINNED_APPS, JSON.stringify(pinnedApps));
+    }
 
-    // Time and Battery Update
-    function updateTimeAndBattery() {
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.PINNED_APPS);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // ============ TIME & BATTERY ============
+    function updateTime() {
       const now = new Date();
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('timeDisplay').textContent = `${hours}:${minutes}`;
+    }
 
-      // Simulate battery (in real app, use Battery API)
-      if (navigator.getBattery) {
+    function updateBattery() {
+      if (navigator.getBattery && typeof navigator.getBattery === 'function') {
         navigator.getBattery().then(battery => {
-          updateBatteryUI(battery.level * 100);
+          renderBatteryUI(battery.level * 100, battery.charging);
+          battery.addEventListener('levelchange', () => {
+            renderBatteryUI(battery.level * 100, battery.charging);
+          });
+        }).catch(() => {
+          document.getElementById('batteryPercentage').textContent = 'N/A';
         });
       } else {
-        // Fallback: show simulated battery
-        const simulatedBattery = Math.min(100, Math.max(20, Math.random() * 100));
-        updateBatteryUI(simulatedBattery);
+        document.getElementById('batteryPercentage').textContent = 'N/A';
       }
     }
 
-    function updateBatteryUI(level) {
+    function renderBatteryUI(level, charging = false) {
       const percentage = Math.round(level);
       const iconColor = percentage > 50 ? '#34C759' : percentage > 20 ? '#FF9500' : '#FF3B30';
       
-      const batteryIcon = document.getElementById('batteryIcon');
-      batteryIcon.innerHTML = `
+      document.getElementById('batteryIcon').innerHTML = `
         <svg class="battery-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect x="2" y="6" width="16" height="12" rx="2" fill="none" stroke="${iconColor}" stroke-width="1.5"/>
           <rect x="19" y="8" width="2" height="8" rx="1" fill="${iconColor}"/>
-          <rect x="3" y="7" width="${(16 * percentage) / 100}" height="10" rx="1" fill="${iconColor}"/>
+          <rect x="3" y="7" width="${(14 * percentage) / 100}" height="10" rx="1" fill="${iconColor}"/>
         </svg>
       `;
-      document.getElementById('batteryPercentage').textContent = `${percentage}%`;
+      
+      document.getElementById('batteryPercentage').textContent = `${percentage}%${charging ? ' ⚡' : ''}`;
     }
 
-    setInterval(updateTimeAndBattery, 1000);
-    updateTimeAndBattery();
+    setInterval(updateTime, 1000);
+    updateTime();
+    updateBattery();
 
-    // Day Display Update
+    // ============ DAY DISPLAY ============
     function updateDayDisplay() {
       const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      const today = days[new Date().getDay()];
-      document.getElementById('dayDisplay').textContent = today;
+      document.getElementById('dayDisplay').textContent = days[new Date().getDay()];
     }
     updateDayDisplay();
 
-    // Floating App Gravity Physics
-    class FloatingApp {
-      constructor(name, iconSrc, x, y) {
-        this.name = name;
-        this.iconSrc = iconSrc;
-        this.x = x;
-        this.y = y;
-        this.vx = 0;
-        this.vy = 0;
-        this.isDragging = false;
-        this.element = this.create();
-        this.shelfY = window.innerHeight - 85;
-        this.animate();
-      }
+    // ============ APPS DATA ============
+    const allApps = {
+      'Safari': { url: 'https://www.google.com', icon: 'https://icons.macosicons.com/png/512/safari-512.png' },
+      'Mail': { url: 'https://mail.google.com', icon: 'https://icons.macosicons.com/png/512/mail-512.png' },
+      'Messages': { url: 'https://messages.google.com', icon: 'https://icons.macosicons.com/png/512/messages-512.png' },
+      'Calendar': { url: 'https://calendar.google.com', icon: 'https://icons.macosicons.com/png/512/calendar-512.png' },
+      'Notes': { url: 'https://docs.google.com/document/u/0/', icon: 'https://icons.macosicons.com/png/512/notes-512.png' },
+      'Maps': { url: 'https://maps.google.com', icon: 'https://icons.macosicons.com/png/512/maps-512.png' },
+      'Photos': { url: 'https://photos.google.com', icon: 'https://icons.macosicons.com/png/512/photos-512.png' },
+      'Music': { url: 'https://music.apple.com', icon: 'https://icons.macosicons.com/png/512/music-512.png' },
+      'Finder': { url: 'https://google.com', icon: 'https://icons.macosicons.com/png/512/finder-512.png' },
+      'Settings': { url: 'https://google.com', icon: 'https://icons.macosicons.com/png/512/system-preferences-512.png' },
+      'Stocks': { url: 'https://google.com', icon: 'https://icons.macosicons.com/png/512/stocks-512.png' },
+      'Reminders': { url: 'https://google.com', icon: 'https://icons.macosicons.com/png/512/reminders-512.png' },
+      'Clock': { url: 'https://google.com', icon: 'https://icons.macosicons.com/png/512/clock-512.png' },
+      'News': { url: 'https://news.google.com', icon: 'https://icons.macosicons.com/png/512/news-512.png' }
+    };
 
-      create() {
-        const div = document.createElement('div');
-        div.className = 'floating-app-icon';
-        div.id = `float-${this.name.replace(/\s+/g, '-')}`;
-        div.style.left = this.x + 'px';
-        div.style.top = this.y + 'px';
-        div.innerHTML = `<img src="${this.iconSrc}" alt="${this.name}">`;
+    // ============ WALLPAPERS FROM GIT ============
+    const wallpaperRepoUrl = 'https://api.github.com/repos/school-rgb/frutiger-os-wallpaper/contents';
+    let wallpapers = [];
+    let currentWallpaper = localStorage.getItem(STORAGE_KEYS.SELECTED_WALLPAPER) || '';
 
-        div.addEventListener('mousedown', (e) => this.startDrag(e));
-        div.addEventListener('click', () => {
-          if (!this.isDragging) {
-            openApp(this.name, this.iconSrc, 'https://www.google.com');
-          }
-        });
-
-        floatingAppContainer.appendChild(div);
-        return div;
-      }
-
-      startDrag(e) {
-        this.isDragging = true;
-        this.element.classList.add('dragging');
-        this.dragStartX = e.clientX;
-        this.dragStartY = e.clientY;
-        this.dragStartLeft = this.x;
-        this.dragStartTop = this.y;
-
-        const onMouseMove = (e) => this.drag(e);
-        const onMouseUp = () => this.endDrag(onMouseMove, onMouseUp);
-
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-      }
-
-      drag(e) {
-        this.x = this.dragStartLeft + (e.clientX - this.dragStartX);
-        this.y = this.dragStartTop + (e.clientY - this.dragStartY);
-        this.updatePosition();
-      }
-
-      endDrag(onMouseMove, onMouseUp) {
-        this.isDragging = false;
-        this.element.classList.remove('dragging');
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
+    async function fetchWallpapersFromGit() {
+      try {
+        const response = await fetch(wallpaperRepoUrl);
+        const data = await response.json();
         
-        // Set velocity for gravity
-        this.vy = 2;
-      }
+        wallpapers = data.filter(file => 
+          /\.(png|jpg|jpeg|mp4|webm|gif)$/i.test(file.name)
+        ).map(file => ({
+          name: file.name.replace(/\.[^/.]+$/, ""),
+          url: file.download_url,
+          type: /\.(mp4|webm|mov)$/i.test(file.name) ? 'video' : 'image'
+        }));
 
-      animate() {
-        if (!this.isDragging) {
-          // Apply gravity
-          this.vy += 0.3;
-          this.y += this.vy;
-
-          // Snap to shelf
-          if (this.y + 70 >= this.shelfY - 10) {
-            this.y = this.shelfY - 70;
-            this.vy = 0;
-          }
-
-          // Keep within bounds
-          this.x = Math.max(10, Math.min(window.innerWidth - 80, this.x));
+        renderWallpaperGrid();
+        
+        // Load last selected wallpaper
+        if (currentWallpaper) {
+          const selected = wallpapers.find(w => w.url === currentWallpaper);
+          if (selected) setWallpaper(selected);
+        } else if (wallpapers.length > 0) {
+          setWallpaper(wallpapers[0]);
         }
-        this.updatePosition();
-        requestAnimationFrame(() => this.animate());
-      }
-
-      updatePosition() {
-        this.element.style.left = this.x + 'px';
-        this.element.style.top = this.y + 'px';
+      } catch (error) {
+        console.log('Wallpapers not available, using default');
+        document.getElementById('desktopWallpaper').style.backgroundColor = '#0a0a0a';
       }
     }
 
-    // Floating Apps Management
-    let floatingApps = {};
-
-    function createFloatingApp(name, iconSrc) {
-      if (!floatingApps[name]) {
-        const randomX = Math.random() * (window.innerWidth - 100) + 50;
-        floatingApps[name] = new FloatingApp(name, iconSrc, randomX, 150);
-      }
-    }
-
-    // Context Menu
-    document.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      contextMenu.innerHTML = `
-        <div class="context-item" onclick="document.getElementById('launcherMenu').classList.add('active'); contextMenu.classList.remove('active');">
-          <span class="context-icon">🔍</span>
-          <span class="context-label">Show Apps</span>
+    function renderWallpaperGrid() {
+      const grid = document.getElementById('wallpaperGrid');
+      grid.innerHTML = wallpapers.map(wp => `
+        <div class="wallpaper-item" 
+          style="background-image: url('${wp.url}')"
+          onclick="setWallpaper({url: '${wp.url}', name: '${wp.name}', type: '${wp.type}'})"
+          title="${wp.name}">
         </div>
-        <div class="context-item" onclick="location.reload();">
-          <span class="context-icon">🔄</span>
-          <span class="context-label">Refresh</span>
-        </div>
-      `;
-      contextMenu.classList.add('active');
-      contextMenu.style.left = e.clientX + 'px';
-      contextMenu.style.top = e.clientY + 'px';
-    });
-
-    document.addEventListener('click', () => {
-      contextMenu.classList.remove('active');
-    });
-
-    // Launcher Toggle
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === ' ') {
-        e.preventDefault();
-        launcher.classList.toggle('active');
-      }
-    });
-
-    // Resize Handling
-    function initResize(e, win, direction) {
-      currentResizingElement = win;
-      win.classList.add('resizing');
-      document.body.classList.add('is-interacting');
-
-      const startX = e.clientX, startY = e.clientY;
-      const startWidth = win.offsetWidth, startHeight = win.offsetHeight;
-      const startLeft = win.offsetLeft, startTop = win.offsetTop;
-
-      window.addEventListener('mousemove', function resize(e) {
-        const dX = e.clientX - startX, dY = e.clientY - startY;
-        if (direction.includes('e')) win.style.width = Math.max(300, startWidth + dX) + 'px';
-        if (direction.includes('w')) { win.style.width = Math.max(300, startWidth - dX) + 'px'; win.style.left = (startLeft + dX) + 'px'; }
-        if (direction.includes('s')) win.style.height = Math.max(200, startHeight + dY) + 'px';
-        if (direction.includes('n')) { win.style.height = Math.max(200, startHeight - dY) + 'px'; win.style.top = (startTop + dY) + 'px'; }
-      });
-
-      window.addEventListener('mouseup', function stopResize() {
-        window.removeEventListener('mousemove', resize);
-        window.removeEventListener('mouseup', stopResize);
-        win.classList.remove('resizing');
-        document.body.classList.remove('is-interacting');
-        currentResizingElement = null;
-      });
+      `).join('');
     }
 
-    function updateInstalledApps() {
-      installedApps = Array.from(document.querySelectorAll('#mainAppGrid .app-icon')).map(app => {
-        return {
-          name: app.querySelector('span').textContent,
-          icon: app.querySelector('img').src,
-          url: app.getAttribute('onclick').match(/'([^']*)'/g)[2].replace(/'/g, ''),
-          isFromAppStore: app.getAttribute('data-appstore') === 'true'
-        };
-      });
-    }
-
-    const searchInput = document.getElementById('searchInput');
-    const defaultView = document.getElementById('defaultView');
-    const searchView = document.getElementById('searchView');
-
-    searchInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      if (!q) {
-        defaultView.classList.remove('hidden');
-        searchView.classList.remove('active');
-        return;
+    function setWallpaper(wallpaper) {
+      const container = document.getElementById('desktopWallpaper');
+      
+      if (wallpaper.type === 'video') {
+        container.innerHTML = `<video autoplay muted loop style="width:100%; height:100%; object-fit:cover;"><source src="${wallpaper.url}" type="video/mp4"></video>`;
+      } else {
+        container.style.backgroundImage = `url('${wallpaper.url}')`;
+        container.style.backgroundSize = 'cover';
+        container.style.backgroundPosition = 'center';
       }
       
-      defaultView.classList.add('hidden');
-      searchView.classList.add('active');
-      searchView.innerHTML = '';
+      localStorage.setItem(STORAGE_KEYS.SELECTED_WALLPAPER, wallpaper.url);
+      currentWallpaper = wallpaper.url;
+    }
 
-      const localResults = installedApps.filter(app => app.name.toLowerCase().includes(q));
+    fetchWallpapersFromGit();
+
+    // ============ APP LAUNCHER ============
+    let openApps = {};
+    let shelfAppsData = {};
+    let highestZIndex = 10;
+
+    const initialPinnedApps = loadState();
+
+    function renderAppGrid() {
+      const container = document.getElementById('appsContainer');
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
       
-      if (localResults.length > 0) {
-        searchView.innerHTML += `<div class="search-category-title">Installed Apps</div>`;
-        localResults.forEach(app => {
-          searchView.innerHTML += `
-            <div class="search-result-item" onclick="openApp('${app.name}', '${app.icon}', '${app.url}'); document.getElementById('launcherMenu').classList.remove('active');">
-              <img src="${app.icon}">
-              <span>${app.name}</span>
-            </div>
-          `;
-        });
-      }
+      const filtered = Object.keys(allApps).filter(name => 
+        name.toLowerCase().includes(searchTerm)
+      );
 
-      searchView.innerHTML += `<div class="search-category-title">Web Search</div>`;
-      searchView.innerHTML += `
-        <div class="search-result-item" onclick="openApp('Google Search', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png', 'https://www.google.com/search?igu=1&q=${encodeURIComponent(q)}'); document.getElementById('launcherMenu').classList.remove('active');">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png">
-          <span>Search web for "${q}"</span>
+      container.innerHTML = filtered.map(name => `
+        <div class="app-item" onclick="openApp('${name}')">
+          <img src="${allApps[name].icon}" alt="${name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect fill=%22%23888%22 width=%2264%22 height=%2264%22 rx=%2216%22/%3E%3Ctext x=%2232%22 y=%2240%22 fill=%22white%22 font-size=%2220%22 text-anchor=%22middle%22 dominant-baseline=%22central%22%3E${name[0]}%3C/text%3E%3C/svg%3E'">
+          <span>${name}</span>
+          <div class="pin-badge ${shelfAppsData[name] ? 'pinned' : ''}" onclick="event.stopPropagation(); togglePinApp('${name}')" title="${shelfAppsData[name] ? 'Remove from Shelf' : 'Add to Shelf'}">
+            ${shelfAppsData[name] ? '✓' : '+'}
+          </div>
         </div>
-      `;
-    });
+      `).join('');
+    }
 
-    function openApp(name, iconSrc, url) {
-      if (openApps[name]) {
-        showAppWindow(name);
+    function togglePinApp(appName) {
+      if (shelfAppsData[appName]) {
+        delete shelfAppsData[appName];
+        const dockIcon = document.getElementById(`dock-${appName.replace(/\s+/g, '-')}`);
+        if (dockIcon) dockIcon.remove();
+      } else {
+        shelfAppsData[appName] = true;
+        addAppToShelf(appName);
+      }
+      saveState();
+      renderAppGrid();
+    }
+
+    function addAppToShelf(appName) {
+      const shelfCenter = document.getElementById('shelfCenter');
+      
+      if (document.getElementById(`dock-${appName.replace(/\s+/g, '-')}`)) return;
+
+      const icon = document.createElement('div');
+      icon.className = 'shelf-app-icon';
+      icon.id = `dock-${appName.replace(/\s+/g, '-')}`;
+      icon.innerHTML = `<img src="${allApps[appName].icon}" alt="${appName}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect fill=%22%23888%22 width=%2264%22 height=%2264%22 rx=%2216%22/%3E%3C/svg%3E">`;
+      icon.onclick = () => {
+        if (openApps[appName]) {
+          toggleAppWindow(appName);
+        } else {
+          openApp(appName);
+        }
+      };
+      
+      shelfCenter.appendChild(icon);
+    }
+
+    function openApp(appName) {
+      if (openApps[appName]) {
+        showAppWindow(appName);
         return;
       }
 
-      launcher.classList.remove('active');
+      document.getElementById('launcherMenu').classList.remove('active');
 
       const win = document.createElement('div');
       win.className = 'app-window windowed';
-      win.id = `win-${name.replace(/\s+/g, '-')}`;
+      win.id = `win-${appName.replace(/\s+/g, '-')}`;
       win.style.zIndex = ++highestZIndex;
       win.style.left = (window.innerWidth / 2 - 475) + 'px';
       win.style.top = (window.innerHeight / 2 - 300) + 'px';
 
-      const handles = ['n', 's', 'w', 'e', 'nw', 'ne', 'sw', 'se'];
-      handles.forEach(h => {
-        const hDiv = document.createElement('div');
-        hDiv.className = `resize-handle ${h}`;
-        hDiv.addEventListener('mousedown', e => initResize(e, win, h));
-        win.appendChild(hDiv);
-      });
-
       const header = document.createElement('div');
       header.className = 'window-header';
-      
-      const titleDiv = document.createElement('div');
-      titleDiv.className = 'window-title';
-      titleDiv.innerHTML = `<img src="${iconSrc}"> ${name}`;
-
-      const controlsDiv = document.createElement('div');
-      controlsDiv.className = 'window-controls';
-      
-      const minBtn = document.createElement('button'); minBtn.className = 'win-btn'; minBtn.innerHTML = '−';
-      const maxBtn = document.createElement('button'); maxBtn.className = 'win-btn'; maxBtn.innerHTML = '□';
-      const closeBtn = document.createElement('button'); closeBtn.className = 'win-btn close'; closeBtn.innerHTML = '✕';
-
-      minBtn.onclick = (e) => { e.stopPropagation(); hideAppWindow(name); };
-      maxBtn.onclick = (e) => { e.stopPropagation(); toggleMaximize(name); };
-      closeBtn.onclick = (e) => { e.stopPropagation(); closeApp(name); };
-
-      controlsDiv.append(minBtn, maxBtn, closeBtn);
-      header.append(titleDiv, controlsDiv);
+      header.innerHTML = `
+        <div class="window-title">
+          <img src="${allApps[appName].icon}" alt="${appName}">
+          ${appName}
+        </div>
+        <div class="window-controls">
+          <button class="win-btn" onclick="hideAppWindow('${appName}')">−</button>
+          <button class="win-btn" onclick="toggleMaximize('${appName}')">□</button>
+          <button class="win-btn close" onclick="closeApp('${appName}')">✕</button>
+        </div>
+      `;
 
       const body = document.createElement('div');
       body.className = 'window-body';
-      body.innerHTML = `<iframe src="${url}"></iframe>`;
+      body.innerHTML = `<iframe src="${allApps[appName].url}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>`;
 
-      win.append(header, body);
-      desktop.appendChild(win);
+      win.appendChild(header);
+      win.appendChild(body);
+      document.querySelector('.desktop').appendChild(win);
 
-      let isDragging = false, startX, startY, startLeft, startTop;
+      let isDragging = false;
       header.addEventListener('mousedown', (e) => {
-        if(e.target.closest('.win-btn') || openApps[name].isMaximized) return;
+        if (e.target.closest('.win-btn')) return;
         isDragging = true;
-        win.classList.add('dragging');
-        document.body.classList.add('is-interacting');
-        highestZIndex++;
-        win.style.zIndex = highestZIndex;
-        startX = e.clientX; startY = e.clientY;
-        startLeft = parseInt(win.style.left || 0);
-        startTop = parseInt(win.style.top || 0);
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = parseInt(win.style.left);
+        const startTop = parseInt(win.style.top);
+
+        const onMove = (e) => {
+          win.style.left = (startLeft + e.clientX - startX) + 'px';
+          win.style.top = (startTop + e.clientY - startY) + 'px';
+        };
+
+        const onUp = () => {
+          isDragging = false;
+          window.removeEventListener('mousemove', onMove);
+          window.removeEventListener('mouseup', onUp);
+        };
+
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
       });
 
-      window.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-          win.style.left = (startLeft + (e.clientX - startX)) + 'px';
-          win.style.top = (startTop + (e.clientY - startY)) + 'px';
-        }
-      });
-
-      window.addEventListener('mouseup', () => {
-        isDragging = false;
-        win.classList.remove('dragging');
-        document.body.classList.remove('is-interacting');
-      });
-
-      win.addEventListener('mousedown', () => {
-        highestZIndex++;
-        win.style.zIndex = highestZIndex;
-      });
-
-      const shelfIcon = document.createElement('div');
-      shelfIcon.className = 'shelf-app-icon active';
-      shelfIcon.id = `dock-${name.replace(/\s+/g, '-')}`;
-      shelfIcon.innerHTML = `<img src="${iconSrc}">`;
-      shelfIcon.onclick = () => {
-        if (openApps[name].window.classList.contains('hidden')) {
-          showAppWindow(name);
-        } else if (win.style.zIndex == highestZIndex) {
-          hideAppWindow(name);
-        } else {
-          highestZIndex++;
-          win.style.zIndex = highestZIndex;
-        }
-      };
-      shelfCenter.appendChild(shelfIcon);
-
-      openApps[name] = { window: win, dock: shelfIcon, isMaximized: false };
-      createFloatingApp(name, iconSrc);
-      updateAltTabKeys();
+      openApps[appName] = { window: win };
+      updateShelfIcons();
     }
 
-    function toggleMaximize(name) {
-      const app = openApps[name];
-      if (app.isMaximized) {
-        app.window.classList.add('windowed');
-        app.window.style.width = '950px';
-        app.window.style.height = '600px';
-        app.window.style.left = (window.innerWidth / 2 - 475) + 'px';
-        app.window.style.top = (window.innerHeight / 2 - 300) + 'px';
-        app.isMaximized = false;
+    function toggleAppWindow(appName) {
+      if (openApps[appName].window.classList.contains('hidden')) {
+        showAppWindow(appName);
+      } else if (openApps[appName].window.style.zIndex == highestZIndex) {
+        hideAppWindow(appName);
       } else {
-        app.window.classList.remove('windowed');
-        app.window.style.width = '100vw';
-        app.window.style.height = '100vh';
-        app.window.style.left = '0px';
-        app.window.style.top = '0px';
-        app.isMaximized = true;
+        showAppWindow(appName);
+      }
+    }
+
+    function hideAppWindow(appName) {
+      openApps[appName].window.classList.add('hidden');
+      const icon = document.getElementById(`dock-${appName.replace(/\s+/g, '-')}`);
+      if (icon) icon.classList.remove('active');
+    }
+
+    function showAppWindow(appName) {
+      openApps[appName].window.classList.remove('hidden');
+      const icon = document.getElementById(`dock-${appName.replace(/\s+/g, '-')}`);
+      if (icon) icon.classList.add('active');
+      highestZIndex++;
+      openApps[appName].window.style.zIndex = highestZIndex;
+    }
+
+    function toggleMaximize(appName) {
+      const win = openApps[appName].window;
+      if (win.classList.contains('windowed')) {
+        win.classList.remove('windowed');
+        win.style.width = '100vw';
+        win.style.height = '100vh';
+        win.style.left = '0';
+        win.style.top = '0';
+      } else {
+        win.classList.add('windowed');
+        win.style.width = '950px';
+        win.style.height = '600px';
+        win.style.left = (window.innerWidth / 2 - 475) + 'px';
+        win.style.top = (window.innerHeight / 2 - 300) + 'px';
       }
       highestZIndex++;
-      app.window.style.zIndex = highestZIndex;
+      win.style.zIndex = highestZIndex;
     }
 
-    function hideAppWindow(name) {
-      openApps[name].window.classList.add('hidden');
-      openApps[name].dock.classList.remove('active');
+    function closeApp(appName) {
+      openApps[appName].window.remove();
+      delete openApps[appName];
+      updateShelfIcons();
     }
 
-    function showAppWindow(name) {
-      const app = openApps[name];
-      app.window.classList.remove('hidden');
-      app.dock.classList.add('active');
-      highestZIndex++;
-      app.window.style.zIndex = highestZIndex;
+    function updateShelfIcons() {
+      Object.keys(shelfAppsData).forEach(appName => {
+        const icon = document.getElementById(`dock-${appName.replace(/\s+/g, '-')}`);
+        if (icon) {
+          if (openApps[appName]) {
+            icon.classList.add('active');
+          } else {
+            icon.classList.remove('active');
+          }
+        }
+      });
     }
 
-    function closeApp(name) {
-      openApps[name].window.remove();
-      openApps[name].dock.remove();
-      delete openApps[name];
-      if (floatingApps[name]) {
-        floatingApps[name].element.remove();
-        delete floatingApps[name];
-      }
-      updateAltTabKeys();
-    }
+    // ============ CONTEXT MENU ============
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      const menu = document.getElementById('contextMenu');
+      menu.innerHTML = `
+        <div class="context-item" onclick="document.getElementById('launcherMenu').classList.add('active'); menu.classList.remove('active');">
+          <span class="context-icon">🔍</span>
+          <span class="context-label">Show Apps & Wallpapers</span>
+        </div>
+      `;
+      menu.classList.add('active');
+      menu.style.left = e.clientX + 'px';
+      menu.style.top = e.clientY + 'px';
+    });
 
-    function updateAltTabKeys() {
-      altTabAppKeys = Object.keys(openApps);
-    }
+    document.addEventListener('click', () => {
+      document.getElementById('contextMenu').classList.remove('active');
+    });
 
-    let isAltTabMode = false;
-    
+    // ============ LAUNCHER SEARCH ============
+    document.getElementById('searchInput').addEventListener('input', () => {
+      renderAppGrid();
+    });
+
+    // ============ KEYBOARD SHORTCUTS ============
     document.addEventListener('keydown', (e) => {
-      if (e.altKey && e.key === 'Tab') {
+      if ((e.metaKey || e.ctrlKey) && e.key === ' ') {
         e.preventDefault();
-        if (altTabAppKeys.length === 0) return;
-        
-        if (!isAltTabMode) {
-          isAltTabMode = true;
-          altTabOverlay.classList.add('active');
-          renderAltTabGrid();
-        }
-        
-        altTabIndex = (altTabIndex + (e.shiftKey ? -1 : 1) + altTabAppKeys.length) % altTabAppKeys.length;
-        updateAltTabSelection();
+        document.getElementById('launcherMenu').classList.toggle('active');
       }
     });
 
-    document.addEventListener('keyup', (e) => {
-      if (e.key === 'Alt' && isAltTabMode) {
-        isAltTabMode = false;
-        altTabOverlay.classList.remove('active');
-        if(altTabAppKeys.length > 0) {
-          const targetApp = altTabAppKeys[altTabIndex];
-          showAppWindow(targetApp);
-        }
-      }
+    // ============ INITIALIZATION ============
+    renderAppGrid();
+    
+    initialPinnedApps.forEach(appName => {
+      shelfAppsData[appName] = true;
+      addAppToShelf(appName);
     });
-
-    function renderAltTabGrid() {
-      altTabOverlay.innerHTML = '';
-      altTabAppKeys.forEach((key, index) => {
-        const appInfo = installedApps.find(a => a.name === key) || { icon: openApps[key].dock.querySelector('img').src };
-        const card = document.createElement('div');
-        card.className = 'alttab-card' + (index === altTabIndex ? ' selected' : '');
-        card.innerHTML = `<img src="${appInfo.icon}"><span>${key}</span>`;
-        altTabOverlay.appendChild(card);
-      });
-    }
-
-    function updateAltTabSelection() {
-      const cards = altTabOverlay.querySelectorAll('.alttab-card');
-      cards.forEach((c, i) => {
-        if(i === altTabIndex) c.classList.add('selected');
-        else c.classList.remove('selected');
-      });
-    }
-
-    updateInstalledApps();
   </script>
 </body>
 </html>

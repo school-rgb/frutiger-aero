@@ -425,7 +425,7 @@ function cleanWebUrl(url) {
   return url;
 }
 
-const BASE_CDN_NETWORK = "https://raw.githack.com/school-rgb/Hydra-assets/main/";
+const BASE_CDN_NETWORK = "https://raw.githack.com/rzwn2bm626-eng/frutiger-assets-v9/main/";
 const GAMES_FOLDER_NETWORK = "gmes/";
 const FALLBACK_IMG = "https://img.icons8.com/?size=100&id=gp2EGUQ15At9&format=png&color=999999";
 
@@ -458,7 +458,7 @@ function dedupeGames(games) {
 async function loadNetworkGames() {
   try {
     const cacheBuster = '?t=' + new Date().getTime();
-    const r = await fetch("https://raw.githubusercontent.com/school-rgb/Hydra-assets/main/gmes.json" + cacheBuster, { cache: 'no-store' });
+    const r = await fetch("https://raw.githubusercontent.com/rzwn2bm626-eng/frutiger-assets-v9/gmes.json" + cacheBuster, { cache: 'no-store' });
     if (!r.ok) { loadFromCacheFallback(); return; }
     const d = await r.json();
     let rawArray = safeArray(d);

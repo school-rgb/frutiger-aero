@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <style>
+    @font-face {
+      font-family: 'CustomFont';
+      src: url('Electroharmonix.otf') format('opentype');
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Google Sans', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      height: 100vh;
+      overflow: hidden;
+      background: #000000;
+    }
+
+    #desktopWallpaperContainer {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
+    #desktopWallpaperContainer video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+
+    #dayDisplay {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      color: #d3d3d3;
+      font-family: 'CustomFont', sans-serif;
+      font-size: 4rem;
+      z-index: 1;
+      cursor: grab;
+      text-shadow: 
+        2px 2px 4px rgba(0,0,0,0.8),
+        -1px -1px 2px rgba(255,255,255,0.1),
+        1px 1px 2px rgba(0,0,0,0.5);
+      background: transparent;
+      border: none;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+
+    #dayDisplay.dragging {
+      cursor: grabbing;
+    }
+
+    #topBar {
+      position: absolute;
+      top: 0;
+      right: 30px;
+      height: 45px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 100;
+      padding-right: 20px;
+    }
+
+    #timeDisplay {
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    #batteryContainer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    #batteryIcon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #batteryPercentage {
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      min-width: 30px;
+      text-align: right;
+    }
+
+    /* Battery SVG Styling */
+    .battery-svg {
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    }
+
+    #rainCanvas {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      width: 100%;
+      height: 100%;
+    }
+
+    .desktop {
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      overflow: hidden;
+      z-index: 3;
+    }
+
+    .app-window {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #09090b;
+      border-radius: 0;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      z-index: 800;
+      overflow: hidden;
+      border: none;
+      transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), height 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .app-window.windowed {
+      width: 950px;
+      height: 600px;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+
+    .app-window.dragging, .app-window.resizing,
+    .launcher.dragging, .launcher.resizing {
+      transition: none !important;
+    }
+
+    .app-window.hidden {
+      display: none !important;
+    }
+
+    .window-header {
+      height: 40px;
+      background: #050505;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      cursor: move;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+
+    .window-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+
+    .window-title img {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+    }
+
+    .window-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .win-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      color: #ffffff;
+      transition: background 0.15s;
+    }
+
+    .win-btn img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+      filter: invert(1);
+    }
+
+    .win-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .win-btn.close:hover {
+      background: #e81123;
+      color: white;
+    }
+
+    .window-body {
+      flex: 1;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      background: #000000;
+    }
+
+    .window-body iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    body.is-interacting iframe {
+      pointer-events: none !important;
+    }
+
+    .resize-handle { position: absolute; z-index: 999; display: none; }
+    .app-window.windowed .resize-handle, .launcher .resize-handle { display: block; }
+    .resize-handle.n  { top: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
+    .resize-handle.s  { bottom: -4px; left: 0; right: 0; height: 8px; cursor: ns-resize; }
+    .resize-handle.w  { top: 0; bottom: 0; left: -4px; width: 8px; cursor: ew-resize; }
+    .resize-handle.e  { top: 0; bottom: 0; right: -4px; width: 8px; cursor: ew-resize; }
+    .resize-handle.nw { top: -4px; left: -4px; width: 12px; height: 12px; cursor: nwse-resize; }
+    .resize-handle.ne { top: -4px; right: -4px; width: 12px; height: 12px; cursor: nesw-resize; }
+    .resize-handle.sw { bottom: -4px; left: -4px; width: 12px; height: 12px; cursor: nesw-resize; }
+    .resize-handle.se { bottom: -4px; right: -4px; width: 12px; height: 12px; cursor: nwse-resize; }
+
+    .context-menu {
+      position: absolute;
+      width: 220px;
+      background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      z-index: 1500;
+      display: none;
+      flex-direction: column;
+    }
+
+    .context-menu.active { display: flex; }
+
+    .context-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #ffffff;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.10s ease;
+      position: relative;
+    }
+
+    .context-item:hover { background: rgba(255, 255, 255, 0.12); }
+    .context-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.8; }
+    .context-label { flex: 1; }
+    .context-arrow { font-size: 10px; color: #888888; }
+
+    .submenu {
+      position: absolute;
+      left: 100%;
+      top: 0;
+      width: 160px;
+      background: rgba(18, 18, 18, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      display: none;
+      flex-direction: column;
+    }
+
+    .context-item:hover .submenu { display: flex; }
+
+    .launcher {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      max-width: 800px;
+      background: rgba(18, 18, 18, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-bottom: none;
+      border-radius: 24px 24px 0 0;
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      z-index: 500;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .launcher.active {
+      display: flex;
+    }
+
+    #launcherSearchBar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
+    }
+
+    #searchInput {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    #searchInput::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .launcher-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .launcher-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .launcher-close {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      border-radius: 8px;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+
+    .launcher-close:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 12px;
+      padding: 0 4px;
+    }
+
+    .app-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+
+    .app-icon:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .app-icon img {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .app-icon span {
+      font-size: 11px;
+      color: #ffffff;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .shelf {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 900px;
+      height: 85px;
+      background: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-bottom: none;
+      border-radius: 24px 24px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 10px 20px 15px 20px;
+      z-index: 50;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .shelf-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .shelf-app-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .shelf-app-icon:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: scale(1.15) translateY(-8px);
+    }
+
+    .shelf-app-icon.active::before {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+    }
+
+    .shelf-app-icon img {
+      width: 32px;
+      height: 32px;
+      object-fit: cover;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+
+    .floating-app-container {
+      position: fixed;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 1200px;
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    .floating-app-icon {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      cursor: grab;
+      z-index: 40;
+      pointer-events: auto;
+      user-select: none;
+    }
+
+    .floating-app-icon:active {
+      cursor: grabbing;
+    }
+
+    .floating-app-icon.dragging {
+      filter: drop-shadow(0 15px 40px rgba(0,0,0,0.7));
+    }
+
+    .floating-app-icon img {
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      object-fit: cover;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transition: filter 0.1s ease;
+    }
+
+    .floating-app-icon:hover img {
+      filter: brightness(1.1);
+    }
+
+    .search-category-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      padding: 8px 12px;
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    #defaultView, #searchView {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #defaultView.hidden {
+      display: none;
+    }
+
+    #searchView {
+      display: none;
+    }
+
+    #searchView.active {
+      display: flex;
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin: 0 4px;
+    }
+
+    .search-result-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .search-result-item img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .search-result-item span {
+      font-size: 13px;
+      color: #ffffff;
+    }
+
+    .alttab-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      z-index: 2000;
+      padding: 20px;
+    }
+
+    .alttab-overlay.active {
+      display: flex;
+    }
+
+    .alttab-card {
+      width: 120px;
+      height: 140px;
+      border-radius: 16px;
+      background: rgba(30, 30, 30, 0.9);
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .alttab-card.selected {
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.1);
+    }
+
+    .alttab-card img {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .alttab-card span {
+      font-size: 12px;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .app-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      }
+      .shelf {
+        width: 95%;
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="desktopWallpaperContainer"></div>
+  <canvas id="rainCanvas"></canvas>
+
+  <div id="topBar">
+    <div id="timeDisplay">00:00</div>
+    <div id="batteryContainer">
+      <div id="batteryIcon"></div>
+      <div id="batteryPercentage">100%</div>
+    </div>
+  </div>
+
+  <button id="dayDisplay">Monday</button>
+
+  <div class="desktop">
+    <div class="context-menu" id="contextMenu"></div>
+    <div class="floating-app-container" id="floatingAppContainer"></div>
+    
+    <div class="launcher" id="launcherMenu">
+      <div class="launcher-header">
+        <span class="launcher-title">Apps</span>
+        <button class="launcher-close" onclick="document.getElementById('launcherMenu').classList.remove('active')">×</button>
+      </div>
+      <div id="launcherSearchBar">
+        <span style="color: #888888; font-size: 14px;">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search apps...">
+      </div>
+      <div id="defaultView">
+        <div class="app-grid" id="mainAppGrid">
+          <div class="app-icon" onclick="openApp('Safari', 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Safari_browser_logo.svg/1024px-Safari_browser_logo.svg.png', 'https://www.google.com');" data-appstore="false">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Safari_browser_logo.svg/1024px-Safari_browser_logo.svg.png">
+            <span>Safari</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Mail', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mail_app.svg/1024px-Mail_app.svg.png', 'https://mail.google.com');" data-appstore="false">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Mail_app.svg/1024px-Mail_app.svg.png">
+            <span>Mail</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Messages', 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Messages_icon.svg/1024px-Messages_icon.svg.png', 'https://messages.google.com');" data-appstore="false">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Messages_icon.svg/1024px-Messages_icon.svg.png">
+            <span>Messages</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Calendar', 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Calendar_icon.svg/1024px-Calendar_icon.svg.png', 'https://calendar.google.com');" data-appstore="false">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Calendar_icon.svg/1024px-Calendar_icon.svg.png">
+            <span>Calendar</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Notes', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Notes_icon.svg/1024px-Notes_icon.svg.png', 'https://docs.google.com/document/u/0/');" data-appstore="false">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Notes_icon.svg/1024px-Notes_icon.svg.png">
+            <span>Notes</span>
+          </div>
+          <div class="app-icon" onclick="openApp('Maps', 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Maps_icon.svg/1024px-Maps_icon.svg.png', 'https://maps.google.com');" data-appstore="false">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Maps_icon.svg/1024px-Maps_icon.svg.png">
+            <span>Maps</span>
+          </div>
+        </div>
+      </div>
+      <div id="searchView"></div>
+    </div>
+
+    <div class="shelf" id="shelf">
+      <div class="shelf-center" id="shelfCenter"></div>
+    </div>
+
+    <div class="alttab-overlay" id="altTabOverlay"></div>
+  </div>
+
+  <script>
+    let highestZIndex = 10;
+    let openApps = {};
+    let installedApps = [];
+    let altTabAppKeys = [];
+    let altTabIndex = 0;
+    let currentResizingElement = null;
+
+    const desktop = document.querySelector('.desktop');
+    const launcher = document.getElementById('launcherMenu');
+    const shelfCenter = document.getElementById('shelfCenter');
+    const altTabOverlay = document.getElementById('altTabOverlay');
+    const contextMenu = document.getElementById('contextMenu');
+    const floatingAppContainer = document.getElementById('floatingAppContainer');
+
+    // Time and Battery Update
+    function updateTimeAndBattery() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('timeDisplay').textContent = `${hours}:${minutes}`;
+
+      // Simulate battery (in real app, use Battery API)
+      if (navigator.getBattery) {
+        navigator.getBattery().then(battery => {
+          updateBatteryUI(battery.level * 100);
+        });
+      } else {
+        // Fallback: show simulated battery
+        const simulatedBattery = Math.min(100, Math.max(20, Math.random() * 100));
+        updateBatteryUI(simulatedBattery);
+      }
+    }
+
+    function updateBatteryUI(level) {
+      const percentage = Math.round(level);
+      const iconColor = percentage > 50 ? '#34C759' : percentage > 20 ? '#FF9500' : '#FF3B30';
+      
+      const batteryIcon = document.getElementById('batteryIcon');
+      batteryIcon.innerHTML = `
+        <svg class="battery-svg" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="6" width="16" height="12" rx="2" fill="none" stroke="${iconColor}" stroke-width="1.5"/>
+          <rect x="19" y="8" width="2" height="8" rx="1" fill="${iconColor}"/>
+          <rect x="3" y="7" width="${(16 * percentage) / 100}" height="10" rx="1" fill="${iconColor}"/>
+        </svg>
+      `;
+      document.getElementById('batteryPercentage').textContent = `${percentage}%`;
+    }
+
+    setInterval(updateTimeAndBattery, 1000);
+    updateTimeAndBattery();
+
+    // Day Display Update
+    function updateDayDisplay() {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const today = days[new Date().getDay()];
+      document.getElementById('dayDisplay').textContent = today;
+    }
+    updateDayDisplay();
+
+    // Floating App Gravity Physics
+    class FloatingApp {
+      constructor(name, iconSrc, x, y) {
+        this.name = name;
+        this.iconSrc = iconSrc;
+        this.x = x;
+        this.y = y;
+        this.vx = 0;
+        this.vy = 0;
+        this.isDragging = false;
+        this.element = this.create();
+        this.shelfY = window.innerHeight - 85;
+        this.animate();
+      }
+
+      create() {
+        const div = document.createElement('div');
+        div.className = 'floating-app-icon';
+        div.id = `float-${this.name.replace(/\s+/g, '-')}`;
+        div.style.left = this.x + 'px';
+        div.style.top = this.y + 'px';
+        div.innerHTML = `<img src="${this.iconSrc}" alt="${this.name}">`;
+
+        div.addEventListener('mousedown', (e) => this.startDrag(e));
+        div.addEventListener('click', () => {
+          if (!this.isDragging) {
+            openApp(this.name, this.iconSrc, 'https://www.google.com');
+          }
+        });
+
+        floatingAppContainer.appendChild(div);
+        return div;
+      }
+
+      startDrag(e) {
+        this.isDragging = true;
+        this.element.classList.add('dragging');
+        this.dragStartX = e.clientX;
+        this.dragStartY = e.clientY;
+        this.dragStartLeft = this.x;
+        this.dragStartTop = this.y;
+
+        const onMouseMove = (e) => this.drag(e);
+        const onMouseUp = () => this.endDrag(onMouseMove, onMouseUp);
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      }
+
+      drag(e) {
+        this.x = this.dragStartLeft + (e.clientX - this.dragStartX);
+        this.y = this.dragStartTop + (e.clientY - this.dragStartY);
+        this.updatePosition();
+      }
+
+      endDrag(onMouseMove, onMouseUp) {
+        this.isDragging = false;
+        this.element.classList.remove('dragging');
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        
+        // Set velocity for gravity
+        this.vy = 2;
+      }
+
+      animate() {
+        if (!this.isDragging) {
+          // Apply gravity
+          this.vy += 0.3;
+          this.y += this.vy;
+
+          // Snap to shelf
+          if (this.y + 70 >= this.shelfY - 10) {
+            this.y = this.shelfY - 70;
+            this.vy = 0;
+          }
+
+          // Keep within bounds
+          this.x = Math.max(10, Math.min(window.innerWidth - 80, this.x));
+        }
+        this.updatePosition();
+        requestAnimationFrame(() => this.animate());
+      }
+
+      updatePosition() {
+        this.element.style.left = this.x + 'px';
+        this.element.style.top = this.y + 'px';
+      }
+    }
+
+    // Floating Apps Management
+    let floatingApps = {};
+
+    function createFloatingApp(name, iconSrc) {
+      if (!floatingApps[name]) {
+        const randomX = Math.random() * (window.innerWidth - 100) + 50;
+        floatingApps[name] = new FloatingApp(name, iconSrc, randomX, 150);
+      }
+    }
+
+    // Context Menu
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      contextMenu.innerHTML = `
+        <div class="context-item" onclick="document.getElementById('launcherMenu').classList.add('active'); contextMenu.classList.remove('active');">
+          <span class="context-icon">🔍</span>
+          <span class="context-label">Show Apps</span>
+        </div>
+        <div class="context-item" onclick="location.reload();">
+          <span class="context-icon">🔄</span>
+          <span class="context-label">Refresh</span>
+        </div>
+      `;
+      contextMenu.classList.add('active');
+      contextMenu.style.left = e.clientX + 'px';
+      contextMenu.style.top = e.clientY + 'px';
+    });
+
+    document.addEventListener('click', () => {
+      contextMenu.classList.remove('active');
+    });
+
+    // Launcher Toggle
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ' ') {
+        e.preventDefault();
+        launcher.classList.toggle('active');
+      }
+    });
+
+    // Resize Handling
+    function initResize(e, win, direction) {
+      currentResizingElement = win;
+      win.classList.add('resizing');
+      document.body.classList.add('is-interacting');
+
+      const startX = e.clientX, startY = e.clientY;
+      const startWidth = win.offsetWidth, startHeight = win.offsetHeight;
+      const startLeft = win.offsetLeft, startTop = win.offsetTop;
+
+      window.addEventListener('mousemove', function resize(e) {
+        const dX = e.clientX - startX, dY = e.clientY - startY;
+        if (direction.includes('e')) win.style.width = Math.max(300, startWidth + dX) + 'px';
+        if (direction.includes('w')) { win.style.width = Math.max(300, startWidth - dX) + 'px'; win.style.left = (startLeft + dX) + 'px'; }
+        if (direction.includes('s')) win.style.height = Math.max(200, startHeight + dY) + 'px';
+        if (direction.includes('n')) { win.style.height = Math.max(200, startHeight - dY) + 'px'; win.style.top = (startTop + dY) + 'px'; }
+      });
+
+      window.addEventListener('mouseup', function stopResize() {
+        window.removeEventListener('mousemove', resize);
+        window.removeEventListener('mouseup', stopResize);
+        win.classList.remove('resizing');
+        document.body.classList.remove('is-interacting');
+        currentResizingElement = null;
+      });
+    }
+
+    function updateInstalledApps() {
+      installedApps = Array.from(document.querySelectorAll('#mainAppGrid .app-icon')).map(app => {
+        return {
+          name: app.querySelector('span').textContent,
+          icon: app.querySelector('img').src,
+          url: app.getAttribute('onclick').match(/'([^']*)'/g)[2].replace(/'/g, ''),
+          isFromAppStore: app.getAttribute('data-appstore') === 'true'
+        };
+      });
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    const defaultView = document.getElementById('defaultView');
+    const searchView = document.getElementById('searchView');
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        defaultView.classList.remove('hidden');
+        searchView.classList.remove('active');
+        return;
+      }
+      
+      defaultView.classList.add('hidden');
+      searchView.classList.add('active');
+      searchView.innerHTML = '';
+
+      const localResults = installedApps.filter(app => app.name.toLowerCase().includes(q));
+      
+      if (localResults.length > 0) {
+        searchView.innerHTML += `<div class="search-category-title">Installed Apps</div>`;
+        localResults.forEach(app => {
+          searchView.innerHTML += `
+            <div class="search-result-item" onclick="openApp('${app.name}', '${app.icon}', '${app.url}'); document.getElementById('launcherMenu').classList.remove('active');">
+              <img src="${app.icon}">
+              <span>${app.name}</span>
+            </div>
+          `;
+        });
+      }
+
+      searchView.innerHTML += `<div class="search-category-title">Web Search</div>`;
+      searchView.innerHTML += `
+        <div class="search-result-item" onclick="openApp('Google Search', 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png', 'https://www.google.com/search?igu=1&q=${encodeURIComponent(q)}'); document.getElementById('launcherMenu').classList.remove('active');">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/1200px-Google_%22G%22_Logo.svg.png">
+          <span>Search web for "${q}"</span>
+        </div>
+      `;
+    });
+
+    function openApp(name, iconSrc, url) {
+      if (openApps[name]) {
+        showAppWindow(name);
+        return;
+      }
+
+      launcher.classList.remove('active');
+
+      const win = document.createElement('div');
+      win.className = 'app-window windowed';
+      win.id = `win-${name.replace(/\s+/g, '-')}`;
+      win.style.zIndex = ++highestZIndex;
+      win.style.left = (window.innerWidth / 2 - 475) + 'px';
+      win.style.top = (window.innerHeight / 2 - 300) + 'px';
+
+      const handles = ['n', 's', 'w', 'e', 'nw', 'ne', 'sw', 'se'];
+      handles.forEach(h => {
+        const hDiv = document.createElement('div');
+        hDiv.className = `resize-handle ${h}`;
+        hDiv.addEventListener('mousedown', e => initResize(e, win, h));
+        win.appendChild(hDiv);
+      });
+
+      const header = document.createElement('div');
+      header.className = 'window-header';
+      
+      const titleDiv = document.createElement('div');
+      titleDiv.className = 'window-title';
+      titleDiv.innerHTML = `<img src="${iconSrc}"> ${name}`;
+
+      const controlsDiv = document.createElement('div');
+      controlsDiv.className = 'window-controls';
+      
+      const minBtn = document.createElement('button'); minBtn.className = 'win-btn'; minBtn.innerHTML = '−';
+      const maxBtn = document.createElement('button'); maxBtn.className = 'win-btn'; maxBtn.innerHTML = '□';
+      const closeBtn = document.createElement('button'); closeBtn.className = 'win-btn close'; closeBtn.innerHTML = '✕';
+
+      minBtn.onclick = (e) => { e.stopPropagation(); hideAppWindow(name); };
+      maxBtn.onclick = (e) => { e.stopPropagation(); toggleMaximize(name); };
+      closeBtn.onclick = (e) => { e.stopPropagation(); closeApp(name); };
+
+      controlsDiv.append(minBtn, maxBtn, closeBtn);
+      header.append(titleDiv, controlsDiv);
+
+      const body = document.createElement('div');
+      body.className = 'window-body';
+      body.innerHTML = `<iframe src="${url}"></iframe>`;
+
+      win.append(header, body);
+      desktop.appendChild(win);
+
+      let isDragging = false, startX, startY, startLeft, startTop;
+      header.addEventListener('mousedown', (e) => {
+        if(e.target.closest('.win-btn') || openApps[name].isMaximized) return;
+        isDragging = true;
+        win.classList.add('dragging');
+        document.body.classList.add('is-interacting');
+        highestZIndex++;
+        win.style.zIndex = highestZIndex;
+        startX = e.clientX; startY = e.clientY;
+        startLeft = parseInt(win.style.left || 0);
+        startTop = parseInt(win.style.top || 0);
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          win.style.left = (startLeft + (e.clientX - startX)) + 'px';
+          win.style.top = (startTop + (e.clientY - startY)) + 'px';
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        win.classList.remove('dragging');
+        document.body.classList.remove('is-interacting');
+      });
+
+      win.addEventListener('mousedown', () => {
+        highestZIndex++;
+        win.style.zIndex = highestZIndex;
+      });
+
+      const shelfIcon = document.createElement('div');
+      shelfIcon.className = 'shelf-app-icon active';
+      shelfIcon.id = `dock-${name.replace(/\s+/g, '-')}`;
+      shelfIcon.innerHTML = `<img src="${iconSrc}">`;
+      shelfIcon.onclick = () => {
+        if (openApps[name].window.classList.contains('hidden')) {
+          showAppWindow(name);
+        } else if (win.style.zIndex == highestZIndex) {
+          hideAppWindow(name);
+        } else {
+          highestZIndex++;
+          win.style.zIndex = highestZIndex;
+        }
+      };
+      shelfCenter.appendChild(shelfIcon);
+
+      openApps[name] = { window: win, dock: shelfIcon, isMaximized: false };
+      createFloatingApp(name, iconSrc);
+      updateAltTabKeys();
+    }
+
+    function toggleMaximize(name) {
+      const app = openApps[name];
+      if (app.isMaximized) {
+        app.window.classList.add('windowed');
+        app.window.style.width = '950px';
+        app.window.style.height = '600px';
+        app.window.style.left = (window.innerWidth / 2 - 475) + 'px';
+        app.window.style.top = (window.innerHeight / 2 - 300) + 'px';
+        app.isMaximized = false;
+      } else {
+        app.window.classList.remove('windowed');
+        app.window.style.width = '100vw';
+        app.window.style.height = '100vh';
+        app.window.style.left = '0px';
+        app.window.style.top = '0px';
+        app.isMaximized = true;
+      }
+      highestZIndex++;
+      app.window.style.zIndex = highestZIndex;
+    }
+
+    function hideAppWindow(name) {
+      openApps[name].window.classList.add('hidden');
+      openApps[name].dock.classList.remove('active');
+    }
+
+    function showAppWindow(name) {
+      const app = openApps[name];
+      app.window.classList.remove('hidden');
+      app.dock.classList.add('active');
+      highestZIndex++;
+      app.window.style.zIndex = highestZIndex;
+    }
+
+    function closeApp(name) {
+      openApps[name].window.remove();
+      openApps[name].dock.remove();
+      delete openApps[name];
+      if (floatingApps[name]) {
+        floatingApps[name].element.remove();
+        delete floatingApps[name];
+      }
+      updateAltTabKeys();
+    }
+
+    function updateAltTabKeys() {
+      altTabAppKeys = Object.keys(openApps);
+    }
+
+    let isAltTabMode = false;
+    
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+        if (altTabAppKeys.length === 0) return;
+        
+        if (!isAltTabMode) {
+          isAltTabMode = true;
+          altTabOverlay.classList.add('active');
+          renderAltTabGrid();
+        }
+        
+        altTabIndex = (altTabIndex + (e.shiftKey ? -1 : 1) + altTabAppKeys.length) % altTabAppKeys.length;
+        updateAltTabSelection();
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Alt' && isAltTabMode) {
+        isAltTabMode = false;
+        altTabOverlay.classList.remove('active');
+        if(altTabAppKeys.length > 0) {
+          const targetApp = altTabAppKeys[altTabIndex];
+          showAppWindow(targetApp);
+        }
+      }
+    });
+
+    function renderAltTabGrid() {
+      altTabOverlay.innerHTML = '';
+      altTabAppKeys.forEach((key, index) => {
+        const appInfo = installedApps.find(a => a.name === key) || { icon: openApps[key].dock.querySelector('img').src };
+        const card = document.createElement('div');
+        card.className = 'alttab-card' + (index === altTabIndex ? ' selected' : '');
+        card.innerHTML = `<img src="${appInfo.icon}"><span>${key}</span>`;
+        altTabOverlay.appendChild(card);
+      });
+    }
+
+    function updateAltTabSelection() {
+      const cards = altTabOverlay.querySelectorAll('.alttab-card');
+      cards.forEach((c, i) => {
+        if(i === altTabIndex) c.classList.add('selected');
+        else c.classList.remove('selected');
+      });
+    }
+
+    updateInstalledApps();
+  </script>
+</body>
+</html>
